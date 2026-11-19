@@ -5,7 +5,9 @@ import DDPersistence
 import DDIntents
 import DDDesign
 
-/// Task list: swipe right to complete, context menu for everything else, drag to reorder.
+/// Task list (native `List`): tap the checkbox or swipe right to complete, swipe left to
+/// delete, long-press for more, drag to reorder in Edit mode. Before the fight starts,
+/// completing asks to start the fight first.
 struct TasksView: View {
     let raidID: UUID
 
@@ -19,6 +21,8 @@ struct TasksView: View {
     @State private var editing: TaskEditorView.Mode?
     @State private var errorMessage: String?
     @State private var completedCount = 0
+    /// A task the player tried to complete while the raid is still planning.
+    @State private var needsFightStart: RaidTask?
     @Namespace private var zoom
 
     init(raidID: UUID) {
@@ -32,7 +36,8 @@ struct TasksView: View {
     private var open: [TaskRecord] { tasks.filter { !$0.isDone } }
     private var done: [TaskRecord] { tasks.filter(\.isDone) }
     private var config: DamageConfig { DDStore.shared.config }
-    private var canComplete: Bool { raid?.status == .active }
+    /// Completing is offered while planning too; it asks to start the fight first.
+    private var canComplete: Bool { raid?.status == .active || raid?.status == .planning }
     private var canEdit: Bool { raid?.status == .planning || raid?.status == .active }
 
     var body: some View {
@@ -48,6 +53,7 @@ struct TasksView: View {
                     TaskEditorView(raidID: raidID, mode: mode)
                 }
                 .sensoryFeedback(.impact(weight: .heavy), trigger: completedCount) { _, _ in hapticsOn }
+                .startFightPrompt(task: $needsFightStart, raid: raid) { task in complete(task) }
                 .alert("Couldn't do that", isPresented: errorBinding) {
                     Button("OK") { errorMessage = nil }
                 } message: {
@@ -128,13 +134,16 @@ struct TasksView: View {
     @ViewBuilder
     private func row(_ record: TaskRecord) -> some View {
         let task = record.model
-        NavigationLink(value: task.id) {
-            TaskRow(task: task, damage: config.baseDamage(for: task.size), assignee: nickname(task.assigneeID), isLate: task.isLate(startedAt: raid?.startedAt))
+        HStack(spacing: 12) {
+            CompleteButton(task: task, enabled: canComplete) { attemptComplete(task) }
+            NavigationLink(value: task.id) {
+                TaskRow(task: task, damage: config.baseDamage(for: task.size), assignee: nickname(task.assigneeID), isLate: task.isLate(startedAt: raid?.startedAt))
+            }
         }
         .matchedTransitionSource(id: task.id, in: zoom)
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             if !task.isDone && canComplete {
-                Button("Complete", systemImage: "checkmark") { complete(task) }
+                Button("Complete", systemImage: "checkmark") { attemptComplete(task) }
                     .tint(.green)
             }
         }
@@ -145,7 +154,7 @@ struct TasksView: View {
         }
         .contextMenu {
             if !task.isDone && canComplete {
-                Button("Complete", systemImage: "checkmark.circle") { complete(task) }
+                Button("Complete", systemImage: "checkmark.circle") { attemptComplete(task) }
             }
             if task.isDone {
                 Button("Reopen", systemImage: "arrow.uturn.backward") { reopen(task) }
@@ -165,7 +174,7 @@ struct TasksView: View {
         }
         .accessibilityActions {
             if !task.isDone && canComplete {
-                Button("Complete task") { complete(task) }
+                Button("Complete task") { attemptComplete(task) }
             }
             if canEdit {
                 Button("Edit task") { editing = .edit(task) }
@@ -174,6 +183,8 @@ struct TasksView: View {
                 Button("Delete task", role: .destructive) { delete(task) }
             }
         }
+        // A container, so the checkbox keeps its own identifier and label.
+        .accessibilityElement(children: .contain)
         .accessibilityIdentifier("task-\(task.title)")
     }
 
@@ -184,6 +195,15 @@ struct TasksView: View {
     }
 
     // MARK: Actions
+
+    /// Completes now while fighting; while planning, asks to start the fight first.
+    private func attemptComplete(_ task: RaidTask) {
+        if raid?.status == .planning {
+            needsFightStart = task
+        } else {
+            complete(task)
+        }
+    }
 
     private func complete(_ task: RaidTask) {
         do {
@@ -222,31 +242,27 @@ struct TaskRow: View {
     let assignee: String?
     let isLate: Bool
 
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-
     var body: some View {
-        let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6)) : AnyLayout(HStackLayout(spacing: 12))
-        layout {
-            Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(task.isDone ? .green : .secondary)
-                .font(.title3)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(task.title)
-                    .strikethrough(task.isDone)
-                    .foregroundStyle(task.isDone ? .secondary : .primary)
-                HStack(spacing: 6) {
-                    if let assignee { Label(assignee, systemImage: "person.fill") }
-                    if isLate { Label("Late", systemImage: "clock.badge.exclamationmark") }
-                }
+        // Reminders-style: title, then one wrapping line of details. No layout switching,
+        // so it scales cleanly with Dynamic Type.
+        VStack(alignment: .leading, spacing: 2) {
+            Text(task.title)
+                .strikethrough(task.isDone)
+                .foregroundStyle(task.isDone ? Theme.inkSoft : Theme.ink)
+            Text(details)
                 .font(.caption)
                 .foregroundStyle(.readableSecondary)
-            }
-            if !dynamicTypeSize.isAccessibilitySize { Spacer(minLength: 0) }
-            SizeChip(task.size, damage: damage)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(accessibilityText)
+    }
+
+    private var details: String {
+        var parts = ["\(String(localized: task.size.title)) · \(damage) dmg"]
+        if let assignee { parts.append(assignee) }
+        if isLate { parts.append(String(localized: "Late")) }
+        return parts.joined(separator: " · ")
     }
 
     private var accessibilityText: Text {
@@ -255,5 +271,79 @@ struct TaskRow: View {
         if let assignee { parts.append(String(localized: "assigned to \(assignee)")) }
         if isLate { parts.append(String(localized: "added after the fight started")) }
         return Text(parts.joined(separator: ", "))
+    }
+}
+
+/// The row's checkbox, like Reminders: one tap completes the task.
+struct CompleteButton: View {
+    let task: RaidTask
+    let enabled: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")
+                .font(.title2)
+                .foregroundStyle(task.isDone ? AnyShapeStyle(Color.green) : AnyShapeStyle(Theme.inkSoft))
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        // Borderless, so tapping the checkbox doesn't open the task.
+        .buttonStyle(.borderless)
+        .disabled(task.isDone || !enabled)
+        .accessibilityLabel(task.isDone ? Text("\(task.title), done") : Text("Complete \(task.title)"))
+        .accessibilityIdentifier("complete-\(task.title)")
+    }
+}
+
+extension View {
+    /// Asks to start the fight when a task is completed during planning.
+    /// The raid leader can start it right away; others are told to wait.
+    func startFightPrompt(task: Binding<RaidTask?>, raid: Raid?, complete: @escaping (RaidTask) -> Void) -> some View {
+        modifier(StartFightPrompt(task: task, raid: raid, complete: complete))
+    }
+}
+
+private struct StartFightPrompt: ViewModifier {
+    @Binding var task: RaidTask?
+    let raid: Raid?
+    let complete: (RaidTask) -> Void
+    @Environment(Announcer.self) private var announcer
+    @State private var errorMessage: String?
+
+    private var isLeader: Bool { raid?.ownerID == LocalIdentity.current.memberID }
+
+    func body(content: Content) -> some View {
+        content
+            .confirmationDialog(
+                "The fight hasn't started",
+                isPresented: Binding(get: { task != nil }, set: { if !$0 { task = nil } }),
+                titleVisibility: .visible,
+                presenting: task
+            ) { pending in
+                if isLeader {
+                    Button("Start the fight and complete") {
+                        do {
+                            try GameActions.startFight(raid?.id)
+                            announcer.announce(String(localized: "The fight has started!"), important: true)
+                            complete(pending)
+                        } catch {
+                            errorMessage = error.localizedDescription
+                        }
+                    }
+                }
+                Button("Not yet", role: .cancel) {}
+            } message: { _ in
+                if isLeader {
+                    Text("Tasks only hit the boss once the fight is on. Starting locks the boss's health from the planned tasks.")
+                } else {
+                    Text("Tasks only hit the boss once the fight is on. The raid leader starts it.")
+                }
+            }
+            .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
+                Button("OK") { errorMessage = nil }
+            } message: {
+                Text(errorMessage ?? "")
+            }
     }
 }

@@ -81,7 +81,7 @@ final class SmokeTests: XCTestCase {
     }
 
     func complete(_ app: XCUIApplication, _ title: String) {
-        let row = app.buttons["task-\(title)"]
+        let row = app.descendants(matching: .any)["task-\(title)"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         row.swipeRight()
         app.buttons["Complete"].firstMatch.tap()
@@ -114,14 +114,23 @@ final class SmokeTests: XCTestCase {
         tab(app, "Boss")
         XCTAssertTrue(hpLabel(app, contains: "462 / 462 HP").waitForExistence(timeout: 5)) // 300 / 0.65
         try audit(app, "Boss (planning)")
-        app.buttons["startFightButton"].tap()
-
-        // Fight: complete a task and see the boss lose health.
+        // Completing during planning asks to start the fight first.
         tab(app, "Tasks")
-        complete(app, "Outline")
+        let checkbox = app.buttons["complete-Outline"]
+        XCTAssertTrue(checkbox.waitForExistence(timeout: 5))
+        checkbox.tap()
+        let startAndComplete = app.buttons["Start the fight and complete"]
+        XCTAssertTrue(startAndComplete.waitForExistence(timeout: 5))
+        startAndComplete.tap()
         tab(app, "Boss")
         XCTAssertTrue(hpLabel(app, contains: "312 / 462 HP").waitForExistence(timeout: 5))
         try audit(app, "Boss (fighting)")
+
+        // Swiping right completes too.
+        tab(app, "Tasks")
+        complete(app, "Draft")
+        tab(app, "Boss")
+        XCTAssertTrue(hpLabel(app, contains: "162 / 462 HP").waitForExistence(timeout: 5))
 
         tab(app, "Raid")
         // Rows here switch from side-by-side to stacked at large sizes, which the

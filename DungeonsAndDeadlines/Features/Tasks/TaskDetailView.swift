@@ -16,6 +16,7 @@ struct TaskDetailView: View {
     @Query private var members: [MemberRecord]
     @State private var editing = false
     @State private var errorMessage: String?
+    @State private var needsFightStart: RaidTask?
 
     init(taskID: UUID, raidID: UUID) {
         self.taskID = taskID
@@ -59,12 +60,12 @@ struct TaskDetailView: View {
             .navigationTitle("Task")
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                if !task.isDone && raid?.status == .active {
+                if !task.isDone && (raid?.status == .active || raid?.status == .planning) {
                     Button {
-                        do {
-                            announcer.announceOwnHit(try GameActions.completeTask(task.id))
-                        } catch {
-                            errorMessage = error.localizedDescription
+                        if raid?.status == .planning {
+                            needsFightStart = task
+                        } else {
+                            complete(task)
                         }
                     } label: {
                         Label("Complete task", systemImage: "checkmark")
@@ -81,6 +82,7 @@ struct TaskDetailView: View {
                 }
             }
             .sheet(isPresented: $editing) { TaskEditorView(raidID: raidID, mode: .edit(task)) }
+            .startFightPrompt(task: $needsFightStart, raid: raid) { complete($0) }
             .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
                 Button("OK") { errorMessage = nil }
             } message: {
@@ -88,6 +90,14 @@ struct TaskDetailView: View {
             }
         } else {
             ContentUnavailableView("Task deleted", systemImage: "trash")
+        }
+    }
+
+    private func complete(_ task: RaidTask) {
+        do {
+            announcer.announceOwnHit(try GameActions.completeTask(task.id))
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 

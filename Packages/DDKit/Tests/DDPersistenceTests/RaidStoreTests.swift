@@ -43,6 +43,12 @@ struct RaidStoreTests {
         // Completing twice is a no-op.
         #expect(try store.completeTask(t1.id, by: "a") == nil)
         #expect(store.attacks(raid.id).count == 1)
+
+        // Reopen + complete again must not hit the boss a second time.
+        try store.reopenTask(t1.id)
+        #expect(try store.completeTask(t1.id, by: "a") == nil)
+        #expect(store.task(t1.id)?.isDone == true)
+        #expect(store.attacks(raid.id).count == 1)
     }
 
     @Test("Can't start without tasks; only the owner can start")

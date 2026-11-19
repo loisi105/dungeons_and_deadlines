@@ -289,7 +289,9 @@ public final class RaidStore {
         guard let raid = raid(record.raidID) else { throw StoreError.raidNotFound }
         guard raid.status == .active, bossState(raid.id)?.outcome == .ongoing else { throw StoreError.notActive }
 
-        let attack = calculator.taskAttack(raidID: raid.id, taskID: taskID, size: record.size, context: context(for: memberID, raid: raid))
+        // A task hits the boss once. Reopening and completing it again doesn't hit twice.
+        let alreadyHit = attacks(raid.id).contains { $0.kind == .task(taskID) }
+        let attack = alreadyHit ? nil : calculator.taskAttack(raidID: raid.id, taskID: taskID, size: record.size, context: context(for: memberID, raid: raid))
         var task = record.model
         task.completedAt = clock()
         task.completedBy = memberID
