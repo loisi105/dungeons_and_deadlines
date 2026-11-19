@@ -41,6 +41,7 @@ struct CreateRaidView: View {
                         .accessibilityIdentifier("raidNameField")
                     HStack {
                         TextField("Boss name", text: $bossName, axis: .vertical)
+                            .accessibilityIdentifier("bossNameField")
                         Button {
                             bossName = BossNames.random()
                         } label: {

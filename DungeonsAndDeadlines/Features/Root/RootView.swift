@@ -33,9 +33,12 @@ struct RootView: View {
         .task(id: nickname.isEmpty) {
             if !nickname.isEmpty { environment.gameCenter.authenticate() }
         }
+        .onAppear { KeyboardDismissal.shared.install() }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
-            case .active: environment.didBecomeActive()
+            case .active:
+                KeyboardDismissal.shared.install()
+                environment.didBecomeActive()
             case .background: environment.didEnterBackground()
             default: break
             }
