@@ -7,7 +7,7 @@ import DDDesign
 
 /// Home Screen (small, medium), Lock Screen (circular, rectangular, inline) and StandBy.
 struct BossWidget: Widget {
-    static let kind = "com.dungeonsanddeadlines.app.boss"
+    static let kind = "at.fhooe.sail.dungeonsanddeadlines.boss"
 
     var body: some WidgetConfiguration {
         AppIntentConfiguration(kind: Self.kind, intent: SelectRaidIntent.self, provider: BossTimelineProvider()) { entry in

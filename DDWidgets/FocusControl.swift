@@ -5,7 +5,7 @@ import DDIntents
 
 /// Control Center / Lock Screen / Action button toggle for focus.
 struct FocusControl: ControlWidget {
-    static let kind = "com.dungeonsanddeadlines.app.focus-control"
+    static let kind = "at.fhooe.sail.dungeonsanddeadlines.focus-control"
 
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: Self.kind, provider: Provider()) { isOn in

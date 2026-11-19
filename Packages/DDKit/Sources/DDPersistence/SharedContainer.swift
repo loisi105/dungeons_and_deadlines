@@ -4,7 +4,7 @@ import SwiftData
 /// The App Group shared by the app and the widget extension.
 /// Must match `Config/*.entitlements`.
 public enum AppGroup {
-    public static let identifier = "group.com.dungeonsanddeadlines.app"
+    public static let identifier = "group.at.fhooe.sail.dungeonsanddeadlines"
 
     /// One shared instance, so `@AppStorage(store: AppGroup.defaults)` sees every write.
     nonisolated(unsafe) public static let defaults: UserDefaults = UserDefaults(suiteName: identifier) ?? .standard

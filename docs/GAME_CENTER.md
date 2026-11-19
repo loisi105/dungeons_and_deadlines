@@ -19,7 +19,7 @@ Connect, reports fail quietly and the app works normally.
 
 ## App Store Connect setup
 
-1. Enable the **Game Center** capability for bundle ID `com.dungeonsanddeadlines.app`
+1. Enable the **Game Center** capability for bundle ID `at.fhooe.sail.dungeonsanddeadlines`
    (the entitlement is already in `Config/DungeonsAndDeadlines.entitlements`).
 2. In App Store Connect → the app → **Game Center**, create these.
 

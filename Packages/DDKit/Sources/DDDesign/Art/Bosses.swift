@@ -102,7 +102,7 @@ enum BossArt {
 
     static func paintDragon() -> PixelArt {
         var p = PixelPainter()
-        let eyeID = p.eye()
+        _ = p.eye() // registers the glowing eye color
         let wing = p.material(Palette.ember), body = p.material(Palette.moss)
         let belly = p.material(Palette.bone), horn = p.material(Palette.gold)
         p.polygon([(4, 12), (20, 26), (16, 44), (8, 40), (2, 30)], wing, mirror: true)
@@ -122,7 +122,7 @@ enum BossArt {
 
     static func paintSlime() -> PixelArt {
         var p = PixelPainter()
-        let eyeID = p.eye()
+        _ = p.eye() // registers the glowing eye color
         let goo = p.material(Palette.ocean)
         p.ellipse(32, 44, 26, 20, goo)
         p.erase(0, 58, 63, 63)
@@ -199,7 +199,7 @@ enum BossArt {
 
     static func paintGoblin() -> PixelArt {
         var p = PixelPainter()
-        let eyeID = p.eye()
+        _ = p.eye() // registers the glowing eye color
         let skin = p.material(Palette.moss), hood = p.material(Palette.wood), dagger = p.material(Palette.steel)
         p.polygon([(14, 63), (20, 44), (44, 44), (50, 63)], hood)
         p.polygon([(16, 24), (0, 14), (6, 30)], skin, mirror: true)
@@ -219,7 +219,7 @@ enum BossArt {
 
     static func paintMimic() -> PixelArt {
         var p = PixelPainter()
-        let eyeID = p.eye()
+        _ = p.eye() // registers the glowing eye color
         let wood = p.material(Palette.wood), metal = p.material(Palette.gold)
         p.rect(8, 36, 55, 60, wood)
         p.polygon([(8, 30), (12, 8), (52, 8), (56, 30)], wood)
@@ -275,7 +275,7 @@ enum BossArt {
 
     static func paintMushroom() -> PixelArt {
         var p = PixelPainter()
-        let eyeID = p.eye()
+        _ = p.eye() // registers the glowing eye color
         let cap = p.material(Palette.mushroomRed), stem = p.material(Palette.bone)
         p.rect(20, 34, 43, 60, stem)
         p.ellipse(32, 26, 28, 18, cap)

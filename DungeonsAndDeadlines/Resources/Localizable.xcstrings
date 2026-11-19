@@ -1,8 +1,31 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "" : {
+
+    },
+    "%@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ · %2$@"
+          }
+        }
+      }
+    },
     "%@ (you)" : {
 
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
     },
     "%@ %@ of focus damage left today" : {
       "localizations" : {
@@ -14,7 +37,30 @@
         }
       }
     },
+    "%@ %@, attacking for %lld min" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@, attacking for %3$lld min"
+          }
+        }
+      }
+    },
+    "%@ leads with %lld damage." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ leads with %2$lld damage."
+          }
+        }
+      }
+    },
     "%@ of focus damage left today" : {
+
+    },
+    "%@ survived the deadline." : {
 
     },
     "%@ survived with %lld HP." : {
@@ -26,6 +72,55 @@
           }
         }
       }
+    },
+    "%@ vs %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ vs %2$@"
+          }
+        }
+      }
+    },
+    "%@ vs %@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ vs %2$@: %3$@"
+          }
+        }
+      }
+    },
+    "%@ was defeated." : {
+
+    },
+    "%@, done" : {
+
+    },
+    "%@: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$@"
+          }
+        }
+      }
+    },
+    "%@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@. %2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
     },
     "%lld / %lld HP" : {
       "localizations" : {
@@ -40,13 +135,36 @@
     "%lld damage" : {
 
     },
-    "%lld HP" : {
+    "%lld. %@: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld. %2$@: %3$lld"
+          }
+        }
+      }
+    },
+    "%lld. %@: %lld damage. Tasks %lld, focus %lld, %@ focused." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld. %2$@: %3$lld damage. Tasks %4$lld, focus %5$lld, %6$@ focused."
+          }
+        }
+      }
+    },
+    "%lld%% HP" : {
 
     },
     "−%lld" : {
 
     },
     "A raid gets an invite code to share with your group." : {
+
+    },
+    "Achievements" : {
 
     },
     "Add at least one task first." : {
@@ -88,6 +206,9 @@
     "Attacking" : {
 
     },
+    "Attacking now" : {
+
+    },
     "Attacking: 2 damage per minute" : {
 
     },
@@ -97,10 +218,19 @@
     "Boss" : {
 
     },
-    "Boss health when the fight starts" : {
+    "Boss health" : {
+
+    },
+    "Boss health over time" : {
+
+    },
+    "Boss health when the fight starts: %lld HP" : {
 
     },
     "Boss name" : {
+
+    },
+    "Burst and sustained damage" : {
 
     },
     "By" : {
@@ -109,10 +239,16 @@
     "Cancel" : {
 
     },
+    "Chart" : {
+
+    },
     "Class" : {
 
     },
     "Complete" : {
+
+    },
+    "Complete %@" : {
 
     },
     "Complete ${task}" : {
@@ -122,6 +258,9 @@
 
     },
     "Complete Task" : {
+
+    },
+    "Complete tasks or focus to fill the meter." : {
 
     },
     "Completed" : {
@@ -139,10 +278,22 @@
     "Create a raid for a deadline. Plan its tasks, then start the fight." : {
 
     },
+    "Create group raids and share an invite code." : {
+
+    },
+    "Creating a group raid is a Premium feature." : {
+
+    },
+    "damage" : {
+
+    },
     "Damage" : {
 
     },
-    "Damage dealt" : {
+    "Damage chart" : {
+
+    },
+    "Damage meter" : {
 
     },
     "Deadline" : {
@@ -158,6 +309,9 @@
 
     },
     "Defeat" : {
+
+    },
+    "Defeated" : {
 
     },
     "Delete" : {
@@ -178,6 +332,9 @@
     "Dungeons & Deadlines" : {
 
     },
+    "Dungeons & Deadlines Premium" : {
+
+    },
     "e.g. Ada" : {
 
     },
@@ -190,10 +347,19 @@
     "Enter a nickname to continue." : {
 
     },
+    "Fight several deadlines at once." : {
+
+    },
+    "fighters" : {
+
+    },
     "Fighting" : {
 
     },
     "Finish tasks and focus to deal damage. Beat the boss before the deadline, alone or with up to 4 friends." : {
+
+    },
+    "Finish your current boss, or go Premium for unlimited bosses." : {
 
     },
     "Focus" : {
@@ -226,10 +392,57 @@
     "Focus timer" : {
 
     },
+    "Focus: %lld" : {
+
+    },
+    "Focused: %@" : {
+
+    },
+    "Free plan: 1 active solo boss" : {
+
+    },
+    "Free plan: 1 active solo boss, join any raid. Premium adds group raids and unlimited bosses." : {
+
+    },
+    "From %lld to %lld HP" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "From %1$lld to %2$lld HP"
+          }
+        }
+      }
+    },
+    "From %lld to %lld HP." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "From %1$lld to %2$lld HP."
+          }
+        }
+      }
+    },
+    "Game Center" : {
+
+    },
+    "Group raids are Premium" : {
+
+    },
+    "Group raids need Premium." : {
+
+    },
     "Haptics" : {
 
     },
-    "Health left" : {
+    "Health" : {
+
+    },
+    "HP" : {
+
+    },
+    "HP left" : {
 
     },
     "Invite" : {
@@ -263,6 +476,18 @@
     "Join with code" : {
 
     },
+    "Join with code…" : {
+
+    },
+    "Joining a friend's raid is always free." : {
+
+    },
+    "Joining a friend's raid stays free." : {
+
+    },
+    "Keep new bosses and features coming." : {
+
+    },
     "Late" : {
 
     },
@@ -270,6 +495,9 @@
 
     },
     "Leader" : {
+
+    },
+    "Leaderboards" : {
 
     },
     "Leave and remove from this phone" : {
@@ -281,22 +509,40 @@
     "Leave this raid?" : {
 
     },
+    "Left undone" : {
+
+    },
+    "List" : {
+
+    },
+    "Loading plans…" : {
+
+    },
     "Locks the boss's health and starts the fight." : {
+
+    },
+    "Manage subscription" : {
+
+    },
+    "Member" : {
 
     },
     "Members (%lld/5)" : {
 
     },
-    "Mode" : {
+    "Meter" : {
 
     },
-    "Multiplayer isn't available yet." : {
+    "Mode" : {
 
     },
     "Multiplayer needs Firebase; this build is solo only." : {
 
     },
     "New" : {
+
+    },
+    "New boss…" : {
 
     },
     "New raid" : {
@@ -311,6 +557,12 @@
     "No boss yet" : {
 
     },
+    "No damage yet" : {
+
+    },
+    "No hits yet." : {
+
+    },
     "No report" : {
 
     },
@@ -321,6 +573,12 @@
 
     },
     "None" : {
+
+    },
+    "Not now" : {
+
+    },
+    "Not yet" : {
 
     },
     "OK" : {
@@ -356,6 +614,12 @@
     "Planning" : {
 
     },
+    "Premium" : {
+
+    },
+    "Premium is active" : {
+
+    },
     "Prepare for battle" : {
 
     },
@@ -363,6 +627,9 @@
 
     },
     "Project or deadline" : {
+
+    },
+    "Purchases aren't available right now. Check your connection and try again later." : {
 
     },
     "Quest Log" : {
@@ -383,7 +650,13 @@
     "Raid report" : {
 
     },
+    "Raid with up to 4 friends" : {
+
+    },
     "Random boss name" : {
+
+    },
+    "Ranking" : {
 
     },
     "Ready when you are" : {
@@ -392,19 +665,34 @@
     "Reopen" : {
 
     },
-    "Result" : {
-
-    },
     "Resume" : {
 
     },
     "Save" : {
 
     },
+    "See Premium" : {
+
+    },
     "See report" : {
 
     },
+    "Share" : {
+
+    },
     "Share invite" : {
+
+    },
+    "Show as" : {
+
+    },
+    "Sign in to Game Center" : {
+
+    },
+    "Sign in to Game Center to earn achievements and compare your damage with friends." : {
+
+    },
+    "Signed in as %@" : {
 
     },
     "Six letters and numbers from the raid leader." : {
@@ -429,6 +717,9 @@
     "Someone" : {
 
     },
+    "Source" : {
+
+    },
     "Start" : {
 
     },
@@ -441,6 +732,9 @@
     "Start the fight" : {
 
     },
+    "Start the fight and complete" : {
+
+    },
     "Status" : {
 
     },
@@ -450,6 +744,15 @@
     "Stop Focus" : {
 
     },
+    "Support the party" : {
+
+    },
+    "Survived" : {
+
+    },
+    "Switch boss" : {
+
+    },
     "Task" : {
 
     },
@@ -457,6 +760,25 @@
 
     },
     "Tasks" : {
+
+    },
+    "Tasks %lld (%lld dmg) · Focus %@ (%lld dmg) · Best streak %lld d" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Tasks %1$lld (%2$lld dmg) · Focus %3$@ (%4$lld dmg) · Best streak %5$lld d"
+          }
+        }
+      }
+    },
+    "Tasks only hit the boss once the fight is on. Starting locks the boss's health from the planned tasks." : {
+
+    },
+    "Tasks only hit the boss once the fight is on. The raid leader starts it." : {
+
+    },
+    "Tasks: %lld" : {
 
     },
     "Teammates hit the boss %lld times for %lld damage." : {
@@ -486,6 +808,27 @@
       }
     },
     "The fight has started!" : {
+
+    },
+    "The fight hasn't started" : {
+
+    },
+    "The fight isn't over yet." : {
+
+    },
+    "The free plan has %lld active solo boss at a time. Finish it, or go Premium for more." : {
+
+    },
+    "The party" : {
+
+    },
+    "These still dealt damage, but weren't part of the boss's health." : {
+
+    },
+    "Time" : {
+
+    },
+    "Unlimited solo bosses" : {
 
     },
     "Up to 5 people per raid." : {

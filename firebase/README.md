@@ -7,7 +7,7 @@ It calls Firebase Auth and Firestore over REST: `Packages/DDKit/Sources/DDSync` 
 `GoogleService-Info.plist` is only read for `API_KEY` and `PROJECT_ID`.
 
 ## Set up a Firebase project
-1. Create a project in the Firebase console and add an iOS app with bundle ID `com.dungeonsanddeadlines.app`.
+1. Create a project in the Firebase console and add an iOS app with bundle ID `at.fhooe.sail.dungeonsanddeadlines`.
 2. Enable **Authentication → Anonymous** and **Firestore**.
 3. Download `GoogleService-Info.plist` into `DungeonsAndDeadlines/Resources/` (it's git-ignored).
 4. Deploy the rules: `firebase deploy --only firestore:rules` from this folder.

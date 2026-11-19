@@ -110,7 +110,7 @@ xcrun simctl ui booted content_size accessibility-extra-extra-extra-large
 ```
 
 ```bash
-xcrun simctl launch booted com.dungeonsanddeadlines.app -uiTesting -seedDemo -startTab raid
+xcrun simctl launch booted at.fhooe.sail.dungeonsanddeadlines -uiTesting -seedDemo -startTab raid
 ```
 
 ## What's left
@@ -121,7 +121,7 @@ xcrun simctl launch booted com.dungeonsanddeadlines.app -uiTesting -seedDemo -st
 2. **Rules tests and an emulator session.** These have never run, because Node and the Firebase CLI aren't installed on this Mac. Run `cd firebase/rules-tests && npm install && npm test`, then try two simulators with `-useFirebaseEmulator`. The sync logic itself is covered by the fake-Firestore tests.
 3. **Game Center.** Create the IDs in App Store Connect ([GAME_CENTER.md](GAME_CENTER.md)).
 4. **Premium.** Create the subscription group and products in App Store Connect ([MONETIZATION.md](MONETIZATION.md)). Check that the local StoreKit file loads when running from Xcode, and try a purchase.
-5. **Signing team.** Set one for the device builds that App Group, Live Activities and Game Center need.
+5. **Signing:** done. Team **FH OO Studienbetriebs GmbH** (`UBQ8UHSHKQ`), automatic signing. IDs: app `at.fhooe.sail.dungeonsanddeadlines`, widgets `…dungeonsanddeadlines.widgets`, UI tests `…dungeonsanddeadlines.uitests`, App Group `group.at.fhooe.sail.dungeonsanddeadlines`. Device builds sign and provision. If `codesign` fails with `errSecInternalComponent` when building from a terminal, allow keychain access to the signing key (or build from Xcode).
 
 ### M8 stretch (pick by time left)
 
@@ -149,7 +149,7 @@ These need a person (or the simulator tool once `xcode-select` is fixed):
 - The Live Activity and Dynamic Island while focus runs
 - The Control Center / Lock Screen control and the Action button
 - Siri / Shortcuts phrases
-- Anything on a physical device. Signing has no team set; App Group, Live Activities and Game Center need one.
+- Running on a physical device. The signed device build succeeds, but the phone needs Developer Mode turned on before it can install.
 
 ## Gotchas learned the hard way
 
