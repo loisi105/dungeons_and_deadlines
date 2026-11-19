@@ -120,6 +120,8 @@ struct BossView: View {
                 Text(raid.bossName)
                     .font(.title.weight(.black))
                     .multilineTextAlignment(.center)
+                    // A single long word ("Procrastination") can't wrap; let it shrink instead of clipping.
+                    .minimumScaleFactor(0.5)
                     .frame(maxWidth: .infinity)
                     .accessibilityAddTraits(.isHeader)
                 if state.outcome == .ongoing { PhaseBadge(state.phase) }

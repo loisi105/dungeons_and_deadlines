@@ -113,7 +113,10 @@ enum BossNames {
         "Lab Report Ogre", "Group Project Kraken", "Citation Goblin", "Procrastination Wraith",
         "Midterm Mimic", "Wifi Phantom", "Syntax Spider", "Burnout Shroom", "Proctor Cyclops", "Homework Slime",
     ]
-    static func random() -> String { all.randomElement() ?? "Exam Dragon" }
+    /// UI tests always get the longest name, the worst case for layout.
+    static func random() -> String {
+        LaunchOptions.isUITesting ? "Procrastination Wraith" : (all.randomElement() ?? "Exam Dragon")
+    }
 }
 
 #Preview { CreateRaidView().environment(SyncEngine()) }

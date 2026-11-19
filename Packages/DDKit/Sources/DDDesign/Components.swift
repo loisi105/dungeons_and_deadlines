@@ -31,8 +31,12 @@ public struct HPBar: View {
     public var body: some View {
         HStack(spacing: 2) {
             ForEach(0..<Self.segments, id: \.self) { i in
-                Rectangle()
-                    .fill(i < filled ? phase.tint : Theme.ink.opacity(0.12))
+                if i < filled {
+                    Rectangle().fill(phase.tint)
+                } else {
+                    // Empty slots are outlined so the bar stays readable at 0 HP.
+                    Rectangle().strokeBorder(Theme.inkSoft, lineWidth: 1.5)
+                }
             }
         }
         .padding(4)

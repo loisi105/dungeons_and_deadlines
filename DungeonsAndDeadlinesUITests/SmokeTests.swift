@@ -177,4 +177,15 @@ final class SmokeTests: XCTestCase {
         sleep(1) // let the chart-to-list transition finish before measuring contrast
         try audit(app, "Meter (list)")
     }
+
+    func testVictoryReport() throws {
+        let app = launch(["-seedFinished"])
+        let seeReport = app.buttons["seeReportButton"]
+        XCTAssertTrue(seeReport.waitForExistence(timeout: 10))
+        try audit(app, "Boss (victory)")
+        seeReport.tap()
+        XCTAssertTrue(app.staticTexts["The party"].waitForExistence(timeout: 5))
+        sleep(1)
+        try audit(app, "Report")
+    }
 }

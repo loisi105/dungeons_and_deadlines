@@ -14,6 +14,8 @@ enum LaunchOptions {
 
     /// Seeds a solo raid mid-fight, for screenshots and manual accessibility checks.
     static var seedDemo: Bool { ProcessInfo.processInfo.arguments.contains("-seedDemo") }
+    /// `-seedFinished` seeds a won 4-player raid (report screenshots and tests).
+    static var seedFinished: Bool { ProcessInfo.processInfo.arguments.contains("-seedFinished") }
     /// `-meterAsList` opens the damage meter in list mode (screenshots).
     static var meterAsList: Bool { ProcessInfo.processInfo.arguments.contains("-meterAsList") }
 
@@ -21,6 +23,7 @@ enum LaunchOptions {
     static func applyBeforeLaunch() {
         defer {
             if seedDemo { seedDemoRaid() }
+            if seedFinished { seedFinishedRaid() }
             if meterAsList { AppGroup.defaults.set(true, forKey: "settings.meterAsList") }
         }
         guard isUITesting else { return }
@@ -49,6 +52,43 @@ extension LaunchOptions {
         let tasks = titles.compactMap { try? store.addTask(raidID: raid.id, title: $0.0, size: $0.1) }
         try? store.startFight(raid.id, by: me.memberID)
         if let first = tasks.first { try? store.completeTask(first.id, by: me.memberID) }
+    }
+}
+
+extension LaunchOptions {
+    /// A won raid: 4 members, hits from everyone, one late task and one left undone.
+    @MainActor
+    static func seedFinishedRaid() {
+        let store = DDStore.shared
+        guard store.raids().isEmpty else { return }
+        LocalIdentity.setNickname("Ada")
+        let me = LocalIdentity.current
+        let start = Date.now.addingTimeInterval(-86_400 * 6)
+        let clock = store.clock
+        store.clock = { start }
+        defer { store.clock = clock }
+        guard let raid = try? store.createRaid(
+            name: "Thesis", bossName: "Deadline Clock", deadline: Date.now.addingTimeInterval(86_400),
+            multiplayer: false, owner: me, role: .mage
+        ) else { return }
+        let tasks = [("Outline", TaskSize.s), ("Literature review", .l), ("Draft chapter 1", .m), ("Final read-through", .s)]
+            .compactMap { try? store.addTask(raidID: raid.id, title: $0.0, size: $0.1) }
+        try? store.startFight(raid.id, by: me.memberID)
+        let crew = [("fake-mia", "Mia", Role.healer), ("fake-leo", "Leo", .tank), ("fake-zoe", "Zoe", .rogue)]
+        for (id, name, role) in crew {
+            store.mergeRemote(member: Member(id: id, raidID: raid.id, nickname: name, role: role, joinedAt: start))
+        }
+        store.clock = { start.addingTimeInterval(3600) }
+        _ = try? store.addTask(raidID: raid.id, title: "Make slides", size: .s) // late task
+        for (i, task) in tasks.prefix(3).enumerated() {
+            store.clock = { start.addingTimeInterval(Double(i + 1) * 86_400) }
+            _ = try? store.completeTask(task.id, by: i == 1 ? "fake-mia" : me.memberID)
+        }
+        for (day, id, minutes) in [(1, "fake-leo", 120), (2, "fake-leo", 150), (3, "fake-zoe", 60), (4, me.memberID, 90), (5, "fake-mia", 170)] {
+            let at = start.addingTimeInterval(Double(day) * 86_400 + 600)
+            let attack = Attack(raidID: raid.id, memberID: id, kind: .focus(seconds: minutes * 60), damage: minutes * 2, createdAt: at, localDay: LocalDay.key(for: at))
+            try? store.insertAttack(attack, syncState: .synced)
+        }
     }
 }
 
