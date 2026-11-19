@@ -30,9 +30,13 @@ struct RoleList: View {
 
     var body: some View {
         List {
-            option(nil)
-            ForEach(Role.allCases) { option($0) }
+            Group {
+                option(nil)
+                ForEach(Role.allCases) { option($0) }
+            }
+            .dungeonRow()
         }
+        .dungeonScreen()
         .navigationTitle("Class")
     }
 
@@ -53,7 +57,7 @@ struct RoleList: View {
                 }
             }
         }
-        .foregroundStyle(.primary)
+        .foregroundStyle(Theme.ink)
         .accessibilityAddTraits(role == value ? .isSelected : [])
     }
 }

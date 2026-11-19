@@ -49,6 +49,7 @@ struct TaskEditorView: View {
                         .focused($titleFocused)
                         .accessibilityIdentifier("taskTitleField")
                 }
+                .dungeonRow()
                 Section {
                     Picker("Size", selection: $size) {
                         ForEach(TaskSize.allCases) { size in
@@ -63,6 +64,7 @@ struct TaskEditorView: View {
                 } footer: {
                     Text("Be honest: bigger tasks hit harder, and teammates see the size.").readableFootnote()
                 }
+                .dungeonRow()
                 if members.count > 1 {
                     Section {
                         Picker("Assigned to", selection: $assigneeID) {
@@ -72,12 +74,15 @@ struct TaskEditorView: View {
                             }
                         }
                     }
+                    .dungeonRow()
                 }
                 if let errorMessage {
                     Section { Text(errorMessage).foregroundStyle(.red) }
+                    .dungeonRow()
                 }
             }
             .headerProminence(.increased)
+            .dungeonScreen()
             .navigationTitle(isEditing ? "Edit task" : "New task")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

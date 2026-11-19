@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import DDPersistence
+import DDDesign
 
 /// Decides between onboarding, the raid picker and the game tabs.
 struct RootView: View {
@@ -23,6 +24,9 @@ struct RootView: View {
                 WelcomeView()
             }
         }
+        .fontDesign(.serif)
+        .foregroundStyle(Theme.ink)
+        .tint(Theme.accent)
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active: environment.didBecomeActive()

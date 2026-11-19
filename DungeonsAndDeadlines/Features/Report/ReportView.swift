@@ -19,12 +19,14 @@ struct ReportView: View {
                             LabeledContent("Damage dealt", value: "\(report.state.totalDamage)")
                             LabeledContent("Health left", value: "\(report.state.currentHP) / \(report.state.maxHP)")
                         }
+                        .dungeonRow()
                     }
                 } else {
                     ContentUnavailableView("No report", systemImage: "doc")
                 }
             }
             .headerProminence(.increased)
+            .dungeonScreen()
             .navigationTitle("Raid report")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }

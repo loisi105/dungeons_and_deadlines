@@ -4,8 +4,9 @@ import GameCore
 import UIKit
 #endif
 
-/// The boss health bar. Content layer: deliberately not glass.
-/// VoiceOver sees it as a progress indicator with a spoken value.
+/// The boss health bar: 20 pixel segments in a notched frame. VoiceOver sees it as a
+/// progress indicator with a spoken value. Segments plus the HP text mean it never
+/// relies on color alone.
 public struct HPBar: View {
     let current: Int
     let max: Int
@@ -14,8 +15,8 @@ public struct HPBar: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorSchemeContrast) private var contrast
-    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
-    @ScaledMetric(relativeTo: .body) private var height: CGFloat = 22
+    @ScaledMetric(relativeTo: .body) private var height: CGFloat = 24
+    static let segments = 20
 
     public init(current: Int, max: Int, phase: Phase, bossName: String) {
         self.current = current
@@ -25,29 +26,20 @@ public struct HPBar: View {
     }
 
     var fraction: Double { max > 0 ? Double(current) / Double(max) : 0 }
+    var filled: Int { current <= 0 ? 0 : Swift.max(1, Int((fraction * Double(Self.segments)).rounded(.up))) }
 
     public var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .leading) {
-                Capsule().fill(Color.primary.opacity(0.12))
-                Capsule()
-                    .fill(phase.tint)
-                    .frame(width: proxy.size.width * fraction)
-                    .overlay {
-                        if differentiateWithoutColor {
-                            // Stripes so the fill reads without relying on hue.
-                            Capsule().fill(.clear).overlay(
-                                Image(systemName: "line.diagonal")
-                                    .resizable(resizingMode: .tile)
-                                    .foregroundStyle(.black.opacity(0.25))
-                            ).clipShape(Capsule())
-                        }
-                    }
-                Capsule().strokeBorder(.primary.opacity(contrast == .increased ? 0.9 : 0.15), lineWidth: contrast == .increased ? 2 : 1)
+        HStack(spacing: 2) {
+            ForEach(0..<Self.segments, id: \.self) { i in
+                Rectangle()
+                    .fill(i < filled ? phase.tint : Theme.ink.opacity(0.12))
             }
         }
+        .padding(4)
         .frame(height: height)
-        .animation(reduceMotion ? nil : .spring(duration: 0.5), value: current)
+        .background(PixelCornerShape(step: 3).fill(Theme.card))
+        .overlay(PixelCornerShape(step: 3).stroke(Theme.outline, lineWidth: contrast == .increased ? 3 : 2))
+        .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: filled)
         .accessibilityRepresentation {
             ProgressView(value: Double(current), total: Double(Swift.max(max, 1))) {
                 Text("\(bossName) health")
@@ -70,34 +62,15 @@ public struct PhaseBadge: View {
             Image(systemName: phase.symbol)
                 .foregroundStyle(phase.tint)
         }
-        .font(.subheadline.weight(.semibold))
+        .font(.subheadline.weight(.bold))
+        .fontDesign(.serif)
+        .foregroundStyle(Theme.ink)
         .padding(.horizontal, 14)
         .frame(minHeight: 44)
-        .background(phase.tint.opacity(0.15), in: Capsule())
+        .background(PixelCornerShape(step: 3).fill(phase.tint.opacity(0.18)))
+        .overlay(PixelCornerShape(step: 3).stroke(phase.tint, lineWidth: 2))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("Phase \(phase.rawValue): \(Text(phase.title)). \(Text(phase.hint))"))
-    }
-}
-
-/// Placeholder boss art until final illustrations exist (see open decisions).
-public struct BossAvatar: View {
-    let phase: Phase
-    let defeated: Bool
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 120
-
-    public init(phase: Phase, defeated: Bool = false) {
-        self.phase = phase
-        self.defeated = defeated
-    }
-
-    public var body: some View {
-        Image(systemName: defeated ? "lizard" : "lizard.fill")
-            .resizable()
-            .scaledToFit()
-            .frame(width: size, height: size)
-            .foregroundStyle(defeated ? AnyShapeStyle(.secondary) : AnyShapeStyle(phase.tint.gradient))
-            .rotationEffect(defeated ? .degrees(180) : .zero)
-            .accessibilityHidden(true)
     }
 }
 
@@ -117,7 +90,8 @@ public struct SizeChip: View {
             .font(.caption.weight(.bold))
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(.thinMaterial, in: Capsule())
+            .foregroundStyle(Theme.ink)
+            .background(PixelCornerShape(step: 2).fill(Theme.parchmentDeep))
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("\(Text(size.title)), \(damage) damage"))
     }
@@ -129,9 +103,10 @@ public struct SizeChip: View {
         HPBar(current: 400, max: 1000, phase: .enraged, bossName: "Exam Dragon")
         PhaseBadge(.berserk)
         SizeChip(.l, damage: 400)
-        BossAvatar(phase: .angry)
+        BossAvatar(bossName: "Exam Dragon", phase: .angry)
     }
     .padding()
+    .background(DungeonBackground())
 }
 
 /// Footnote text that meets contrast guidelines on grouped backgrounds
@@ -142,7 +117,7 @@ public struct ReadableFootnote: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .font(.footnote)
-            .foregroundStyle(Color.primary.opacity(contrast == .increased ? 1 : 0.75))
+            .foregroundStyle(contrast == .increased ? Theme.ink : Theme.inkSoft)
     }
 }
 
@@ -152,14 +127,7 @@ extension View {
 
 extension Color {
     /// Fill for prominent actions. Dark enough that white labels reach 4.5:1 in both modes.
-    public static let actionTint = Color(red: 0.60, green: 0.16, blue: 0.03)
-}
-
-extension View {
-    /// The main action on a screen: Liquid Glass prominent style with an accessible tint.
-    public func primaryActionStyle() -> some View {
-        buttonStyle(.glassProminent).tint(.actionTint).fontWeight(.semibold)
-    }
+    public static let actionTint = Theme.emberBottom
 }
 
 extension Color {
@@ -177,14 +145,7 @@ extension Color {
 
 extension ShapeStyle where Self == Color {
     /// Secondary text that still reaches 4.5:1 on white, grouped and filled backgrounds.
-    public static var readableSecondary: Color { Color.primary.opacity(0.72) }
-}
-
-extension View {
-    /// Secondary actions: Liquid Glass with full-contrast labels.
-    public func secondaryActionStyle() -> some View {
-        buttonStyle(.glass).foregroundStyle(.primary)
-    }
+    public static var readableSecondary: Color { Theme.inkSoft }
 }
 
 /// Title + value row that stacks vertically at large text sizes instead of truncating.

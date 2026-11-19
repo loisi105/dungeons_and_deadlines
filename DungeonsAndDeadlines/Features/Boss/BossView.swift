@@ -88,6 +88,7 @@ struct BossView: View {
             .frame(maxWidth: .infinity)
         }
         .scrollIndicators(.hidden)
+        .dungeonScreen()
     }
 
     // MARK: Header
@@ -95,21 +96,29 @@ struct BossView: View {
     private func header(raid: Raid, state: BossState) -> some View {
         VStack(spacing: 16) {
             ZStack {
-                BossAvatar(phase: state.phase, defeated: state.outcome == .won)
+                BossAvatar(bossName: raid.bossName, phase: state.phase, defeated: state.outcome == .won)
                     .modifier(ShakeEffect(amount: reduceMotion ? 0 : 10, shakes: shake))
                     .opacity(reduceMotion && shake.truncatingRemainder(dividingBy: 2) == 1 ? 0.6 : 1)
+                SwordSlash(trigger: hitCount)
+                    .frame(width: 150, height: 150)
+                    .offset(x: 30, y: 10)
                 if let lastHit {
                     DamageNumber(damage: lastHit.damage, id: hitCount, reduceMotion: reduceMotion)
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 24)
-            .background(state.phase.tint.opacity(0.18).gradient, in: RoundedRectangle(cornerRadius: 28))
-            .backgroundExtensionEffect()
+            .padding(.vertical, 16)
+            .background {
+                // The icon's night sky behind the boss, framed like a window into the dungeon.
+                PixelArtView(.nightSky, fill: true)
+                    .overlay(state.phase.tint.opacity(state.phase >= .enraged ? 0.25 : 0))
+                    .clipShape(PixelCornerShape(step: 6))
+                    .overlay(PixelCornerShape(step: 6).stroke(Theme.outline, lineWidth: 3))
+            }
 
             VStack(spacing: 8) {
                 Text(raid.bossName)
-                    .font(.title.bold())
+                    .font(.largeTitle.weight(.black))
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
                 if state.outcome == .ongoing { PhaseBadge(state.phase) }
@@ -148,7 +157,7 @@ struct BossView: View {
 
     private func planningCard(raid: Raid, state: BossState) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Planning", systemImage: "list.bullet.clipboard")
+            Label("Prepare for battle", systemImage: "map.fill")
                 .font(.headline)
             Text("Add the tasks for this deadline. When the fight starts, the boss's health is locked at \(state.maxHP) HP from the planned tasks.")
                 .foregroundStyle(.readableSecondary)
@@ -160,7 +169,7 @@ struct BossView: View {
                     Button {
                         startFight()
                     } label: {
-                        Label("Start fight", systemImage: "flame.fill")
+                        Label("Start the fight", systemImage: "flame.fill")
                     }
                     .primaryActionStyle()
                     .disabled(tasks.isEmpty)
@@ -173,9 +182,7 @@ struct BossView: View {
                     .foregroundStyle(.readableSecondary)
             }
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 20))
+        .dungeonPanel()
     }
 
     private func outcomeCard(raid: Raid, state: BossState) -> some View {
@@ -197,9 +204,8 @@ struct BossView: View {
                 .controlSize(.large)
                 .accessibilityIdentifier("seeReportButton")
         }
-        .padding()
         .frame(maxWidth: .infinity)
-        .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 20))
+        .dungeonPanel()
         .accessibilityElement(children: .contain)
     }
 
@@ -229,9 +235,7 @@ struct BossView: View {
                     .accessibilityLabel(A11yText.attack(attack, by: attack.memberID == me ? nil : nickname(attack.memberID)))
                 }
             }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(.fill.quaternary, in: RoundedRectangle(cornerRadius: 20))
+            .dungeonPanel()
         }
     }
 
@@ -285,8 +289,8 @@ struct DamageNumber: View {
 
     var body: some View {
         Text("−\(damage)")
-            .font(.system(.largeTitle, design: .rounded).weight(.heavy))
-            .foregroundStyle(.red)
+            .font(.system(.largeTitle, design: .monospaced).weight(.black))
+            .foregroundStyle(Color(hex: 0xEF4444))
             .shadow(radius: 4)
             .offset(y: visible && !reduceMotion ? -70 : 0)
             .opacity(visible ? 0 : 1)

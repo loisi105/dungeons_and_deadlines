@@ -23,14 +23,18 @@ struct JoinRaidView: View {
                 } footer: {
                     Text("Ask the raid leader for the 6-character code. Raids hold up to 5 people.").readableFootnote()
                 }
+                .dungeonRow()
                 Section {
                     RolePickerRow(role: $role)
                 }
+                .dungeonRow()
                 if let errorMessage {
                     Section { Text(errorMessage).foregroundStyle(.red) }
+                    .dungeonRow()
                 }
             }
             .headerProminence(.increased)
+            .dungeonScreen()
             .navigationTitle("Join raid")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

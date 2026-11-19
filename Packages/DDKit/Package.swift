@@ -19,5 +19,6 @@ let package = Package(
         .testTarget(name: "GameCoreTests", dependencies: ["GameCore"]),
         .testTarget(name: "DDPersistenceTests", dependencies: ["DDPersistence"]),
         .testTarget(name: "DDIntentsTests", dependencies: ["DDIntents", "DDPersistence"]),
+        .testTarget(name: "DDDesignTests", dependencies: ["DDDesign", "GameCore"]),
     ]
 )

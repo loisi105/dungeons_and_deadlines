@@ -38,7 +38,7 @@ struct TasksView: View {
     var body: some View {
         NavigationStack {
             taskList
-                .navigationTitle("Tasks")
+                .navigationTitle("Quest Log")
                 .navigationDestination(for: UUID.self) { id in
                     TaskDetailView(taskID: id, raidID: raidID)
                         .navigationTransition(.zoom(sourceID: id, in: zoom))
@@ -67,6 +67,7 @@ struct TasksView: View {
             doneSection
         }
         .headerProminence(.increased)
+            .dungeonScreen()
     }
 
     @ToolbarContentBuilder
@@ -85,12 +86,14 @@ struct TasksView: View {
         if let raid, raid.status == .planning {
             let hp = BossEngine.lockHP(tasks: tasks.map(\.model), config: config)
             Section {
-                LabeledContent("Boss health when the fight starts") {
-                    Text("\(hp) HP").monospacedDigit()
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Boss health when the fight starts: \(hp) HP")
+                        .font(.headline)
+                    Text("Small tasks deal \(config.smallTaskDamage), medium \(config.mediumTaskDamage), large \(config.largeTaskDamage) damage. Focus time covers the rest.")
+                        .readableFootnote()
                 }
-            } footer: {
-                Text("Small tasks deal \(config.smallTaskDamage), medium \(config.mediumTaskDamage), large \(config.largeTaskDamage) damage. Focus time covers the rest.").readableFootnote()
             }
+            .dungeonRow()
         }
     }
 
@@ -107,6 +110,7 @@ struct TasksView: View {
         } header: {
             Text("Open (\(open.count))")
         }
+        .dungeonRow()
     }
 
     @ViewBuilder
@@ -115,6 +119,7 @@ struct TasksView: View {
             Section("Done (\(done.count))") {
                 ForEach(done) { task in row(task) }
             }
+            .dungeonRow()
         }
     }
 

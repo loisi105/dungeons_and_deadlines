@@ -55,6 +55,7 @@ struct FocusView: View {
                 .frame(maxWidth: .infinity)
             }
             .navigationTitle("Focus")
+            .dungeonScreen()
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }

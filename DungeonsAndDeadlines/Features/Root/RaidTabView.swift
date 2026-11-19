@@ -33,10 +33,10 @@ struct RaidTabView: View {
 
     var body: some View {
         TabView(selection: $selection) {
-            Tab("Boss", systemImage: "lizard.fill", value: TabID.boss) {
+            Tab("Boss", systemImage: "flame.fill", value: TabID.boss) {
                 BossView(raidID: raidID, showTasks: { selection = .tasks })
             }
-            Tab("Tasks", systemImage: "checklist", value: TabID.tasks) {
+            Tab("Tasks", systemImage: "scroll.fill", value: TabID.tasks) {
                 TasksView(raidID: raidID)
             }
             Tab("Raid", systemImage: "person.3.fill", value: TabID.raid) {

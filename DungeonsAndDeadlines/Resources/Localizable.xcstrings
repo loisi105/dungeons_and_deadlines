@@ -4,6 +4,16 @@
     "%@ (you)" : {
 
     },
+    "%@ %@ of focus damage left today" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@ of focus damage left today"
+          }
+        }
+      }
+    },
     "%@ of focus damage left today" : {
 
     },
@@ -325,6 +335,9 @@
     "Other raids" : {
 
     },
+    "Party" : {
+
+    },
     "Past raids" : {
 
     },
@@ -343,10 +356,16 @@
     "Planning" : {
 
     },
+    "Prepare for battle" : {
+
+    },
     "Project" : {
 
     },
     "Project or deadline" : {
+
+    },
+    "Quest Log" : {
 
     },
     "Raid" : {
@@ -413,13 +432,13 @@
     "Start" : {
 
     },
-    "Start fight" : {
-
-    },
     "Start focus" : {
 
     },
     "Start Focus" : {
+
+    },
+    "Start the fight" : {
 
     },
     "Status" : {

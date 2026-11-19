@@ -12,7 +12,7 @@ struct OnboardingView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 28) {
-                    BossAvatar(phase: .angry)
+                    BossAvatar(bossName: "Deadline Clock", phase: .angry)
                         .padding(.top, 32)
                     VStack(spacing: 12) {
                         Text("Deadlines are bosses.")
@@ -57,6 +57,7 @@ struct OnboardingView: View {
                 .frame(maxWidth: .infinity)
             }
             .scrollDismissesKeyboard(.interactively)
+            .dungeonScreen()
         }
     }
 

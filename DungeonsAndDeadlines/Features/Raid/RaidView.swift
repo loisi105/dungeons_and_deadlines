@@ -44,7 +44,8 @@ struct RaidView: View {
                 extraSections
             }
             .headerProminence(.increased)
-            .navigationTitle("Raid")
+            .dungeonScreen()
+            .navigationTitle("Party")
             .toolbar {
                 Menu("New", systemImage: "plus") {
                     Button("New raid", systemImage: "plus") { showCreate = true }
@@ -77,6 +78,7 @@ struct RaidView: View {
                 Button("See report", systemImage: "doc.text.magnifyingglass") { showReport = true }
             }
         }
+        .dungeonRow()
     }
 
     private func inviteSection(_ raid: Raid) -> some View {
@@ -100,6 +102,7 @@ struct RaidView: View {
         } footer: {
             Text("Up to 5 people per raid.").readableFootnote()
         }
+        .dungeonRow()
     }
 
     private func membersSection(_ raid: Raid) -> some View {
@@ -135,6 +138,7 @@ struct RaidView: View {
         } header: {
             Text("Members (\(members.count)/5)").font(.headline)
         }
+        .dungeonRow()
     }
 
     private var youSection: some View {
@@ -154,6 +158,7 @@ struct RaidView: View {
         } header: {
             Text("You").font(.headline)
         }
+        .dungeonRow()
     }
 
     @ViewBuilder
@@ -172,6 +177,7 @@ struct RaidView: View {
             } header: {
                 Text("Other raids").font(.headline)
             }
+            .dungeonRow()
         }
     }
 
@@ -181,6 +187,7 @@ struct RaidView: View {
                 confirmLeave = true
             }
         }
+        .dungeonRow()
     }
 
     /// Hook for later milestones (debug tools).

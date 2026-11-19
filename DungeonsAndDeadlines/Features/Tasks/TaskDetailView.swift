@@ -43,14 +43,17 @@ struct TaskDetailView: View {
                             .foregroundStyle(.orange)
                     }
                 }
+                .dungeonRow()
                 if let completedAt = task.completedAt {
                     Section("Completed") {
                         LabeledContent("By", value: name(task.completedBy) ?? "?")
                         LabeledContent("When") { Text(completedAt, format: .dateTime) }
                     }
+                    .dungeonRow()
                 }
             }
             .headerProminence(.increased)
+            .dungeonScreen()
             .navigationTitle("Task")
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {

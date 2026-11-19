@@ -15,7 +15,7 @@ struct WelcomeView: View {
             List {
                 Section {
                     VStack(alignment: .leading, spacing: 12) {
-                        BossAvatar(phase: .calm)
+                        BossAvatar(bossName: "Slime", phase: .calm)
                             .frame(maxWidth: .infinity)
                         Text("No boss yet")
                             .font(.title2.bold())
@@ -24,6 +24,7 @@ struct WelcomeView: View {
                     }
                     .padding(.vertical)
                 }
+                .dungeonRow()
                 if !raids.isEmpty {
                     Section("Past raids") {
                         ForEach(raids) { raid in
@@ -35,9 +36,11 @@ struct WelcomeView: View {
                             .foregroundStyle(.primary)
                         }
                     }
+                    .dungeonRow()
                 }
             }
             .headerProminence(.increased)
+            .dungeonScreen()
             .navigationTitle("Dungeons & Deadlines")
             .safeAreaInset(edge: .bottom) {
                 GlassEffectContainer(spacing: 12) {

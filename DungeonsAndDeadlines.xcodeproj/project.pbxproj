@@ -11,8 +11,6 @@
 		DD0000000000000000000202 /* DDPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000102 /* DDPersistence */; };
 		DD0000000000000000000203 /* DDIntents in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000103 /* DDIntents */; };
 		DD0000000000000000000204 /* DDDesign in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000104 /* DDDesign */; };
-		DD0000000000000000000205 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000105 /* FirebaseAuth */; };
-		DD0000000000000000000206 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000106 /* FirebaseFirestore */; };
 		DD0000000000000000000211 /* GameCore in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000111 /* GameCore */; };
 		DD0000000000000000000212 /* DDPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000112 /* DDPersistence */; };
 		DD0000000000000000000213 /* DDIntents in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000113 /* DDIntents */; };
@@ -90,8 +88,6 @@
 				DD0000000000000000000202 /* DDPersistence in Frameworks */,
 				DD0000000000000000000203 /* DDIntents in Frameworks */,
 				DD0000000000000000000204 /* DDDesign in Frameworks */,
-				DD0000000000000000000205 /* FirebaseAuth in Frameworks */,
-				DD0000000000000000000206 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -164,8 +160,6 @@
 				DD0000000000000000000102 /* DDPersistence */,
 				DD0000000000000000000103 /* DDIntents */,
 				DD0000000000000000000104 /* DDDesign */,
-				DD0000000000000000000105 /* FirebaseAuth */,
-				DD0000000000000000000106 /* FirebaseFirestore */,
 			);
 			productName = DungeonsAndDeadlines;
 			productReference = DD00000000000000000000A1 /* DungeonsAndDeadlines.app */;
@@ -251,7 +245,6 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				DD00000000000000000000F1 /* XCLocalSwiftPackageReference "Packages/DDKit" */,
-				DD00000000000000000000F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = DD00000000000000000000C2 /* Products */;
@@ -409,7 +402,7 @@
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_FILE = "Config/App-Info.plist";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -441,7 +434,7 @@
 				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_FILE = "Config/App-Info.plist";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -588,17 +581,6 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		DD00000000000000000000F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 13.0.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
 		DD0000000000000000000101 /* GameCore */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -615,16 +597,6 @@
 		DD0000000000000000000104 /* DDDesign */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DDDesign;
-		};
-		DD0000000000000000000105 /* FirebaseAuth */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DD00000000000000000000F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAuth;
-		};
-		DD0000000000000000000106 /* FirebaseFirestore */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = DD00000000000000000000F2 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseFirestore;
 		};
 		DD0000000000000000000111 /* GameCore */ = {
 			isa = XCSwiftPackageProductDependency;

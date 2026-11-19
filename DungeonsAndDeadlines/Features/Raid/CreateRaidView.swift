@@ -34,12 +34,14 @@ struct CreateRaidView: View {
                 } header: {
                     Text("Raid")
                 }
+                .dungeonRow()
 
                 Section {
                     DatePicker("Deadline", selection: $deadline, in: Date.now.addingTimeInterval(3600)..., displayedComponents: [.date, .hourAndMinute])
                 } footer: {
                     Text("The boss gets angrier as the deadline gets closer.").readableFootnote()
                 }
+                .dungeonRow()
 
                 Section {
                     Picker("Mode", selection: $multiplayer) {
@@ -59,12 +61,15 @@ struct CreateRaidView: View {
                     }
                     .readableFootnote()
                 }
+                .dungeonRow()
 
                 if let errorMessage {
                     Section { Text(errorMessage).foregroundStyle(.red) }
+                    .dungeonRow()
                 }
             }
             .headerProminence(.increased)
+            .dungeonScreen()
             .navigationTitle("New raid")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -104,8 +109,9 @@ struct CreateRaidView: View {
 
 enum BossNames {
     static let all = [
-        "Exam Dragon", "Thesis Hydra", "Deadline Lich", "Slide Deck Golem", "Bug Basilisk",
-        "Essay Wyrm", "Lab Report Ogre", "Group Project Kraken", "Citation Goblin", "Procrastination Wraith",
+        "Deadline Clock", "Exam Dragon", "Thesis Hydra", "Slide Deck Golem", "Essay Wyrm",
+        "Lab Report Ogre", "Group Project Kraken", "Citation Goblin", "Procrastination Wraith",
+        "Midterm Mimic", "Wifi Phantom", "Syntax Spider", "Burnout Shroom", "Proctor Cyclops", "Homework Slime",
     ]
     static func random() -> String { all.randomElement() ?? "Exam Dragon" }
 }
