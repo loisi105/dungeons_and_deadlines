@@ -1,30 +1,37 @@
 # Handoff
 
-Last updated: 2026-11-19. Read this first, then [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for milestone details.
+Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for milestone details.
 
 ## TL;DR
 
-- **Committed on `main`:** M0–M4 plus the art-style "Theme" milestone. The solo game, focus timer, Live Activity, Control Center toggle, Siri shortcuts, widgets and the pixel-art theme all build and pass their tests.
-- **Uncommitted in the working tree:** M5 (damage meter and fake teammates). It's nearly done; see [Finish M5](#1-finish-m5-uncommitted).
-- **Not started:** Game Center (GameKit), M6 (multiplayer over Firebase REST), M7 (full report). Drafts for all three are in [`docs/handoff/drafts/`](handoff/drafts).
+- **Done and committed on `main`:** M0–M7 plus the pixel-art theme and Game Center.
+  - Solo and multiplayer raids (multiplayer uses Firebase over REST).
+  - Focus timer, Live Activity, Control Center toggle, Siri shortcuts, widgets.
+  - Damage meter, end-of-raid report, achievements and leaderboards.
+- **Tests:** all 62 package tests and all 6 UI flows (each with accessibility audits) pass.
+- **What's left:** setup that needs accounts (Firebase project, App Store Connect, a signing team), checks that need a person or the simulator tool, and the M8 stretch goals. See [What's left](#whats-left).
 - **Rule from the user:** commit after each milestone.
 
-## Commits so far
+## Commits
 
 | Commit | Milestone |
 |---|---|
 | `864486d` | M0–M2: Xcode project, DDKit package, GameCore rules, local solo game |
-| `1a5c2d1` | (Nico) Layered icon art in `docs/icon/` — the art-style reference |
+| `1a5c2d1` | (Nico) Layered icon art in `docs/icon/`, the art-style reference |
 | `2a6e7e9` | M3: focus timer, tab-bar timer accessory, Live Activity, Control Center toggle, App Shortcuts |
 | `c003ebc` | Theme: pixel-fantasy art style from the icon art, 12 bosses, faster launch (Firebase SDK removed) |
 | `b502342` | M4: Home Screen, Lock Screen and StandBy widgets |
+| `ea1f943`, `83344e6` | M5: damage meter, fake teammates |
+| `0cef81b` | Game Center: sign-in, achievements, leaderboards, Access Point |
+| `14a73cd` | M6: multiplayer raids over Firebase REST (DDSync target) |
+| `ec6c24c` | M7: end-of-raid report with titles |
 
 ## Decisions that changed since the plan docs
 
 | Topic | Plan said | Now |
 |---|---|---|
 | Toolchain | Xcode 26 | Built with **Xcode 27.2**, iOS 27.2 simulator. Deployment target is still **iOS 26.0**. |
-| Firebase | iOS SDK | **REST, no SDK.** The SDK added ~1.4 s to every launch (measured: app code starts at 1.75 s with it vs 0.32 s without). Same Firebase project, Auth, Firestore and security rules. Teammates' changes arrive by polling (~5 s) while a raid screen is open. The user chose this. |
+| Firebase | iOS SDK | **REST, no SDK.** The SDK added ~1.4 s to every launch (measured: app code starts at 1.75 s with it vs 0.32 s without). Same Firebase project, Auth, Firestore and security rules. Teammates' changes arrive by polling the current raid every 5 s while the app is in the foreground. The user chose this. Code: `Packages/DDKit/Sources/DDSync`. |
 | Store | `@ModelActor RaidStore` | `@MainActor RaidStore` on `mainContext`, so `@Query` views see writes immediately. |
 | Intents from widgets/controls | Write locally, sync later | Write intents also conform to `LiveActivityIntent`, so iOS runs them **in the app process**. The app's store, Live Activity and sync all see the change at once. |
 | Art style | SF Symbol placeholders | **Pixel fantasy, taken from Nico's icon layers** (`docs/icon/*.svg`): 64×64 grids, one-pixel dark outline, three-tone shading, cream/gold/night-purple palette. The user wanted the remote art used as the style reference. |
@@ -37,9 +44,9 @@ Last updated: 2026-11-19. Read this first, then [IMPLEMENTATION_PLAN.md](IMPLEME
 
 ```
 DungeonsAndDeadlines/          app (MainActor default isolation)
-  App/                         entry, AppEnvironment (+ LaunchOptions), Announcer, AppShortcuts
-  Features/                    Root, Boss, Tasks, Focus, Raid, Meter*, Debug*, Report
-  Sync/SyncEngine.swift        STUB until M6 (isAvailable = false)
+  App/                         entry, AppEnvironment (+ LaunchOptions), Announcer, AppShortcuts, GameCenterService
+  Features/                    Root, Boss, Tasks, Focus, Raid, Meter, Debug, Report
+  Sync/SyncEngine.swift        sign-in, debounced uploads, foreground polling (wraps DDSync.RaidSync)
 DDWidgets/                     widget extension: BossWidget, FocusLiveActivity, FocusControl
 DungeonsAndDeadlinesUITests/   SmokeTests (flows + accessibility audits), LaunchPerformanceTests
 Packages/DDKit/                GameCore, DDPersistence, DDIntents, DDDesign (+ tests)
@@ -48,8 +55,7 @@ Packages/DDKit/                GameCore, DDPersistence, DDIntents, DDDesign (+ t
 Config/                        entitlements, Info.plists (not compiled)
 tools/                         svg2grid.py (icon SVG → Swift grids), make_icon.py (icon + launch image)
 firebase/                      firestore.rules, rules tests, emulator config, setup README
-docs/                          README-level docs, GAME_CENTER.md, handoff/drafts/
-(* = uncommitted)
+docs/                          ARCHITECTURE, IMPLEMENTATION_PLAN, GAME_CENTER, HANDOFF, icon/
 ```
 
 ## Build and test
@@ -74,7 +80,8 @@ cd Packages/DDKit && swift test
 
 - `build.sh` uses the **iPhone 18 Pro** simulator (override with `SIMULATOR=...`) and keeps derived data and packages in `build/` (git-ignored).
 - `xcodebuild -quiet` prints a harmless `error: the following command failed with exit code 0`. Ignore it.
-- Package tests (49) run on macOS: GameCore 27, persistence 11, intents 5, design and art 6 (including the paint-speed check).
+- Package tests (62) run on macOS: GameCore 31, persistence 11, intents 5, design and art 6 (including the paint-speed check), sync 9 (two-player flows against an in-memory fake Firestore).
+- UI tests (6): onboarding, solo plan → fight → hit, focus timer with backgrounding, meter with fake teammates, victory report, plus an on-demand launch metric.
 - The UI tests write each audit issue as a line starting with `AUDIT [...]`. Find them with `grep AUDIT build/test.log`.
 - To dump the boss art as PNGs for review: `DD_DUMP_ART=/some/dir swift test --filter DDDesignTests` (writes `sheet.png`).
 - The iOS Simulator MCP tool won't attach until the user runs `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`. Until then, use `xcrun simctl` (install, launch, `io screenshot`) as this session did.
@@ -87,8 +94,9 @@ cd Packages/DDKit && swift test
 | `-seedDemo` | Solo raid "Thesis" vs "Exam Dragon", 4 tasks, fight started, one task done |
 | `-startTab boss\|tasks\|meter\|raid` | Opens that tab |
 | `-fakeTeammates` | Starts 3 simulated teammates once a solo fight is active |
+| `-seedFinished` | A won 4-player raid with a late task and an undone task (report) |
 | `-meterAsList` | Damage meter opens in list mode |
-| `-useFirebaseEmulator` | (M6) Use the local emulator |
+| `-useFirebaseEmulator` | Use the local Firebase emulator (works without `GoogleService-Info.plist`) |
 
 Example: check a screen at the largest text size:
 
@@ -100,63 +108,33 @@ xcrun simctl ui booted content_size accessibility-extra-extra-extra-large
 xcrun simctl launch booted com.dungeonsanddeadlines.app -uiTesting -seedDemo -startTab raid
 ```
 
-## Next steps, in order
+## What's left
 
-### 1. Finish M5 (uncommitted)
+### Setup that needs accounts (the user's decision and credentials)
 
-Done in the working tree:
-- Meter tab (`Features/Meter/MeterView.swift`): Swift Charts with a custom legend and `accessibilityChartDescriptor`, a list mode (forced at accessibility sizes, where the Chart/List switch is hidden), and an "Attacking now" section.
-- `Features/Debug/FakeTeammates.swift` and `DebugSection.swift` (Raid tab, debug builds, solo raids only).
-- All `Section("…")` titles became explicit `header: { Text(…).font(.headline) }`.
-- Page background is now plain (vignette only; see gotchas). Boss name uses `.title` and wraps.
-- New UI test `testDamageMeterWithFakeTeammates` stops the fakes before auditing.
+1. **Firebase project.** Create it, enable Anonymous Auth and Firestore, put `GoogleService-Info.plist` into `DungeonsAndDeadlines/Resources/` (git-ignored), and deploy `firebase/firestore.rules`. See [firebase/README.md](../firebase/README.md).
+2. **Rules tests and an emulator session.** These have never run, because Node and the Firebase CLI aren't installed on this Mac. Run `cd firebase/rules-tests && npm install && npm test`, then try two simulators with `-useFirebaseEmulator`. The sync logic itself is covered by the fake-Firestore tests.
+3. **Game Center.** Create the IDs in App Store Connect ([GAME_CENTER.md](GAME_CENTER.md)).
+4. **Signing team.** Set one for the device builds that App Group, Live Activities and Game Center need.
 
-Left to do:
-1. Run the UI tests. The last change (the audit skips elements overlapping the tab bar or the focus accessory) **was not verified**, because the run was stopped. The previous run's only failure was "Attacking now" sitting under the accessory.
-2. Commit as `M5: damage meter and fake teammates`.
+### M8 stretch (pick by time left)
 
-### 2. Game Center (GameKit)
+See [IMPLEMENTATION_PLAN.md, M8](IMPLEMENTATION_PLAN.md#m8-stretch-pick-by-time-left):
+- push updates for teammates' hits on the Lock Screen (needs a Cloud Function and an APNs key)
+- notifications
+- Sign in with Apple linking
+- peer confirmation of tasks
+- cosmetics
+- taunts
 
-Drafts are in `docs/handoff/drafts/GameKit/`, with the design in [GAME_CENTER.md](GAME_CENTER.md).
-1. Move `PlayerProgress.swift` into `Packages/DDKit/Sources/GameCore/` and the tests into `Tests/GameCoreTests/`.
-2. The draft reads `report.attacks`, so add `public var attacks: [Attack]` to `RaidReport` (raid attacks only) and fill it in `Titles.report`.
-3. Add `GameCenterService.swift` to `DungeonsAndDeadlines/App/`, create it in `AppEnvironment`, and inject it into the environment.
-4. Add the `com.apple.developer.game-center` entitlement (`true`) to `Config/DungeonsAndDeadlines.entitlements`.
-5. Call `authenticate()` once onboarding is done (RootView, when the nickname is set). Call `syncProgress()` from `didBecomeActive` and, debounced, from `GameActions.onChange`.
-6. Show the Access Point on WelcomeView and the Raid tab (`onAppear`/`onDisappear` → `showAccessPoint`). Add a "Game Center" section to RaidView with Achievements and Leaderboards buttons.
-7. Keep it off in `-uiTesting`; the service already checks `isEnabled`. Audit the new section.
-8. `GKAccessPoint.trigger(state:)` may be deprecated on iOS 26+. If the build warns, switch to the newer API.
+Also possible:
+- Game Center friend invites to raids
+- more bosses (add a `paintX()` in `Bosses.swift` plus a name keyword)
 
-### 3. M6: multiplayer over Firebase REST
+### Known limitations
 
-- **Drafts:**
-  - `docs/handoff/drafts/M6/FirebaseREST.swift`: config from `GoogleService-Info.plist`, anonymous Auth via `accounts:signUp` and token refresh, refresh token in the Keychain, and a Firestore client with typed values, `commit` (preconditions, server timestamps, array append) and `runQuery`.
-  - `SyncEngine.SDK-reference.swift` is the **old SDK-based** engine. Reuse its structure and field mappings, not its Firebase calls.
-- **Firestore schema:** README "Decisions" and IMPLEMENTATION_PLAN Appendix C.
-- **Rules:** `firebase/firestore.rules`; tests in `firebase/rules-tests/`. Node and the Firebase CLI aren't installed on this Mac, so the rules tests have never run.
-- **Mapping each operation to REST:**
-
-| Operation | REST call | Notes |
-|---|---|---|
-| Publish raid | One `commit` writing `raids/{id}` and `inviteCodes/{code}` with `mustNotExist` | `FAILED_PRECONDITION` means the code is taken; retry up to 5 times with a new code |
-| Join | `get inviteCodes/{code}` → `commit` with `appendToArray("memberIDs", [uid])` → `get raids/{id}` | `PERMISSION_DENIED` means the raid is full or closed |
-| Upload an attack | `commit`, `mustNotExist`, `serverTimeFields: ["serverCreatedAt"]` | `FAILED_PRECONDITION`/`ALREADY_EXISTS` means it already landed: mark synced |
-| Upload tasks/members | `commit` with a `mask` | Add `updatedAt` with `serverTimeFields` |
-| Poll (foreground, ~5 s, current raid only) | `get raids/{id}`; `runQuery` for `attacks` by `serverCreatedAt > cursor`, `tasks` and `members` by `updatedAt > cursor` | Store the cursors per raid |
-| Merge | `RaidStore.mergeRemote(...)` (already written and tested) | Then `settleOutcome`, reload widgets, sync the Live Activity |
-
-- **Error handling:** `PERMISSION_DENIED` → drop the item (it will never succeed). Anything else → keep it pending and retry with backoff.
-- **UI to enable:** in `CreateRaidView` and `JoinRaidView`, `sync.isAvailable` gates multiplayer and `publish`/`join` are already called. `WelcomeView` shows Join only when sync is available.
-- **Tests:** a sync integration test against the emulator (two stores converge), as the plan describes.
-- **Launch:** don't do network work before the first frame. Start sign-in in a `Task` after launch.
-
-### 4. M7: end-of-raid report
-
-The draft is `docs/handoff/drafts/M7/ReportView.swift`, a full themed report (HP chart with audio-graph descriptor, member cards with titles, late and open tasks, share as image plus text). Replace the simple `Features/Report/ReportView.swift` with it, apply `.dungeonScreen()`/`.dungeonRow()`, and add a UI test that finishes a raid and audits the report. The win/lose transition (`settleOutcome`) and `Titles` are already done and tested in GameCore.
-
-### 5. Docs
-
-Update `docs/ARCHITECTURE.md` and `docs/IMPLEMENTATION_PLAN.md` with the table in [Decisions that changed](#decisions-that-changed-since-the-plan-docs), or link to this file.
+- Leaving a raid deletes your member document, but you stay in `memberIDs`, because the rules don't allow removing yourself there.
+- Teammates' hits reach your phone only while the app is open (polling). Closed-app updates are the M8 push item above.
 
 ## Not verified yet
 

@@ -5,7 +5,7 @@ Platform: iOS (SwiftUI), student project
 Last updated: 2026-11-19
 
 ## Status
-M0–M4 and the pixel-art theme are built and committed; M5 (damage meter) is in progress. Game Center, M6 (multiplayer) and M7 (full report) are next. **Start with [docs/HANDOFF.md](docs/HANDOFF.md)**: current state, how to build and test, next steps and gotchas.
+M0–M7 are built and committed: the solo and multiplayer game, focus timer, widgets, Live Activity, damage meter, report, pixel-art theme and Game Center. What's left is account setup (Firebase, App Store Connect, signing) and the M8 stretch goals. **Start with [docs/HANDOFF.md](docs/HANDOFF.md)**: current state, how to build and test, what's left and gotchas.
 
 ## Decisions (2026-11-19)
 - **Backend:** Firebase (Auth + Firestore), called over **REST without the iOS SDK**. The SDK added ~1.4 s to every launch.
