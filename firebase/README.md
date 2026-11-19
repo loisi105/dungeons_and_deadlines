@@ -3,7 +3,7 @@
 Backend for multiplayer raids (M6). The app works solo without any of this.
 
 The app does **not** use the Firebase iOS SDK (it added ~1.4 s to every launch).
-It calls Firebase Auth and Firestore over REST (see `docs/handoff/drafts/M6/FirebaseREST.swift`).
+It calls Firebase Auth and Firestore over REST: `Packages/DDKit/Sources/DDSync` (tested against an in-memory fake Firestore in `Tests/DDSyncTests`), used by `DungeonsAndDeadlines/Sync/SyncEngine.swift`.
 `GoogleService-Info.plist` is only read for `API_KEY` and `PROJECT_ID`.
 
 ## Set up a Firebase project
@@ -23,3 +23,10 @@ Run the app with the launch argument `-useFirebaseEmulator`. Without a `GoogleSe
 ```bash
 cd rules-tests && npm install && npm test
 ```
+
+## How the app syncs
+
+- **Sign-in:** anonymous Firebase Auth after launch (never before the first frame). The user ID and refresh token are kept in the Keychain.
+- **Upload:** the local outbox, debounced after each change. Attacks are create-only (`currentDocument.exists = false`); a retry of one that already landed counts as done. Writes the rules reject (`PERMISSION_DENIED`) are dropped, everything else is retried.
+- **Download:** while the app is in the foreground, the current raid is polled every 5 s. It reads the raid document plus only the members, tasks and attacks changed since the last poll (server timestamps `updatedAt` / `serverCreatedAt`), so a quiet poll costs about 4 reads.
+- **Leaving** deletes your member document. You stay in `memberIDs`, because the rules don't allow removing yourself there.

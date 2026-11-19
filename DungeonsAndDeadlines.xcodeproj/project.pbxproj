@@ -11,6 +11,7 @@
 		DD0000000000000000000202 /* DDPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000102 /* DDPersistence */; };
 		DD0000000000000000000203 /* DDIntents in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000103 /* DDIntents */; };
 		DD0000000000000000000204 /* DDDesign in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000104 /* DDDesign */; };
+		DD0000000000000000000207 /* DDSync in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000107 /* DDSync */; };
 		DD0000000000000000000211 /* GameCore in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000111 /* GameCore */; };
 		DD0000000000000000000212 /* DDPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000112 /* DDPersistence */; };
 		DD0000000000000000000213 /* DDIntents in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000113 /* DDIntents */; };
@@ -88,6 +89,7 @@
 				DD0000000000000000000202 /* DDPersistence in Frameworks */,
 				DD0000000000000000000203 /* DDIntents in Frameworks */,
 				DD0000000000000000000204 /* DDDesign in Frameworks */,
+				DD0000000000000000000207 /* DDSync in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -160,6 +162,7 @@
 				DD0000000000000000000102 /* DDPersistence */,
 				DD0000000000000000000103 /* DDIntents */,
 				DD0000000000000000000104 /* DDDesign */,
+				DD0000000000000000000107 /* DDSync */,
 			);
 			productName = DungeonsAndDeadlines;
 			productReference = DD00000000000000000000A1 /* DungeonsAndDeadlines.app */;
@@ -597,6 +600,10 @@
 		DD0000000000000000000104 /* DDDesign */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DDDesign;
+		};
+		DD0000000000000000000107 /* DDSync */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DDSync;
 		};
 		DD0000000000000000000111 /* GameCore */ = {
 			isa = XCSwiftPackageProductDependency;

@@ -95,6 +95,7 @@ final class AppEnvironment {
 
     func didEnterBackground() {
         try? store.markFocusBackgrounded(memberID: LocalIdentity.current.memberID)
+        sync.appDidEnterBackground()
     }
 
     /// Shown once as an alert after the background rule paused a session.
