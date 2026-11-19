@@ -25,6 +25,7 @@ struct RootView: View {
             }
         }
         .sheet(isPresented: $debugPaywall) { PaywallView(reason: .soloLimitReached) }
+        .sheet(isPresented: $environment.showCreateRaid) { CreateRaidView() }
         .fontDesign(.serif)
         .foregroundStyle(Theme.ink)
         .tint(Theme.accent)

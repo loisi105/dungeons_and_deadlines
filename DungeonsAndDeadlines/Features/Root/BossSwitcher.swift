@@ -12,7 +12,7 @@ struct BossSwitcher: View {
 
     @Environment(SyncEngine.self) private var sync
     @Query(sort: \RaidRecord.createdAt, order: .reverse) private var raids: [RaidRecord]
-    @State private var showCreate = false
+    @Environment(AppEnvironment.self) private var environment
     @State private var showJoin = false
 
     var body: some View {
@@ -30,7 +30,7 @@ struct BossSwitcher: View {
             }
             .pickerStyle(.inline)
             Section {
-                Button("New boss…", systemImage: "plus") { showCreate = true }
+                Button("New boss…", systemImage: "plus") { environment.showCreateRaid = true }
                     .accessibilityIdentifier("newBossButton")
                 if sync.isAvailable {
                     Button("Join with code…", systemImage: "person.badge.plus") { showJoin = true }
@@ -40,7 +40,6 @@ struct BossSwitcher: View {
             Label("Switch boss", systemImage: "rectangle.stack.fill")
         }
         .accessibilityIdentifier("bossSwitcher")
-        .sheet(isPresented: $showCreate) { CreateRaidView() }
         .sheet(isPresented: $showJoin) { JoinRaidView() }
     }
 

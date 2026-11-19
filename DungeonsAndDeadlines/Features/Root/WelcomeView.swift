@@ -8,7 +8,7 @@ struct WelcomeView: View {
     @Environment(SyncEngine.self) private var sync
     @Environment(GameCenterService.self) private var gameCenter
     @Query(sort: \RaidRecord.createdAt, order: .reverse) private var raids: [RaidRecord]
-    @State private var showCreate = false
+    @Environment(AppEnvironment.self) private var environment
     @State private var showJoin = false
 
     var body: some View {
@@ -59,7 +59,7 @@ struct WelcomeView: View {
                             .accessibilityHint("Join a friend's raid with an invite code.")
                         }
                         Button {
-                            showCreate = true
+                            environment.showCreateRaid = true
                         } label: {
                             Label("New raid", systemImage: "plus")
                                 .frame(maxWidth: .infinity)
@@ -73,7 +73,6 @@ struct WelcomeView: View {
             }
             .onAppear { gameCenter.showAccessPoint(true) }
             .onDisappear { gameCenter.showAccessPoint(false) }
-            .sheet(isPresented: $showCreate) { CreateRaidView() }
             .sheet(isPresented: $showJoin) { JoinRaidView() }
         }
     }

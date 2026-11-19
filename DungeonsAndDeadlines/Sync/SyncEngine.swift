@@ -86,7 +86,11 @@ final class SyncEngine {
         return raidID
     }
 
+    /// Leaves a multiplayer raid, or deletes a solo boss, on this phone.
     func leave(_ raidID: UUID) async {
+        #if os(iOS)
+        LiveActivityController.end(raidID: raidID)
+        #endif
         if let sync {
             await sync.leave(raidID)
         } else {

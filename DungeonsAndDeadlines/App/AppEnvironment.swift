@@ -144,6 +144,10 @@ final class AppEnvironment {
         sync.appDidEnterBackground()
     }
 
+    /// The "new boss" sheet lives at the root, so it stays open even if the current boss
+    /// is deleted from inside it (to free the free-plan slot).
+    var showCreateRaid = false
+
     /// Shown once as an alert after the background rule paused a session.
     var pausedByBackground = false
 }

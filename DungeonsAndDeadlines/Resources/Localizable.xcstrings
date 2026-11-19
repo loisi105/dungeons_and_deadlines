@@ -14,6 +14,16 @@
         }
       }
     },
+    "%@ (%@), its tasks and hits are deleted. This can't be undone." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$@), its tasks and hits are deleted. This can't be undone."
+          }
+        }
+      }
+    },
     "%@ (you)" : {
 
     },
@@ -326,13 +336,19 @@
     "Delete" : {
 
     },
+    "Delete %@?" : {
+
+    },
+    "Delete %@…" : {
+
+    },
+    "Delete boss" : {
+
+    },
     "Delete task" : {
 
     },
     "done" : {
-
-    },
-    "Done" : {
 
     },
     "Done (%lld)" : {
@@ -365,10 +381,10 @@
     "Fighting" : {
 
     },
-    "Finish tasks and focus to deal damage. Beat the boss before the deadline, alone or with up to 4 friends." : {
+    "Finish or delete your current boss, or go Premium for unlimited bosses." : {
 
     },
-    "Finish your current boss, or go Premium for unlimited bosses." : {
+    "Finish tasks and focus to deal damage. Beat the boss before the deadline, alone or with up to 4 friends." : {
 
     },
     "Focus" : {
@@ -513,6 +529,9 @@
 
     },
     "Leaderboards" : {
+
+    },
+    "Leave" : {
 
     },
     "Leave and remove from this phone" : {

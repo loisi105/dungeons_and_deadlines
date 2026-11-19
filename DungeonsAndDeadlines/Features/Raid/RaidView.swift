@@ -21,9 +21,9 @@ struct RaidView: View {
     @Query private var members: [MemberRecord]
     @Query(sort: \RaidRecord.createdAt, order: .reverse) private var allRaids: [RaidRecord]
 
-    @State private var showCreate = false
+    @Environment(AppEnvironment.self) private var environment
     @State private var showJoin = false
-    @State private var confirmLeave = false
+    @State private var removing: Raid?
     @State private var showReport = false
 
     init(raidID: UUID) {
@@ -54,27 +54,20 @@ struct RaidView: View {
             .navigationTitle("Party")
             .toolbar {
                 Menu("New", systemImage: "plus") {
-                    Button("New raid", systemImage: "plus") { showCreate = true }
+                    Button("New raid", systemImage: "plus") { environment.showCreateRaid = true }
                     Button("Join with code", systemImage: "person.badge.plus") { showJoin = true }
                         .disabled(!sync.isAvailable)
                 }
             }
             .onAppear { gameCenter.showAccessPoint(true) }
             .onDisappear { gameCenter.showAccessPoint(false) }
-            .sheet(isPresented: $showCreate) { CreateRaidView() }
             .sheet(isPresented: $showJoin) { JoinRaidView() }
             .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
             // Screen level, not on the Premium row: sheets attached to list rows get
             // dismissed when the list refreshes, which closed the paywall right away.
             .sheet(item: $paywall) { PaywallView(reason: $0.block) }
             .manageSubscriptionsSheet(isPresented: $manageSubscription, subscriptionGroupID: Entitlements.subscriptionGroupID)
-            .confirmationDialog("Leave this raid?", isPresented: $confirmLeave, titleVisibility: .visible) {
-                Button("Leave and remove from this phone", role: .destructive) {
-                    Task { await sync.leave(raidID) }
-                }
-            } message: {
-                Text("Its tasks and hits are removed from this phone. Teammates keep their copy.")
-            }
+            .deleteBossConfirmation($removing)
         }
     }
 
@@ -223,6 +216,19 @@ struct RaidView: View {
                         RaidRow(raid: raid)
                     }
                     .foregroundStyle(.primary)
+                    .swipeActions(edge: .trailing) {
+                        Button(raid.isMultiplayer ? "Leave" : "Delete", systemImage: "trash", role: .destructive) {
+                            removing = raid.model
+                        }
+                    }
+                    .contextMenu {
+                        Button(raid.isMultiplayer ? "Leave raid" : "Delete boss", systemImage: "trash", role: .destructive) {
+                            removing = raid.model
+                        }
+                    }
+                    .accessibilityActions {
+                        Button(raid.isMultiplayer ? "Leave raid" : "Delete boss") { removing = raid.model }
+                    }
                 }
             } header: {
                 Text("Other raids").font(.headline)
@@ -233,8 +239,13 @@ struct RaidView: View {
 
     private var dangerSection: some View {
         Section {
-            Button("Leave raid", systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
-                confirmLeave = true
+            if let raid = raids.first?.model {
+                Button(raid.isMultiplayer ? "Leave raid" : "Delete boss",
+                       systemImage: raid.isMultiplayer ? "rectangle.portrait.and.arrow.right" : "trash",
+                       role: .destructive) {
+                    removing = raid
+                }
+                .accessibilityIdentifier("deleteCurrentBoss")
             }
         }
         .dungeonRow()

@@ -337,4 +337,30 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(hpLabel(app, contains: "385 / ").waitForExistence(timeout: 5))
         try audit(app, "Boss (resumed)")
     }
+
+    func testFreePlanDeleteOldBossToStartANewOne() throws {
+        let app = launch(["-seedDemo"])
+        app.buttons["bossSwitcher"].tap()
+        let newBoss = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'New boss'")).firstMatch
+        XCTAssertTrue(newBoss.waitForExistence(timeout: 5))
+        newBoss.tap()
+
+        // At the free limit the sheet offers to delete the current boss.
+        let delete = app.buttons["deleteActiveBossButton"]
+        XCTAssertTrue(delete.waitForExistence(timeout: 5))
+        delete.tap()
+        let confirm = app.buttons["Delete boss"].firstMatch
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
+        confirm.tap()
+
+        // The slot is free; the sheet stays open and creating works.
+        XCTAssertFalse(app.buttons["seePremiumButton"].waitForExistence(timeout: 2))
+        let name = app.descendants(matching: .any)["raidNameField"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Essay")
+        app.buttons["createRaidButton"].tap()
+        XCTAssertTrue(app.navigationBars["Essay"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["paywallNotNow"].exists)
+    }
 }

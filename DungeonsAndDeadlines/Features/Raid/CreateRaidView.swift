@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 import GameCore
 import DDPersistence
 import DDDesign
@@ -8,6 +9,9 @@ struct CreateRaidView: View {
     @Environment(SyncEngine.self) private var sync
     @Environment(Entitlements.self) private var entitlements
     @State private var paywall: PaywallReason?
+    @State private var removing: Raid?
+    /// Observed, so the free-plan notice updates as soon as a boss is deleted.
+    @Query private var allRaids: [RaidRecord]
 
     @State private var name = ""
     @State private var bossName = BossNames.random()
@@ -27,11 +31,16 @@ struct CreateRaidView: View {
                                 .font(.headline)
                             Text(block == .multiplayerRequiresPremium
                                  ? "Joining a friend's raid stays free."
-                                 : "Finish your current boss, or go Premium for unlimited bosses.")
+                                 : "Finish or delete your current boss, or go Premium for unlimited bosses.")
                                 .readableFootnote()
                             Button("See Premium") { paywall = PaywallReason(block: block) }
                                 .primaryActionStyle()
                                 .accessibilityIdentifier("seePremiumButton")
+                            if block == .soloLimitReached, let active = activeSoloRaid {
+                                Button("Delete \(active.bossName)…", role: .destructive) { removing = active }
+                                    .dangerActionStyle()
+                                    .accessibilityIdentifier("deleteActiveBossButton")
+                            }
                         }
                     }
                     .dungeonRow()
@@ -89,6 +98,7 @@ struct CreateRaidView: View {
             .headerProminence(.increased)
             .dungeonScreen()
             .sheet(item: $paywall) { PaywallView(reason: $0.block) }
+            .deleteBossConfirmation($removing)
             .navigationTitle("New raid")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -106,9 +116,15 @@ struct CreateRaidView: View {
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
+    /// The unfinished solo boss that uses up the free slot.
+    private var activeSoloRaid: Raid? {
+        let me = LocalIdentity.current.memberID
+        return allRaids.map(\.model).first { !$0.isMultiplayer && $0.ownerID == me && ($0.status == .planning || $0.status == .active) }
+    }
+
     /// Free-plan limit that applies to the current choice, if any.
     private var currentBlock: PlanLimits.Block? {
-        entitlements.block(createMultiplayer: multiplayer, raids: DDStore.shared.raids(), playerID: LocalIdentity.current.memberID)
+        entitlements.block(createMultiplayer: multiplayer, raids: allRaids.map(\.model), playerID: LocalIdentity.current.memberID)
     }
 
     private func create() {
