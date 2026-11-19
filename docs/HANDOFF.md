@@ -41,7 +41,7 @@ Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.
 | `8e0afae` | Follow-up tasks after a win/loss and "Resume the fight"; native close buttons |
 | `1905eff` | Delete old solo bosses (frees the free-plan slot) |
 | `3269e3d` | Completing a task jumps to the boss and plays a class attack |
-| (next) | iPad: sidebar with Bosses, two-column Boss tab, readable list widths, large widget |
+| `e0e6c30` | iPad: sidebar with Bosses, two-column Boss tab, readable list widths, large widget |
 
 ## Decisions that changed since the plan docs
 
