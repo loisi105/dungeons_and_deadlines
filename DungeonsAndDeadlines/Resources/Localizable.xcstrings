@@ -1,0 +1,435 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "%@ (you)" : {
+
+    },
+    "%@ survived with %lld HP." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ survived with %2$lld HP."
+          }
+        }
+      }
+    },
+    "%lld / %lld HP" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld / %2$lld HP"
+          }
+        }
+      }
+    },
+    "%lld damage" : {
+
+    },
+    "%lld HP" : {
+
+    },
+    "−%lld" : {
+
+    },
+    "A raid gets an invite code to share with your group." : {
+
+    },
+    "Add at least one task first." : {
+
+    },
+    "Add task" : {
+
+    },
+    "Add tasks" : {
+
+    },
+    "Add the tasks for this deadline. When the fight starts, the boss's health is locked at %lld HP from the planned tasks." : {
+
+    },
+    "Added" : {
+
+    },
+    "added after the fight started" : {
+
+    },
+    "Added after the fight started" : {
+
+    },
+    "All tasks done!" : {
+
+    },
+    "Ask the raid leader for the 6-character code. Raids hold up to 5 people." : {
+
+    },
+    "Assign to" : {
+
+    },
+    "Assigned to" : {
+
+    },
+    "assigned to %@" : {
+
+    },
+    "Attacking" : {
+
+    },
+    "Be honest: bigger tasks hit harder, and teammates see the size." : {
+
+    },
+    "Boss" : {
+
+    },
+    "Boss health when the fight starts" : {
+
+    },
+    "Boss name" : {
+
+    },
+    "By" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Class" : {
+
+    },
+    "Complete" : {
+
+    },
+    "Complete ${task}" : {
+
+    },
+    "Complete task" : {
+
+    },
+    "Completed" : {
+
+    },
+    "Continue" : {
+
+    },
+    "Couldn't do that" : {
+
+    },
+    "Create" : {
+
+    },
+    "Create a raid for a deadline. Plan its tasks, then start the fight." : {
+
+    },
+    "Damage" : {
+
+    },
+    "Damage dealt" : {
+
+    },
+    "Deadline" : {
+
+    },
+    "Deadline %@" : {
+
+    },
+    "Deadline passed" : {
+
+    },
+    "Deadlines are bosses." : {
+
+    },
+    "Defeat" : {
+
+    },
+    "Delete" : {
+
+    },
+    "Delete task" : {
+
+    },
+    "done" : {
+
+    },
+    "Done" : {
+
+    },
+    "Done (%lld)" : {
+
+    },
+    "Dungeons & Deadlines" : {
+
+    },
+    "e.g. Ada" : {
+
+    },
+    "Edit" : {
+
+    },
+    "Edit task" : {
+
+    },
+    "Enter a nickname to continue." : {
+
+    },
+    "Fighting" : {
+
+    },
+    "Finish tasks and focus to deal damage. Beat the boss before the deadline, alone or with up to 4 friends." : {
+
+    },
+    "Focus paused" : {
+
+    },
+    "Focus paused because you left the app for more than 2 minutes." : {
+
+    },
+    "Haptics" : {
+
+    },
+    "Health left" : {
+
+    },
+    "Invite" : {
+
+    },
+    "Invite code" : {
+
+    },
+    "Its tasks and hits are removed from this phone. Teammates keep their copy." : {
+
+    },
+    "Join" : {
+
+    },
+    "Join a friend's raid with an invite code." : {
+
+    },
+    "Join my raid against %@ in Dungeons & Deadlines! Code: %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Join my raid against %1$@ in Dungeons & Deadlines! Code: %2$@"
+          }
+        }
+      }
+    },
+    "Join raid" : {
+
+    },
+    "Join with code" : {
+
+    },
+    "Late" : {
+
+    },
+    "Latest hits" : {
+
+    },
+    "Leader" : {
+
+    },
+    "Leave and remove from this phone" : {
+
+    },
+    "Leave raid" : {
+
+    },
+    "Leave this raid?" : {
+
+    },
+    "Locks the boss's health and starts the fight." : {
+
+    },
+    "Members (%lld/5)" : {
+
+    },
+    "Mode" : {
+
+    },
+    "Multiplayer isn't available yet." : {
+
+    },
+    "Multiplayer needs Firebase; this build is solo only." : {
+
+    },
+    "New" : {
+
+    },
+    "New raid" : {
+
+    },
+    "New task" : {
+
+    },
+    "Nickname" : {
+
+    },
+    "No boss yet" : {
+
+    },
+    "No report" : {
+
+    },
+    "No tasks yet. Add the steps for this deadline." : {
+
+    },
+    "Nobody" : {
+
+    },
+    "None" : {
+
+    },
+    "OK" : {
+
+    },
+    "Open (%lld)" : {
+
+    },
+    "Other raids" : {
+
+    },
+    "Past raids" : {
+
+    },
+    "Planning" : {
+
+    },
+    "Project" : {
+
+    },
+    "Project or deadline" : {
+
+    },
+    "Raid" : {
+
+    },
+    "Raid (up to 5)" : {
+
+    },
+    "Raid leader" : {
+
+    },
+    "Raid not found" : {
+
+    },
+    "Raid report" : {
+
+    },
+    "Random boss name" : {
+
+    },
+    "Reopen" : {
+
+    },
+    "Result" : {
+
+    },
+    "Save" : {
+
+    },
+    "See report" : {
+
+    },
+    "Share invite" : {
+
+    },
+    "Six letters and numbers from the raid leader." : {
+
+    },
+    "Size" : {
+
+    },
+    "Small tasks deal %lld, medium %lld, large %lld damage. Focus time covers the rest." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Small tasks deal %1$lld, medium %2$lld, large %3$lld damage. Focus time covers the rest."
+          }
+        }
+      }
+    },
+    "Solo" : {
+
+    },
+    "Someone" : {
+
+    },
+    "Start fight" : {
+
+    },
+    "Status" : {
+
+    },
+    "Task" : {
+
+    },
+    "Task deleted" : {
+
+    },
+    "Tasks" : {
+
+    },
+    "Teammates hit the boss %lld times for %lld damage." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Teammates hit the boss %1$lld times for %2$lld damage."
+          }
+        }
+      }
+    },
+    "Teammates see this in raids." : {
+
+    },
+    "The boss gets angrier as the deadline gets closer." : {
+
+    },
+    "The boss is now %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "The boss is now %1$@. %2$@"
+          }
+        }
+      }
+    },
+    "The fight has started!" : {
+
+    },
+    "Up to 5 people per raid." : {
+
+    },
+    "Victory" : {
+
+    },
+    "Waiting for an invite code. Check your connection." : {
+
+    },
+    "Waiting for the raid leader to start the fight." : {
+
+    },
+    "What needs doing?" : {
+
+    },
+    "When" : {
+
+    },
+    "You" : {
+
+    },
+    "You beat %@ before the deadline." : {
+
+    },
+    "You were away for more than 2 minutes, so your focus timer paused when you left. Resume it from the timer." : {
+
+    },
+    "Your nickname" : {
+
+    }
+  },
+  "version" : "1.0"
+}

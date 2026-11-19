@@ -1,0 +1,19 @@
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+xcuserdata/
+*.xcscmblueprint
+.swiftpm/
+.build/
+Packages/DDKit/.build/
+Packages/DDKit/.swiftpm/
+
+# Firebase (each developer downloads their own; see docs/IMPLEMENTATION_PLAN.md M6)
+GoogleService-Info.plist
+firebase/node_modules/
+firebase/*.log
+firebase/rules-tests/node_modules/
+
+# macOS
+.DS_Store
