@@ -463,8 +463,8 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = Config/DDWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/DDWidgets-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dungeons & Deadlines";
@@ -490,8 +490,8 @@
 				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
 				CODE_SIGN_ENTITLEMENTS = Config/DDWidgets.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/DDWidgets-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Dungeons & Deadlines";
@@ -514,8 +514,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = at.fhooe.sail.dungeonsanddeadlines.uitests;
@@ -530,8 +530,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = at.fhooe.sail.dungeonsanddeadlines.uitests;

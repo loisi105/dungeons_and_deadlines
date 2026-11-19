@@ -64,6 +64,10 @@ struct RaidView: View {
             .sheet(isPresented: $showCreate) { CreateRaidView() }
             .sheet(isPresented: $showJoin) { JoinRaidView() }
             .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
+            // Screen level, not on the Premium row: sheets attached to list rows get
+            // dismissed when the list refreshes, which closed the paywall right away.
+            .sheet(item: $paywall) { PaywallView(reason: $0.block) }
+            .manageSubscriptionsSheet(isPresented: $manageSubscription, subscriptionGroupID: Entitlements.subscriptionGroupID)
             .confirmationDialog("Leave this raid?", isPresented: $confirmLeave, titleVisibility: .visible) {
                 Button("Leave and remove from this phone", role: .destructive) {
                     Task { await sync.leave(raidID) }
@@ -183,8 +187,6 @@ struct RaidView: View {
             Text("Premium").font(.headline)
         }
         .dungeonRow()
-        .sheet(item: $paywall) { PaywallView(reason: $0.block) }
-        .manageSubscriptionsSheet(isPresented: $manageSubscription, subscriptionGroupID: Entitlements.subscriptionGroupID)
     }
 
     private var gameCenterSection: some View {

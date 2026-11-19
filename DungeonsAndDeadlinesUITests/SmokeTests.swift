@@ -257,4 +257,54 @@ final class SmokeTests: XCTestCase {
         notNow.tap()
         XCTAssertTrue(app.descendants(matching: .any)["raidNameField"].waitForExistence(timeout: 5))
     }
+
+    func testTappingOutsideHidesKeyboard() throws {
+        let app = launch(["-seedDemo", "-premium"])
+        let keyboard = app.keyboards.firstMatch
+        func waitForKeyboardToHide() {
+            let gone = expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: keyboard)
+            wait(for: [gone], timeout: 5)
+        }
+
+        app.buttons["bossSwitcher"].tap()
+        let newBoss = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'New boss'")).firstMatch
+        XCTAssertTrue(newBoss.waitForExistence(timeout: 5))
+        newBoss.tap()
+
+        // Tapping a field shows the keyboard; moving to another field keeps it.
+        let name = app.descendants(matching: .any)["raidNameField"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 5))
+        app.descendants(matching: .any)["bossNameField"].tap()
+        XCTAssertTrue(keyboard.exists)
+
+        // Tapping anywhere else hides it.
+        app.staticTexts["Deadline"].tap()
+        waitForKeyboardToHide()
+
+        // Tapping a button hides it and still does what the button does.
+        name.tap()
+        XCTAssertTrue(keyboard.waitForExistence(timeout: 5))
+        app.buttons["Cancel"].tap()
+        waitForKeyboardToHide()
+        XCTAssertFalse(name.waitForExistence(timeout: 2), "Cancel should still close the sheet")
+    }
+
+    func testSeePremiumStaysOpen() throws {
+        let app = launch(["-seedDemo"])
+        tab(app, "Raid")
+        let seePremium = app.buttons["partySeePremium"]
+        var swipes = 0
+        while !seePremium.isHittable && swipes < 6 { app.swipeUp(); swipes += 1 }
+        seePremium.tap()
+
+        // One tap opens the paywall, and it stays open.
+        let notNow = app.buttons["paywallNotNow"]
+        XCTAssertTrue(notNow.waitForExistence(timeout: 5))
+        sleep(3)
+        XCTAssertTrue(notNow.exists, "The paywall closed by itself")
+        notNow.tap()
+        XCTAssertFalse(notNow.waitForExistence(timeout: 2))
+    }
 }
