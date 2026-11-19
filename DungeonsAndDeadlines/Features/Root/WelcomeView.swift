@@ -6,6 +6,7 @@ import DDDesign
 /// Shown when there's no current raid: create one, join one, or reopen a finished one.
 struct WelcomeView: View {
     @Environment(SyncEngine.self) private var sync
+    @Environment(GameCenterService.self) private var gameCenter
     @Query(sort: \RaidRecord.createdAt, order: .reverse) private var raids: [RaidRecord]
     @State private var showCreate = false
     @State private var showJoin = false
@@ -70,6 +71,8 @@ struct WelcomeView: View {
                     .padding()
                 }
             }
+            .onAppear { gameCenter.showAccessPoint(true) }
+            .onDisappear { gameCenter.showAccessPoint(false) }
             .sheet(isPresented: $showCreate) { CreateRaidView() }
             .sheet(isPresented: $showJoin) { JoinRaidView() }
         }

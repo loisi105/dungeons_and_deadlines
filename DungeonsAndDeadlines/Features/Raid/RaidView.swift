@@ -10,6 +10,7 @@ struct RaidView: View {
     let raidID: UUID
 
     @Environment(SyncEngine.self) private var sync
+    @Environment(GameCenterService.self) private var gameCenter
     @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
     @AppStorage("identity.nickname", store: AppGroup.defaults) private var nickname = ""
 
@@ -39,6 +40,7 @@ struct RaidView: View {
                     membersSection(raid)
                 }
                 youSection
+                gameCenterSection
                 otherRaidsSection
                 dangerSection
                 extraSections
@@ -53,6 +55,8 @@ struct RaidView: View {
                         .disabled(!sync.isAvailable)
                 }
             }
+            .onAppear { gameCenter.showAccessPoint(true) }
+            .onDisappear { gameCenter.showAccessPoint(false) }
             .sheet(isPresented: $showCreate) { CreateRaidView() }
             .sheet(isPresented: $showJoin) { JoinRaidView() }
             .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
@@ -157,6 +161,28 @@ struct RaidView: View {
             Toggle("Haptics", isOn: $hapticsOn)
         } header: {
             Text("You").font(.headline)
+        }
+        .dungeonRow()
+    }
+
+    private var gameCenterSection: some View {
+        Section {
+            if gameCenter.isAuthenticated {
+                Label {
+                    Text("Signed in as \(gameCenter.displayName ?? "")")
+                } icon: {
+                    Image(systemName: "gamecontroller.fill")
+                }
+                Button("Achievements", systemImage: "trophy.fill") { gameCenter.openDashboard(.achievements) }
+                Button("Leaderboards", systemImage: "list.number") { gameCenter.openDashboard(.leaderboards) }
+            } else {
+                Text("Sign in to Game Center to earn achievements and compare your damage with friends.")
+                    .readableFootnote()
+                Button("Sign in to Game Center", systemImage: "gamecontroller") { gameCenter.authenticate() }
+                    .disabled(!gameCenter.isEnabled)
+            }
+        } header: {
+            Text("Game Center").font(.headline)
         }
         .dungeonRow()
     }

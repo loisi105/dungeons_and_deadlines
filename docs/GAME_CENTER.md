@@ -11,7 +11,7 @@ while everyone is connected, so they can't carry a raid that runs for days).
 |---|---|
 | Launch (after onboarding) | `GKLocalPlayer` sign-in. If iOS needs the player to sign in, it shows its own sheet. |
 | Onboarding | The Game Center display name pre-fills the nickname when none is set. |
-| Raid tab | Game Center section: Achievements and Leaderboards buttons, sign-in state. The Access Point floats on the Raid tab and the welcome screen. |
+| Party (Raid) tab | Game Center section: Achievements and Leaderboards buttons, sign-in state. The Access Point floats on the Raid tab and the welcome screen. |
 | After every hit, win or loss | Progress is recomputed from the local attack log (`PlayerProgress` in GameCore) and only *changes* are reported. |
 
 Everything is skipped in UI tests (`-uiTesting`). Without the IDs below set up in App Store

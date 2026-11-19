@@ -27,6 +27,11 @@ struct RootView: View {
         .fontDesign(.serif)
         .foregroundStyle(Theme.ink)
         .tint(Theme.accent)
+        // Game Center sign-in waits until onboarding is done, so its sheet doesn't
+        // interrupt the first screen.
+        .task(id: nickname.isEmpty) {
+            if !nickname.isEmpty { environment.gameCenter.authenticate() }
+        }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active: environment.didBecomeActive()

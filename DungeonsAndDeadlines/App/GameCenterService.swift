@@ -49,17 +49,29 @@ final class GameCenterService {
         }
     }
 
-    /// Shows or hides the floating Game Center button (top leading, below the title).
+    /// Shows or hides the floating Game Center button (top leading).
     func showAccessPoint(_ visible: Bool) {
         guard isEnabled else { return }
-        GKAccessPoint.shared.location = .topTrailing
-        GKAccessPoint.shared.showHighlights = false
+        GKAccessPoint.shared.location = .topLeading
         GKAccessPoint.shared.isActive = visible && isAuthenticated
     }
 
     func openDashboard(_ state: GKGameCenterViewControllerState) {
         guard isAuthenticated else { authenticate(); return }
         GKAccessPoint.shared.trigger(state: state) {}
+    }
+
+    private var pendingSync: Task<Void, Never>?
+
+    /// Debounced `syncProgress`, for bursts of hits.
+    func scheduleSync() {
+        guard isEnabled, isAuthenticated else { return }
+        pendingSync?.cancel()
+        pendingSync = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(2))
+            guard !Task.isCancelled else { return }
+            self?.syncProgress()
+        }
     }
 
     /// Recomputes progress from the local store and reports anything new.

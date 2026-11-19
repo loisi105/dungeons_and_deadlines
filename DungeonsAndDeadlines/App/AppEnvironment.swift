@@ -58,6 +58,7 @@ extension LaunchOptions {
 final class AppEnvironment {
     let announcer = Announcer()
     let sync = SyncEngine()
+    let gameCenter = GameCenterService()
     #if DEBUG
     let fakeTeammates = FakeTeammates()
     #endif
@@ -66,8 +67,9 @@ final class AppEnvironment {
 
     func bootstrap() {
         sync.configure()
-        GameActions.onChange = { [sync] raidID in
+        GameActions.onChange = { [sync, gameCenter] raidID in
             sync.scheduleFlush(raidID: raidID)
+            gameCenter.scheduleSync()
         }
         #if DEBUG
         fakeTeammates.autoStart = LaunchOptions.fakeTeammates
@@ -88,6 +90,7 @@ final class AppEnvironment {
         #endif
         GameActions.reloadSystemSurfaces()
         sync.appDidBecomeActive()
+        gameCenter.scheduleSync()
     }
 
     func didEnterBackground() {

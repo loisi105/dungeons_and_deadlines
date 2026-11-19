@@ -21,6 +21,8 @@ public struct RaidReport: Sendable {
     public var openTasks: [RaidTask]
     public var timeline: [(date: Date, hp: Int)]
     public var highestPhase: Phase
+    /// This raid's attack log (used for Game Center progress).
+    public var attacks: [Attack]
 }
 
 public enum Titles {
@@ -95,7 +97,8 @@ public enum Titles {
             lateTasks: raidTasks.filter { $0.isLate(startedAt: raid.startedAt) },
             openTasks: raidTasks.filter { !$0.isDone },
             timeline: BossEngine.hpTimeline(raid: raid, attacks: attacks),
-            highestPhase: highest
+            highestPhase: highest,
+            attacks: raidAttacks
         )
     }
 }
