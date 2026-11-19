@@ -151,6 +151,8 @@ Dependency direction: `app / widgets → DDIntents → DDPersistence → GameCor
 
 ## 9. Milestones (revised)
 
+Summary only. Tasks, tests and done criteria for each milestone are in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).
+
 Every milestone's "done" includes: tests green, accessibility audit passing, VoiceOver + largest Dynamic Type checked.
 
 | # | Milestone | Done when |

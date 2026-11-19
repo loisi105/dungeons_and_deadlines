@@ -96,7 +96,7 @@ Also in scope (moved up from stretch): solo mode, widgets, Live Activity, Contro
 Stretch: push notifications for boss phases/teammate attacks, Live Activity push updates for teammates' attacks, loot/cosmetics from finished raids, streak multipliers.
 
 ## Build order
-See the milestones (M0–M8) in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#9-milestones-revised).
+See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the full plan: milestones M0–M8 with tasks, tests, accessibility checks, team split, risks, and the config, package and Firestore rules sketches.
 
 ## iOS features this covers
 SwiftUI with Liquid Glass, SwiftData (shared App Group store), App Intents (Siri, Shortcuts, Spotlight, Action button), interactive widgets (Home, Lock Screen, StandBy), Control Center controls, Live Activities + Dynamic Island, haptics, accessibility (VoiceOver, Dynamic Type, Reduce Motion, Voice Control, accessibility audits), scenePhase handling, Sign in with Apple, notifications, real-time backend sync.
