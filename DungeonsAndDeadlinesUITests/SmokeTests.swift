@@ -197,4 +197,31 @@ final class SmokeTests: XCTestCase {
         sleep(1)
         try audit(app, "Report")
     }
+
+    func testSwitchBetweenBosses() throws {
+        let app = launch(["-seedDemo", "-premium"])
+        XCTAssertTrue(app.navigationBars["Thesis"].waitForExistence(timeout: 5))
+
+        // Start a second boss from the Boss tab's switcher.
+        app.buttons["bossSwitcher"].tap()
+        let newBoss = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'New boss'")).firstMatch
+        XCTAssertTrue(newBoss.waitForExistence(timeout: 5))
+        newBoss.tap()
+        let name = app.textFields["raidNameField"]
+        XCTAssertTrue(name.waitForExistence(timeout: 5))
+        name.tap()
+        name.typeText("Essay")
+        app.buttons["createRaidButton"].tap()
+        XCTAssertTrue(app.navigationBars["Essay"].waitForExistence(timeout: 5))
+        try audit(app, "Boss (second boss)")
+
+        // Switch back from the Tasks tab; the tab stays selected and shows that boss's tasks.
+        tab(app, "Tasks")
+        app.buttons["bossSwitcher"].tap()
+        let dragon = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Exam Dragon'")).firstMatch
+        XCTAssertTrue(dragon.waitForExistence(timeout: 5))
+        dragon.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["task-Literature review"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.tabBars.buttons["Tasks"].isSelected)
+    }
 }

@@ -15,10 +15,9 @@ struct RaidTabView: View {
 
     init(raidID: UUID) {
         self.raidID = raidID
-        _raids = Query(filter: #Predicate<RaidRecord> { $0.id == raidID })
     }
 
-    private var isFighting: Bool { raids.first?.status == .active }
+    private var isFighting: Bool { raids.first { $0.id == raidID }?.status == .active }
 
     enum TabID: Hashable { case boss, tasks, meter, raid }
     @State private var selection: TabID = Self.initialTab
@@ -38,21 +37,21 @@ struct RaidTabView: View {
     var body: some View {
         TabView(selection: $selection) {
             Tab("Boss", systemImage: "flame.fill", value: TabID.boss) {
-                BossView(raidID: raidID, showTasks: { selection = .tasks })
+                BossView(raidID: raidID, showTasks: { selection = .tasks }).id(raidID)
             }
             Tab("Tasks", systemImage: "scroll.fill", value: TabID.tasks) {
-                TasksView(raidID: raidID)
+                TasksView(raidID: raidID).id(raidID)
             }
             Tab("Meter", systemImage: "chart.bar.fill", value: TabID.meter) {
-                MeterView(raidID: raidID)
+                MeterView(raidID: raidID).id(raidID)
             }
             Tab("Raid", systemImage: "person.3.fill", value: TabID.raid) {
-                RaidView(raidID: raidID)
+                RaidView(raidID: raidID).id(raidID)
             }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
         .modifier(FocusAccessoryModifier(enabled: isFighting) {
-            FocusTimerAccessory(raidID: raidID) { showFocus = true }
+            FocusTimerAccessory(raidID: raidID) { showFocus = true }.id(raidID)
         })
         .sheet(isPresented: $showFocus) { FocusView(raidID: raidID) }
         #if DEBUG

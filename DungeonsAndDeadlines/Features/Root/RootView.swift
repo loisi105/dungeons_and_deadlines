@@ -19,7 +19,6 @@ struct RootView: View {
                 OnboardingView()
             } else if let raid = selectedRaid {
                 RaidTabView(raidID: raid.id)
-                    .id(raid.id)
             } else {
                 WelcomeView()
             }

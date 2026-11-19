@@ -51,6 +51,9 @@ struct BossView: View {
                         }
                 }
                 .navigationTitle(raid.name)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) { BossSwitcher(currentRaidID: raidID) }
+                }
                 .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
             } else {
                 ContentUnavailableView("Raid not found", systemImage: "questionmark.circle")

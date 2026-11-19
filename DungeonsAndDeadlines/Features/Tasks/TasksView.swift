@@ -44,6 +44,7 @@ struct TasksView: View {
         NavigationStack {
             taskList
                 .navigationTitle("Quest Log")
+                .navigationSubtitle(raid.map { "\($0.bossName) · \($0.name)" } ?? "")
                 .navigationDestination(for: UUID.self) { id in
                     TaskDetailView(taskID: id, raidID: raidID)
                         .navigationTransition(.zoom(sourceID: id, in: zoom))
@@ -78,6 +79,7 @@ struct TasksView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarTrailing) { BossSwitcher(currentRaidID: raidID) }
         if canEdit {
             ToolbarItem(placement: .topBarLeading) { EditButton() }
             ToolbarItem(placement: .primaryAction) {
