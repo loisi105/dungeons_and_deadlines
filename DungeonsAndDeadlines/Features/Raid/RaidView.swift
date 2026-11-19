@@ -190,10 +190,12 @@ struct RaidView: View {
         .dungeonRow()
     }
 
-    /// Hook for later milestones (debug tools).
+    /// Debug tools (debug builds only).
     @ViewBuilder
     private var extraSections: some View {
-        EmptyView()
+        #if DEBUG
+        DebugSection(raidID: raidID)
+        #endif
     }
 
     private func statusTitle(_ status: RaidStatus) -> LocalizedStringKey {

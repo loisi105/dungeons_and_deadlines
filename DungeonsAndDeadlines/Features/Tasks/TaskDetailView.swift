@@ -45,9 +45,11 @@ struct TaskDetailView: View {
                 }
                 .dungeonRow()
                 if let completedAt = task.completedAt {
-                    Section("Completed") {
+                    Section {
                         LabeledContent("By", value: name(task.completedBy) ?? "?")
                         LabeledContent("When") { Text(completedAt, format: .dateTime) }
+                    } header: {
+                        Text("Completed").font(.headline)
                     }
                     .dungeonRow()
                 }

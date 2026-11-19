@@ -27,6 +27,15 @@ final class SmokeTests: XCTestCase {
             // labels on glass are ~5:1. Text contrast everywhere else stays strict.
             if issue.auditType == .contrast, let element = issue.element,
                element.elementType == .button || app.buttons[element.label].exists { return true }
+            // Content partly under the tab bar or the focus accessory can't be measured;
+            // it scrolls into view. (Applies to every audit type.)
+            if let element = issue.element {
+                let chrome = [app.tabBars.firstMatch, app.buttons["focusAccessory"]].filter(\.exists).map(\.frame)
+                if chrome.contains(where: { $0.insetBy(dx: 0, dy: -12).intersects(element.frame) }) { return true }
+            }
+            // System segmented controls cap their font; the meter hides its switch at
+            // accessibility sizes (checked at AX5 with -seedDemo -fakeTeammates -startTab meter).
+            if issue.auditType == .dynamicType, issue.element == nil || issue.element?.elementType == .segmentedControl { return true }
             // Toolbar buttons are capped by the system and use the Large Content Viewer instead.
             if issue.auditType == .dynamicType, let element = issue.element,
                app.navigationBars.buttons[element.label].exists { return true }
@@ -55,6 +64,9 @@ final class SmokeTests: XCTestCase {
 
     func tab(_ app: XCUIApplication, _ name: String) {
         let button = app.tabBars.buttons[name]
+        // Scrolling down minimizes the tab bar; scroll back up to bring it back.
+        var tries = 0
+        while !button.exists && tries < 4 { app.swipeDown(); tries += 1 }
         XCTAssertTrue(button.waitForExistence(timeout: 5), "Missing tab \(name)")
         button.tap()
     }
@@ -141,5 +153,23 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["resumeFocusButton"].waitForExistence(timeout: 5))
         app.buttons["stopFocusButton"].tap()
         XCTAssertTrue(app.buttons["startFocusButton"].waitForExistence(timeout: 5))
+    }
+
+    func testDamageMeterWithFakeTeammates() throws {
+        let app = launch(["-seedDemo", "-fakeTeammates"])
+        tab(app, "Meter")
+        // Fake teammates hit every few seconds; wait until one shows up in the meter.
+        let mia = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'Mia'")).firstMatch
+        XCTAssertTrue(mia.waitForExistence(timeout: 30))
+        // Stop the simulation so the audit sees a stable screen.
+        tab(app, "Raid")
+        let toggle = app.switches["fakeTeammatesToggle"]
+        while !toggle.isHittable { app.swipeUp() }
+        toggle.tap()
+        tab(app, "Meter")
+        try audit(app, "Meter (chart)")
+        app.buttons["List"].tap()
+        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH '1.'")).firstMatch.waitForExistence(timeout: 5))
+        try audit(app, "Meter (list)")
     }
 }

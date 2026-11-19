@@ -26,7 +26,7 @@ struct WelcomeView: View {
                 }
                 .dungeonRow()
                 if !raids.isEmpty {
-                    Section("Past raids") {
+                    Section {
                         ForEach(raids) { raid in
                             Button {
                                 LocalIdentity.currentRaidID = raid.id
@@ -35,6 +35,8 @@ struct WelcomeView: View {
                             }
                             .foregroundStyle(.primary)
                         }
+                    } header: {
+                        Text("Past raids").font(.headline)
                     }
                     .dungeonRow()
                 }

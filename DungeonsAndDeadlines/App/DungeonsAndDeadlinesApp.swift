@@ -21,6 +21,9 @@ struct DungeonsAndDeadlinesApp: App {
                 .environment(environment)
                 .environment(environment.announcer)
                 .environment(environment.sync)
+                #if DEBUG
+                .environment(environment.fakeTeammates)
+                #endif
         }
         .modelContainer(DDStore.shared.container)
     }

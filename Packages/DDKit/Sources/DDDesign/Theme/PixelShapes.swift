@@ -42,7 +42,7 @@ public struct PixelCornerShape: InsettableShape {
     }
 }
 
-/// Parchment with a soft vignette (light) or dungeon bricks (dark), very subtle so
+/// Parchment (light) or night sky (dark) with a soft vignette, kept plain so
 /// text on the page keeps its contrast. Plain color with Increase Contrast or Reduce Transparency.
 public struct DungeonBackground: View {
     @Environment(\.colorScheme) private var scheme
@@ -55,13 +55,8 @@ public struct DungeonBackground: View {
         ZStack {
             Theme.parchment
             if contrast != .increased && !reduceTransparency {
-                // Only the dungeon gets a pattern. Specks on parchment made text
-                // measure as low-contrast, so light mode keeps just the vignette.
-                if scheme == .dark {
-                    Canvas(rendersAsynchronously: true) { context, size in
-                        drawBricks(context: context, size: size)
-                    }
-                }
+                // No pattern behind text: specks and bricks made text measure as
+                // low-contrast. Texture lives in framed art (boss window, panels).
                 RadialGradient(
                     colors: [.clear, Theme.parchmentDeep.opacity(scheme == .dark ? 0.7 : 0.55)],
                     center: .center, startRadius: 200, endRadius: 700
@@ -70,25 +65,6 @@ public struct DungeonBackground: View {
         }
         .ignoresSafeArea()
         .accessibilityHidden(true)
-    }
-
-    private func drawBricks(context: GraphicsContext, size: CGSize) {
-        let brickW: CGFloat = 48
-        let brickH: CGFloat = 24
-        var rng = SeededGenerator(seed: 7)
-        var y: CGFloat = 0
-        var row = 0
-        while y < size.height {
-            var x: CGFloat = row.isMultiple(of: 2) ? 0 : -brickW / 2
-            while x < size.width {
-                let rect = CGRect(x: x + 1, y: y + 1, width: brickW - 2, height: brickH - 2)
-                let shade = Double.random(in: 0.02...0.045, using: &rng)
-                context.fill(Path(rect), with: .color(Color(hex: 0xC9B7FF).opacity(shade)))
-                x += brickW
-            }
-            y += brickH
-            row += 1
-        }
     }
 }
 

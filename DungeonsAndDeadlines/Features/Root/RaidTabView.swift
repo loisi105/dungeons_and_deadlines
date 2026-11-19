@@ -9,6 +9,9 @@ struct RaidTabView: View {
 
     @Query private var raids: [RaidRecord]
     @State private var showFocus = false
+    #if DEBUG
+    @Environment(FakeTeammates.self) private var fakeTeammates
+    #endif
 
     init(raidID: UUID) {
         self.raidID = raidID
@@ -17,7 +20,7 @@ struct RaidTabView: View {
 
     private var isFighting: Bool { raids.first?.status == .active }
 
-    enum TabID: Hashable { case boss, tasks, raid }
+    enum TabID: Hashable { case boss, tasks, meter, raid }
     @State private var selection: TabID = Self.initialTab
 
     /// `-startTab tasks|raid` opens a specific tab (screenshots, manual checks).
@@ -26,6 +29,7 @@ struct RaidTabView: View {
         guard let i = args.firstIndex(of: "-startTab"), i + 1 < args.count else { return .boss }
         switch args[i + 1] {
         case "tasks": return .tasks
+        case "meter": return .meter
         case "raid": return .raid
         default: return .boss
         }
@@ -39,6 +43,9 @@ struct RaidTabView: View {
             Tab("Tasks", systemImage: "scroll.fill", value: TabID.tasks) {
                 TasksView(raidID: raidID)
             }
+            Tab("Meter", systemImage: "chart.bar.fill", value: TabID.meter) {
+                MeterView(raidID: raidID)
+            }
             Tab("Raid", systemImage: "person.3.fill", value: TabID.raid) {
                 RaidView(raidID: raidID)
             }
@@ -48,6 +55,11 @@ struct RaidTabView: View {
             FocusTimerAccessory(raidID: raidID) { showFocus = true }
         })
         .sheet(isPresented: $showFocus) { FocusView(raidID: raidID) }
+        #if DEBUG
+        .task(id: isFighting) {
+            if isFighting, fakeTeammates.autoStart, !fakeTeammates.isRunning { fakeTeammates.start(raidID: raidID) }
+        }
+        #endif
     }
 }
 

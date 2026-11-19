@@ -116,8 +116,10 @@ struct TasksView: View {
     @ViewBuilder
     private var doneSection: some View {
         if !done.isEmpty {
-            Section("Done (\(done.count))") {
+            Section {
                 ForEach(done) { task in row(task) }
+            } header: {
+                Text("Done (\(done.count))").font(.headline)
             }
             .dungeonRow()
         }

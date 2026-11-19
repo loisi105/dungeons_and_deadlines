@@ -14,10 +14,15 @@ enum LaunchOptions {
 
     /// Seeds a solo raid mid-fight, for screenshots and manual accessibility checks.
     static var seedDemo: Bool { ProcessInfo.processInfo.arguments.contains("-seedDemo") }
+    /// `-meterAsList` opens the damage meter in list mode (screenshots).
+    static var meterAsList: Bool { ProcessInfo.processInfo.arguments.contains("-meterAsList") }
 
     @MainActor
     static func applyBeforeLaunch() {
-        defer { if seedDemo { seedDemoRaid() } }
+        defer {
+            if seedDemo { seedDemoRaid() }
+            if meterAsList { AppGroup.defaults.set(true, forKey: "settings.meterAsList") }
+        }
         guard isUITesting else { return }
         let defaults = AppGroup.defaults
         for key in defaults.dictionaryRepresentation().keys where key.hasPrefix("identity.") || key.hasPrefix("settings.") {
@@ -53,6 +58,9 @@ extension LaunchOptions {
 final class AppEnvironment {
     let announcer = Announcer()
     let sync = SyncEngine()
+    #if DEBUG
+    let fakeTeammates = FakeTeammates()
+    #endif
 
     var store: RaidStore { DDStore.shared }
 
@@ -61,6 +69,9 @@ final class AppEnvironment {
         GameActions.onChange = { [sync] raidID in
             sync.scheduleFlush(raidID: raidID)
         }
+        #if DEBUG
+        fakeTeammates.autoStart = LaunchOptions.fakeTeammates
+        #endif
     }
 
     /// Runs when the app returns to the foreground: applies the focus background rule

@@ -118,8 +118,9 @@ struct BossView: View {
 
             VStack(spacing: 8) {
                 Text(raid.bossName)
-                    .font(.largeTitle.weight(.black))
+                    .font(.title.weight(.black))
                     .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
                     .accessibilityAddTraits(.isHeader)
                 if state.outcome == .ongoing { PhaseBadge(state.phase) }
             }
