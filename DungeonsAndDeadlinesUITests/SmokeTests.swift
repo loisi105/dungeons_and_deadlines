@@ -66,9 +66,6 @@ final class SmokeTests: XCTestCase {
 
     func tab(_ app: XCUIApplication, _ name: String) {
         let button = app.tabBars.buttons[name]
-        // Scrolling down minimizes the tab bar; scroll back up to bring it back.
-        var tries = 0
-        while !button.exists && tries < 4 { app.swipeDown(); tries += 1 }
         XCTAssertTrue(button.waitForExistence(timeout: 5), "Missing tab \(name)")
         button.tap()
     }

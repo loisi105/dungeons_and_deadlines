@@ -49,7 +49,7 @@ struct RaidTabView: View {
                 RaidView(raidID: raidID).id(raidID)
             }
         }
-        .tabBarMinimizeBehavior(.onScrollDown)
+        .tabBarMinimizeBehavior(.never) // the tab bar stays put while scrolling
         .modifier(FocusAccessoryModifier(enabled: isFighting) {
             FocusTimerAccessory(raidID: raidID) { showFocus = true }.id(raidID)
         })
