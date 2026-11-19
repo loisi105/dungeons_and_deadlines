@@ -165,11 +165,16 @@ final class SmokeTests: XCTestCase {
         tab(app, "Raid")
         let toggle = app.switches["fakeTeammatesToggle"]
         while !toggle.isHittable { app.swipeUp() }
-        toggle.tap()
+        // Tap the switch itself (right edge); the row's center doesn't toggle it.
+        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+        XCTAssertEqual(toggle.value as? String, "0")
         tab(app, "Meter")
-        try audit(app, "Meter (chart)")
+        // At accessibility sizes the meter swaps the chart for the list on purpose, so the
+        // chart's text "stops growing" in this check. The list is audited fully below.
+        try audit(app, "Meter (chart)", skipping: .dynamicType)
         app.buttons["List"].tap()
         XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label BEGINSWITH '1.'")).firstMatch.waitForExistence(timeout: 5))
+        sleep(1) // let the chart-to-list transition finish before measuring contrast
         try audit(app, "Meter (list)")
     }
 }

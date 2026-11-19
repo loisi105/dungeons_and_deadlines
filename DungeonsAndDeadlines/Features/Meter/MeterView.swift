@@ -90,6 +90,14 @@ struct MeterView: View {
 
     private var chartSection: some View {
         Section {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Burst and sustained damage").font(.headline).accessibilityAddTraits(.isHeader)
+                HStack(spacing: 16) {
+                    LegendItem(color: Color(light: Color(hex: 0x7A1426), dark: Color(hex: 0xFFD24A)), title: "Tasks", symbol: "bolt.fill")
+                    LegendItem(color: Color(light: Color(hex: 0x3B2A8C), dark: Color(hex: 0xC9B7FF)), title: "Focus", symbol: "timer")
+                }
+                .font(.subheadline)
+            }
             Chart {
                 ForEach(rows) { row in
                     BarMark(x: .value("Damage", row.stats.burst), y: .value("Member", row.name))
@@ -110,24 +118,19 @@ struct MeterView: View {
             // Our own legend: the built-in one doesn't scale with Dynamic Type.
             .chartLegend(.hidden)
             .frame(height: CGFloat(max(rows.count, 1)) * 52 + 40)
+            // One element that speaks every bar, plus the audio graph for VoiceOver's chart rotor.
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text("Damage chart"))
+            .accessibilityValue(Text(rows.map { "\($0.name): \($0.stats.total), tasks \($0.stats.burst), focus \($0.stats.sustained)" }.joined(separator: ". ")))
             .accessibilityChartDescriptor(MeterChartDescriptor(rows: rows))
             .padding(.vertical, 8)
-        } header: {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Burst and sustained damage")
-                HStack(spacing: 16) {
-                    LegendItem(color: Color(light: Color(hex: 0x7A1426), dark: Color(hex: 0xFFD24A)), title: "Tasks", symbol: "bolt.fill")
-                    LegendItem(color: Color(light: Color(hex: 0x3B2A8C), dark: Color(hex: 0xC9B7FF)), title: "Focus", symbol: "timer")
-                }
-                .font(.subheadline)
-                .textCase(nil)
-            }
         }
         .dungeonRow()
     }
 
     private var listSection: some View {
         Section {
+            Text("Ranking").font(.headline).accessibilityAddTraits(.isHeader)
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                 VStack(alignment: .leading, spacing: 6) {
                     Text("\(index + 1). \(row.name): \(row.stats.total)")
@@ -150,8 +153,6 @@ struct MeterView: View {
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(Text("\(index + 1). \(row.name): \(row.stats.total) damage. Tasks \(row.stats.burst), focus \(row.stats.sustained), \(A11yText.duration(row.stats.focusSeconds)) focused."))
             }
-        } header: {
-            Text("Ranking")
         }
         .dungeonRow()
     }
