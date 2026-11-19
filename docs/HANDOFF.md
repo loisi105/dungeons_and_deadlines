@@ -4,11 +4,11 @@ Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.
 
 ## TL;DR
 
-- **Done and committed on `main`:** M0–M7 plus the pixel-art theme and Game Center.
+- **Done and committed on `main`:** M0–M7, the pixel-art theme, Game Center, a boss switcher, one-tap task completion and a soft paywall ([MONETIZATION.md](MONETIZATION.md)).
   - Solo and multiplayer raids (multiplayer uses Firebase over REST).
   - Focus timer, Live Activity, Control Center toggle, Siri shortcuts, widgets.
   - Damage meter, end-of-raid report, achievements and leaderboards.
-- **Tests:** all 62 package tests and all 6 UI flows (each with accessibility audits) pass.
+- **Tests:** all 65 package tests and all 8 UI flows (each with accessibility audits) pass.
 - **What's left:** setup that needs accounts (Firebase project, App Store Connect, a signing team), checks that need a person or the simulator tool, and the M8 stretch goals. See [What's left](#whats-left).
 - **Rule from the user:** commit after each milestone.
 
@@ -25,6 +25,9 @@ Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.
 | `0cef81b` | Game Center: sign-in, achievements, leaderboards, Access Point |
 | `14a73cd` | M6: multiplayer raids over Firebase REST (DDSync target) |
 | `ec6c24c` | M7: end-of-raid report with titles |
+| `a381a11` | Tasks: one-tap checkbox, completing during planning asks to start the fight, no double hits |
+| `78c6445` | Boss switcher on the Boss and Tasks tabs |
+| (next) | Soft paywall: free = 1 active solo boss, Premium = group raids + unlimited bosses (StoreKit 2) |
 
 ## Decisions that changed since the plan docs
 
@@ -80,8 +83,8 @@ cd Packages/DDKit && swift test
 
 - `build.sh` uses the **iPhone 18 Pro** simulator (override with `SIMULATOR=...`) and keeps derived data and packages in `build/` (git-ignored).
 - `xcodebuild -quiet` prints a harmless `error: the following command failed with exit code 0`. Ignore it.
-- Package tests (62) run on macOS: GameCore 31, persistence 11, intents 5, design and art 6 (including the paint-speed check), sync 9 (two-player flows against an in-memory fake Firestore).
-- UI tests (6): onboarding, solo plan → fight → hit, focus timer with backgrounding, meter with fake teammates, victory report, plus an on-demand launch metric.
+- Package tests (65) run on macOS: GameCore 34, persistence 11, intents 5, design and art 6 (including the paint-speed check), sync 9 (two-player flows against an in-memory fake Firestore).
+- UI tests (8): onboarding, solo plan → fight → hit (checkbox and swipe), focus timer with backgrounding, meter with fake teammates, victory report, switching bosses, free-plan paywall, plus an on-demand launch metric.
 - The UI tests write each audit issue as a line starting with `AUDIT [...]`. Find them with `grep AUDIT build/test.log`.
 - To dump the boss art as PNGs for review: `DD_DUMP_ART=/some/dir swift test --filter DDDesignTests` (writes `sheet.png`).
 - The iOS Simulator MCP tool won't attach until the user runs `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`. Until then, use `xcrun simctl` (install, launch, `io screenshot`) as this session did.
@@ -96,6 +99,8 @@ cd Packages/DDKit && swift test
 | `-fakeTeammates` | Starts 3 simulated teammates once a solo fight is active |
 | `-seedFinished` | A won 4-player raid with a late task and an undone task (report) |
 | `-meterAsList` | Damage meter opens in list mode |
+| `-premium` | Acts as a Premium subscriber |
+| `-showPaywall` | Opens the paywall on launch |
 | `-useFirebaseEmulator` | Use the local Firebase emulator (works without `GoogleService-Info.plist`) |
 
 Example: check a screen at the largest text size:
@@ -115,7 +120,8 @@ xcrun simctl launch booted com.dungeonsanddeadlines.app -uiTesting -seedDemo -st
 1. **Firebase project.** Create it, enable Anonymous Auth and Firestore, put `GoogleService-Info.plist` into `DungeonsAndDeadlines/Resources/` (git-ignored), and deploy `firebase/firestore.rules`. See [firebase/README.md](../firebase/README.md).
 2. **Rules tests and an emulator session.** These have never run, because Node and the Firebase CLI aren't installed on this Mac. Run `cd firebase/rules-tests && npm install && npm test`, then try two simulators with `-useFirebaseEmulator`. The sync logic itself is covered by the fake-Firestore tests.
 3. **Game Center.** Create the IDs in App Store Connect ([GAME_CENTER.md](GAME_CENTER.md)).
-4. **Signing team.** Set one for the device builds that App Group, Live Activities and Game Center need.
+4. **Premium.** Create the subscription group and products in App Store Connect ([MONETIZATION.md](MONETIZATION.md)). Check that the local StoreKit file loads when running from Xcode, and try a purchase.
+5. **Signing team.** Set one for the device builds that App Group, Live Activities and Game Center need.
 
 ### M8 stretch (pick by time left)
 

@@ -16,6 +16,10 @@ enum LaunchOptions {
     static var seedDemo: Bool { ProcessInfo.processInfo.arguments.contains("-seedDemo") }
     /// `-seedFinished` seeds a won 4-player raid (report screenshots and tests).
     static var seedFinished: Bool { ProcessInfo.processInfo.arguments.contains("-seedFinished") }
+    /// `-showPaywall` opens the paywall on launch (screenshots, manual checks).
+    static var showPaywall: Bool { ProcessInfo.processInfo.arguments.contains("-showPaywall") }
+    /// `-premium` acts as a Premium subscriber (tests, screenshots).
+    static var forcePremium: Bool { ProcessInfo.processInfo.arguments.contains("-premium") }
     /// `-meterAsList` opens the damage meter in list mode (screenshots).
     static var meterAsList: Bool { ProcessInfo.processInfo.arguments.contains("-meterAsList") }
 
@@ -99,6 +103,7 @@ final class AppEnvironment {
     let announcer = Announcer()
     let sync = SyncEngine()
     let gameCenter = GameCenterService()
+    let entitlements = Entitlements()
     #if DEBUG
     let fakeTeammates = FakeTeammates()
     #endif
@@ -106,6 +111,7 @@ final class AppEnvironment {
     var store: RaidStore { DDStore.shared }
 
     func bootstrap() {
+        entitlements.start()
         sync.configure()
         GameActions.onChange = { [sync, gameCenter] raidID in
             sync.scheduleFlush(raidID: raidID)

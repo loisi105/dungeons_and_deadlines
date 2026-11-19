@@ -11,6 +11,7 @@ struct RootView: View {
     @AppStorage("identity.nickname", store: AppGroup.defaults) private var nickname = ""
     @AppStorage("identity.currentRaidID", store: AppGroup.defaults) private var currentRaidID = ""
     @Query(sort: \RaidRecord.createdAt, order: .reverse) private var raids: [RaidRecord]
+    @State private var debugPaywall = LaunchOptions.showPaywall
 
     var body: some View {
         @Bindable var environment = environment
@@ -23,6 +24,7 @@ struct RootView: View {
                 WelcomeView()
             }
         }
+        .sheet(isPresented: $debugPaywall) { PaywallView(reason: .soloLimitReached) }
         .fontDesign(.serif)
         .foregroundStyle(Theme.ink)
         .tint(Theme.accent)

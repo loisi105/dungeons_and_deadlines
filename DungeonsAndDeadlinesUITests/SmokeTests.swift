@@ -39,6 +39,8 @@ final class SmokeTests: XCTestCase {
             // Toolbar buttons are capped by the system and use the Large Content Viewer instead.
             if issue.auditType == .dynamicType, let element = issue.element,
                app.navigationBars.buttons[element.label].exists { return true }
+            // Inside the system DatePicker (its compact date label) is Apple's UI.
+            if issue.detailedDescription.contains("_UIDatePicker") { return true }
             // The keyboard's prediction bar is system UI.
             if issue.detailedDescription.contains("TUIPrediction") { return true }
             print("AUDIT [\(screen)] \(issue.compactDescription): \(issue.detailedDescription) | element: \(issue.element.map { "\($0.elementType.rawValue) id=\($0.identifier) label=\($0.label) frame=\($0.frame)" } ?? "nil")")
@@ -55,7 +57,7 @@ final class SmokeTests: XCTestCase {
 
     func createRaid(_ app: XCUIApplication, name: String = "Thesis") {
         app.buttons["newRaidButton"].tap()
-        let field = app.textFields["raidNameField"]
+        let field = app.descendants(matching: .any)["raidNameField"]
         XCTAssertTrue(field.waitForExistence(timeout: 5))
         field.tap()
         field.typeText(name)
@@ -207,7 +209,7 @@ final class SmokeTests: XCTestCase {
         let newBoss = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'New boss'")).firstMatch
         XCTAssertTrue(newBoss.waitForExistence(timeout: 5))
         newBoss.tap()
-        let name = app.textFields["raidNameField"]
+        let name = app.descendants(matching: .any)["raidNameField"]
         XCTAssertTrue(name.waitForExistence(timeout: 5))
         name.tap()
         name.typeText("Essay")
@@ -223,5 +225,36 @@ final class SmokeTests: XCTestCase {
         dragon.tap()
         XCTAssertTrue(app.descendants(matching: .any)["task-Literature review"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.tabBars.buttons["Tasks"].isSelected)
+    }
+
+    func testFreePlanSoftPaywall() throws {
+        // Free plan with one active solo boss already (-seedDemo, no -premium).
+        let app = launch(["-seedDemo"])
+        app.buttons["bossSwitcher"].tap()
+        let newBoss = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'New boss'")).firstMatch
+        XCTAssertTrue(newBoss.waitForExistence(timeout: 5))
+        newBoss.tap()
+
+        // The create sheet says why, before anyone hits a wall.
+        XCTAssertTrue(app.buttons["seePremiumButton"].waitForExistence(timeout: 5))
+        try audit(app, "New raid (free limit)")
+
+        // Trying anyway opens the paywall, which can always be dismissed.
+        let name = app.descendants(matching: .any)["raidNameField"]
+        name.tap()
+        name.typeText("Essay")
+        app.buttons["createRaidButton"].tap()
+        let notNow = app.buttons["paywallNotNow"]
+        XCTAssertTrue(notNow.waitForExistence(timeout: 10))
+        sleep(2)
+        let shot = XCTAttachment(screenshot: app.screenshot())
+        shot.name = "Paywall"
+        shot.lifetime = .keepAlways
+        add(shot)
+        // The paywall scrolls; at AX5 everything wraps (checked with -seedDemo -showPaywall),
+        // but the clipping check misjudges this scrolling sheet, so only that check is skipped.
+        try audit(app, "Paywall", skipping: .textClipped)
+        notNow.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["raidNameField"].waitForExistence(timeout: 5))
     }
 }

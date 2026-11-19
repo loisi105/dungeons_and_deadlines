@@ -22,6 +22,7 @@ struct DungeonsAndDeadlinesApp: App {
                 .environment(environment.announcer)
                 .environment(environment.sync)
                 .environment(environment.gameCenter)
+                .environment(environment.entitlements)
                 #if DEBUG
                 .environment(environment.fakeTeammates)
                 #endif

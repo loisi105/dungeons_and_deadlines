@@ -11,6 +11,9 @@ struct RaidView: View {
 
     @Environment(SyncEngine.self) private var sync
     @Environment(GameCenterService.self) private var gameCenter
+    @Environment(Entitlements.self) private var entitlements
+    @State private var paywall: PaywallReason?
+    @State private var manageSubscription = false
     @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
     @AppStorage("identity.nickname", store: AppGroup.defaults) private var nickname = ""
 
@@ -40,6 +43,7 @@ struct RaidView: View {
                     membersSection(raid)
                 }
                 youSection
+                premiumSection
                 gameCenterSection
                 otherRaidsSection
                 dangerSection
@@ -101,10 +105,9 @@ struct RaidView: View {
                 Label("Waiting for an invite code. Check your connection.", systemImage: "wifi.exclamationmark")
                     .foregroundStyle(.readableSecondary)
             }
-        } header: {
-            Text("Invite")
-        } footer: {
             Text("Up to 5 people per raid.").readableFootnote()
+        } header: {
+            Text("Invite").font(.headline)
         }
         .dungeonRow()
     }
@@ -163,6 +166,25 @@ struct RaidView: View {
             Text("You").font(.headline)
         }
         .dungeonRow()
+    }
+
+    private var premiumSection: some View {
+        Section {
+            if entitlements.isPremium {
+                Label("Premium is active", systemImage: "crown.fill")
+                Button("Manage subscription", systemImage: "creditcard") { manageSubscription = true }
+            } else {
+                Text("Free plan: 1 active solo boss, join any raid. Premium adds group raids and unlimited bosses.")
+                    .readableFootnote()
+                Button("See Premium", systemImage: "crown") { paywall = PaywallReason(block: nil) }
+                    .accessibilityIdentifier("partySeePremium")
+            }
+        } header: {
+            Text("Premium").font(.headline)
+        }
+        .dungeonRow()
+        .sheet(item: $paywall) { PaywallView(reason: $0.block) }
+        .manageSubscriptionsSheet(isPresented: $manageSubscription, subscriptionGroupID: Entitlements.subscriptionGroupID)
     }
 
     private var gameCenterSection: some View {

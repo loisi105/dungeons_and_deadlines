@@ -59,10 +59,9 @@ struct TaskEditorView: View {
                     .pickerStyle(.segmented)
                     .sensoryFeedback(.selection, trigger: size)
                     LabeledContent("Damage", value: "\(config.baseDamage(for: size))")
-                } header: {
-                    Text("Size")
-                } footer: {
                     Text("Be honest: bigger tasks hit harder, and teammates see the size.").readableFootnote()
+                } header: {
+                    Text("Size").font(.headline)
                 }
                 .dungeonRow()
                 if members.count > 1 {

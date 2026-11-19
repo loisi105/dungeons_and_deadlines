@@ -20,7 +20,6 @@ struct JoinRaidView: View {
                         .autocorrectionDisabled()
                         .font(.title2.monospaced())
                         .accessibilityHint("Six letters and numbers from the raid leader.")
-                } footer: {
                     Text("Ask the raid leader for the 6-character code. Raids hold up to 5 people.").readableFootnote()
                 }
                 .dungeonRow()

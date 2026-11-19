@@ -6,6 +6,8 @@ import DDDesign
 struct CreateRaidView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(SyncEngine.self) private var sync
+    @Environment(Entitlements.self) private var entitlements
+    @State private var paywall: PaywallReason?
 
     @State private var name = ""
     @State private var bossName = BossNames.random()
@@ -18,11 +20,27 @@ struct CreateRaidView: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let block = currentBlock {
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(block == .multiplayerRequiresPremium ? "Group raids are Premium" : "Free plan: 1 active solo boss")
+                                .font(.headline)
+                            Text(block == .multiplayerRequiresPremium
+                                 ? "Joining a friend's raid stays free."
+                                 : "Finish your current boss, or go Premium for unlimited bosses.")
+                                .readableFootnote()
+                            Button("See Premium") { paywall = PaywallReason(block: block) }
+                                .primaryActionStyle()
+                                .accessibilityIdentifier("seePremiumButton")
+                        }
+                    }
+                    .dungeonRow()
+                }
                 Section {
-                    TextField("Project or deadline", text: $name)
+                    TextField("Project or deadline", text: $name, axis: .vertical)
                         .accessibilityIdentifier("raidNameField")
                     HStack {
-                        TextField("Boss name", text: $bossName)
+                        TextField("Boss name", text: $bossName, axis: .vertical)
                         Button {
                             bossName = BossNames.random()
                         } label: {
@@ -38,7 +56,6 @@ struct CreateRaidView: View {
 
                 Section {
                     DatePicker("Deadline", selection: $deadline, in: Date.now.addingTimeInterval(3600)..., displayedComponents: [.date, .hourAndMinute])
-                } footer: {
                     Text("The boss gets angrier as the deadline gets closer.").readableFootnote()
                 }
                 .dungeonRow()
@@ -50,8 +67,8 @@ struct CreateRaidView: View {
                     }
                     .pickerStyle(.segmented)
                     .disabled(!sync.isAvailable)
+                    .accessibilityHint(entitlements.isPremium ? Text("") : Text("Group raids need Premium."))
                     RolePickerRow(role: $role)
-                } footer: {
                     Group {
                         if sync.isAvailable {
                             Text("A raid gets an invite code to share with your group.")
@@ -70,6 +87,7 @@ struct CreateRaidView: View {
             }
             .headerProminence(.increased)
             .dungeonScreen()
+            .sheet(item: $paywall) { PaywallView(reason: $0.block) }
             .navigationTitle("New raid")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -87,7 +105,16 @@ struct CreateRaidView: View {
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
 
+    /// Free-plan limit that applies to the current choice, if any.
+    private var currentBlock: PlanLimits.Block? {
+        entitlements.block(createMultiplayer: multiplayer, raids: DDStore.shared.raids(), playerID: LocalIdentity.current.memberID)
+    }
+
     private func create() {
+        if let block = currentBlock {
+            paywall = PaywallReason(block: block)
+            return
+        }
         isSaving = true
         errorMessage = nil
         let boss = bossName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -120,3 +147,9 @@ enum BossNames {
 }
 
 #Preview { CreateRaidView().environment(SyncEngine()) }
+
+/// Identifiable wrapper so the paywall can be shown with `.sheet(item:)`.
+struct PaywallReason: Identifiable {
+    let block: PlanLimits.Block?
+    var id: String { block?.rawValue ?? "upgrade" }
+}
