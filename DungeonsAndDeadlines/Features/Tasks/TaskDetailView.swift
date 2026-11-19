@@ -10,6 +10,7 @@ struct TaskDetailView: View {
     let raidID: UUID
 
     @Environment(Announcer.self) private var announcer
+    @Environment(AppEnvironment.self) private var environment
     @Environment(\.dismiss) private var dismiss
     @Query private var tasks: [TaskRecord]
     @Query private var raids: [RaidRecord]
@@ -95,7 +96,9 @@ struct TaskDetailView: View {
 
     private func complete(_ task: RaidTask) {
         do {
-            announcer.announceOwnHit(try GameActions.completeTask(task.id))
+            let attack = try GameActions.completeTask(task.id)
+            dismiss() // back to the list, then over to the boss for the attack
+            environment.castTaskAttack(attack, task: task)
         } catch {
             errorMessage = error.localizedDescription
         }

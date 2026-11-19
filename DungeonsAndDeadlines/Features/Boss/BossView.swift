@@ -11,6 +11,7 @@ struct BossView: View {
     var showTasks: () -> Void = {}
 
     @Environment(Announcer.self) private var announcer
+    @Environment(AppEnvironment.self) private var environment
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
@@ -21,6 +22,8 @@ struct BossView: View {
     @Query private var members: [MemberRecord]
 
     @State private var lastHit: Attack?
+    /// The class attack currently playing over the boss.
+    @State private var activeCast: AttackCast?
     @State private var hitCount = 0
     @State private var shake: CGFloat = 0
     @State private var errorMessage: String?
@@ -69,8 +72,13 @@ struct BossView: View {
             for attack in fresh where attack.memberID != me {
                 announcer.queueTeammateHit(attack)
             }
-            if let latest = fresh.last { playHit(latest) }
+            // A task attack from this phone gets its class animation instead (see below).
+            if let latest = fresh.last, latest.id != environment.pendingAttack?.id, latest.id != activeCast?.id {
+                playHit(latest)
+            }
         }
+        .onChange(of: environment.pendingAttack?.id) { startPendingCast() }
+        .onAppear { startPendingCast() }
         .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("OK") { errorMessage = nil }
         } message: {
@@ -109,6 +117,10 @@ struct BossView: View {
                 SwordSlash(trigger: hitCount)
                     .frame(width: 150, height: 150)
                     .offset(x: 30, y: 10)
+                if let activeCast {
+                    AttackEffect(cast: activeCast) { land(activeCast) }
+                        .id(activeCast.id)
+                }
                 if let lastHit {
                     DamageNumber(damage: lastHit.damage, id: hitCount, reduceMotion: reduceMotion)
                 }
@@ -275,6 +287,30 @@ struct BossView: View {
             announcer.announce(String(localized: "The fight has started!"), important: true)
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+
+    /// Picks up a task attack waiting for this boss (after the tab switch has happened).
+    private func startPendingCast() {
+        // Match by boss, not by this view's attack list: that list updates a moment later.
+        guard let cast = environment.pendingAttack, cast.raidID == raidID else { return }
+        environment.pendingAttack = nil
+        Task {
+            // A short beat after the tab switch so the attack is seen from the start.
+            try? await Task.sleep(for: .milliseconds(Int(250 * AttackEffect.timeScale)))
+            activeCast = cast
+        }
+    }
+
+    /// The class attack reached the boss: shake, damage number, haptic, announcement.
+    private func land(_ cast: AttackCast) {
+        if let attack = attacks.first(where: { $0.id == cast.id })?.model ?? DDStore.shared.attacks(raidID).first(where: { $0.id == cast.id }) {
+            playHit(attack)
+        }
+        announcer.announce(cast.announcement)
+        Task {
+            try? await Task.sleep(for: .seconds(1 * AttackEffect.timeScale))
+            if activeCast?.id == cast.id { activeCast = nil }
         }
     }
 

@@ -12,6 +12,7 @@ struct TasksView: View {
     let raidID: UUID
 
     @Environment(Announcer.self) private var announcer
+    @Environment(AppEnvironment.self) private var environment
     @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
 
     @Query private var raids: [RaidRecord]
@@ -237,7 +238,8 @@ struct TasksView: View {
         do {
             let attack = try GameActions.completeTask(task.id)
             completedCount += 1
-            announcer.announceOwnHit(attack)
+            // Jump to the boss and play the class attack there (it announces the hit).
+            environment.castTaskAttack(attack, task: task)
         } catch {
             errorMessage = error.localizedDescription
         }

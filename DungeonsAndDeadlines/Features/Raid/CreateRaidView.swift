@@ -33,11 +33,15 @@ struct CreateRaidView: View {
                                  ? "Joining a friend's raid stays free."
                                  : "Finish or delete your current boss, or go Premium for unlimited bosses.")
                                 .readableFootnote()
-                            Button("See Premium") { paywall = PaywallReason(block: block) }
+                            Button { paywall = PaywallReason(block: block) } label: {
+                                Text("See Premium").frame(maxWidth: .infinity)
+                            }
                                 .primaryActionStyle()
                                 .accessibilityIdentifier("seePremiumButton")
                             if block == .soloLimitReached, let active = activeSoloRaid {
-                                Button("Delete \(active.bossName)…", role: .destructive) { removing = active }
+                                Button(role: .destructive) { removing = active } label: {
+                                    Text("Delete \(active.bossName)…").frame(maxWidth: .infinity)
+                                }
                                     .dangerActionStyle()
                                     .accessibilityIdentifier("deleteActiveBossButton")
                             }
@@ -59,8 +63,6 @@ struct CreateRaidView: View {
                         .buttonStyle(.borderless)
                         .accessibilityLabel("Random boss name")
                     }
-                } header: {
-                    Text("Raid")
                 }
                 .dungeonRow()
 

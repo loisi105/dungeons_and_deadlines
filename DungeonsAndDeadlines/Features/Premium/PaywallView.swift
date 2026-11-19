@@ -84,11 +84,11 @@ struct PaywallView: View {
                 benefit("person.3.fill", "Raid with up to 4 friends", "Create group raids and share an invite code.")
                 benefit("rectangle.stack.fill", "Unlimited solo bosses", "Fight several deadlines at once.")
                 benefit("heart.fill", "Support the party", "Keep new bosses and features coming.")
+                Text("Joining a friend's raid is always free.")
+                    .readableFootnote()
             }
             .padding()
             .dungeonPanel()
-            Text("Joining a friend's raid is always free.")
-                .readableFootnote()
         }
         .padding()
     }

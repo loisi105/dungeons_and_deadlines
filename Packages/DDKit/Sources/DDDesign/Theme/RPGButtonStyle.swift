@@ -30,6 +30,8 @@ public struct RPGButtonStyle: ButtonStyle {
                 .fontDesign(.serif)
                 .foregroundStyle(textColor)
                 .multilineTextAlignment(.center)
+                // Long labels wrap onto more lines instead of clipping at large text sizes.
+                .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 10)
                 .frame(minHeight: 44)

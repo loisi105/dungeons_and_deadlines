@@ -3,6 +3,9 @@ import DDPersistence
 import DDIntents
 import GameCore
 
+/// The game's tabs.
+enum AppTab: Hashable { case boss, tasks, meter, raid }
+
 /// Launch arguments used by UI tests and debugging.
 enum LaunchOptions {
     /// In-memory store and a fresh identity, so every UI test starts clean.
@@ -18,6 +21,18 @@ enum LaunchOptions {
     static var seedFinished: Bool { ProcessInfo.processInfo.arguments.contains("-seedFinished") }
     /// `-showPaywall` opens the paywall on launch (screenshots, manual checks).
     static var showPaywall: Bool { ProcessInfo.processInfo.arguments.contains("-showPaywall") }
+    /// `-startTab tasks|meter|raid` opens a specific tab (screenshots, manual checks).
+    static var initialTab: AppTab {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-startTab"), i + 1 < args.count else { return .boss }
+        switch args[i + 1] {
+        case "tasks": return .tasks
+        case "meter": return .meter
+        case "raid": return .raid
+        default: return .boss
+        }
+    }
+
     /// `-premium` acts as a Premium subscriber (tests, screenshots).
     static var forcePremium: Bool { ProcessInfo.processInfo.arguments.contains("-premium") }
     /// `-meterAsList` opens the damage meter in list mode (screenshots).
@@ -142,6 +157,20 @@ final class AppEnvironment {
     func didEnterBackground() {
         try? store.markFocusBackgrounded(memberID: LocalIdentity.current.memberID)
         sync.appDidEnterBackground()
+    }
+
+    /// The selected tab, here so any screen can switch tabs (a task attack jumps to the boss).
+    var selectedTab: AppTab = LaunchOptions.initialTab
+
+    /// A task attack the Boss tab should play next.
+    var pendingAttack: AttackCast?
+
+    /// Completing a task in the app: jump to the boss and play the class attack there.
+    func castTaskAttack(_ attack: Attack?, task: RaidTask) {
+        guard let attack else { return }
+        let role = store.members(attack.raidID).first { $0.id == attack.memberID }?.role
+        pendingAttack = AttackCast(id: attack.id, raidID: attack.raidID, damage: attack.damage, role: role, taskTitle: task.title)
+        selectedTab = .boss
     }
 
     /// The "new boss" sheet lives at the root, so it stays open even if the current boss

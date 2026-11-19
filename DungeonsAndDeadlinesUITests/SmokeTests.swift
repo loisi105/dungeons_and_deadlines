@@ -87,6 +87,17 @@ final class SmokeTests: XCTestCase {
         app.buttons["Complete"].firstMatch.tap()
     }
 
+    /// Scrolls until `element` is visible and not under the fixed tab bar / timer bar.
+    func scrollClearOfBottomBars(_ app: XCUIApplication, _ element: XCUIElement) {
+        let bars = [app.tabBars.firstMatch, app.buttons["focusAccessory"]].filter(\.exists).map(\.frame.minY)
+        let limit = (bars.min() ?? app.frame.maxY) - 16
+        var swipes = 0
+        while (!element.exists || !element.isHittable || element.frame.maxY > limit) && swipes < 8 {
+            app.swipeUp()
+            swipes += 1
+        }
+    }
+
     func hpLabel(_ app: XCUIApplication, contains text: String) -> XCUIElement {
         app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", text)).firstMatch
     }
@@ -122,8 +133,9 @@ final class SmokeTests: XCTestCase {
         let startAndComplete = app.buttons["Start the fight and complete"]
         XCTAssertTrue(startAndComplete.waitForExistence(timeout: 5))
         startAndComplete.tap()
-        tab(app, "Boss")
+        // Completing jumps straight to the boss for the attack.
         XCTAssertTrue(hpLabel(app, contains: "312 / 462 HP").waitForExistence(timeout: 5))
+        XCTAssertTrue(app.tabBars.buttons["Boss"].isSelected)
         try audit(app, "Boss (fighting)")
 
         // Swiping right completes too.
@@ -173,7 +185,7 @@ final class SmokeTests: XCTestCase {
         // Stop the simulation so the audit sees a stable screen.
         tab(app, "Raid")
         let toggle = app.switches["fakeTeammatesToggle"]
-        while !toggle.isHittable { app.swipeUp() }
+        scrollClearOfBottomBars(app, toggle)
         // Tap the switch itself (right edge); the row's center doesn't toggle it.
         toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
         XCTAssertEqual(toggle.value as? String, "0")
@@ -293,8 +305,7 @@ final class SmokeTests: XCTestCase {
         let app = launch(["-seedDemo"])
         tab(app, "Raid")
         let seePremium = app.buttons["partySeePremium"]
-        var swipes = 0
-        while !seePremium.isHittable && swipes < 6 { app.swipeUp(); swipes += 1 }
+        scrollClearOfBottomBars(app, seePremium)
         seePremium.tap()
 
         // One tap opens the paywall, and it stays open.
@@ -362,5 +373,42 @@ final class SmokeTests: XCTestCase {
         app.buttons["createRaidButton"].tap()
         XCTAssertTrue(app.navigationBars["Essay"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["paywallNotNow"].exists)
+    }
+
+    func testTaskAttackJumpsToBossAndAnimates() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"]) // the demo player is a mage
+        let checkbox = app.buttons["complete-Literature review"]
+        XCTAssertTrue(checkbox.waitForExistence(timeout: 5))
+        checkbox.tap()
+
+        // The app switches to the boss and plays the spell; the hit lands and it stays there.
+        XCTAssertTrue(app.tabBars.buttons["Boss"].isSelected)
+        Thread.sleep(forTimeInterval: 0.4)
+        let midFlight = XCTAttachment(screenshot: app.screenshot())
+        midFlight.name = "Attack mid-flight"
+        midFlight.lifetime = .keepAlways
+        add(midFlight)
+        XCTAssertTrue(hpLabel(app, contains: "550 / 1.000 HP").waitForExistence(timeout: 5)
+                      || hpLabel(app, contains: "550 / 1,000 HP").exists)
+        Thread.sleep(forTimeInterval: 1.5)
+        XCTAssertTrue(app.tabBars.buttons["Boss"].isSelected)
+        try audit(app, "Boss (after attack)")
+    }
+
+    /// Not a check: captures the class attack in slow motion for review.
+    /// Run with `TEST_RUNNER_DD_CAPTURE=1 ./build.sh test -only-testing:…/testCaptureAttackFrames`.
+    func testCaptureAttackFrames() throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["DD_CAPTURE"] != nil, "Frame capture runs only on request")
+        let app = launch(["-seedDemo", "-startTab", "tasks", "-slowMotion"])
+        let checkbox = app.buttons["complete-Literature review"]
+        XCTAssertTrue(checkbox.waitForExistence(timeout: 10))
+        checkbox.tap()
+        for i in 0..<4 {
+            Thread.sleep(forTimeInterval: 1.2)
+            let frame = XCTAttachment(screenshot: app.screenshot())
+            frame.name = "Attack frame \(i)"
+            frame.lifetime = .keepAlways
+            add(frame)
+        }
     }
 }
