@@ -2,10 +2,22 @@
 
 Working name: **Dungeons & Deadlines** (formerly "Deadline Dojo")
 Platform: iOS (SwiftUI), student project
-Last updated: 2026-11-06
+Last updated: 2026-11-19
 
 ## Status
-Ideation done, concept chosen. No code written yet. Next step: data model, screens, damage calculator.
+Ideation done, concept chosen, core technical decisions made (see "Decisions"). No code written yet. Next step: Xcode project setup and the `GameCore` package (models + `DamageCalculator`) with unit tests.
+
+## Decisions (2026-11-19)
+- **Backend:** Firebase (Auth + Firestore)
+- **Minimum iOS: 26.0**, the lowest version that supports every planned feature:
+  - Liquid Glass APIs (`.glassEffect`, `GlassEffectContainer`, `.buttonStyle(.glass)`, `.tabViewBottomAccessory`): iOS 26. This is what sets the minimum.
+  - Control Center / Lock Screen controls: iOS 18
+  - SwiftData, `@Observable`, interactive widgets, `.sensoryFeedback`, accessibility audits in UI tests: iOS 17
+  - iOS 26 runs on iPhone 11 and newer
+- **Focus: architecture, accessibility, native touch, widgets, Liquid Glass.** See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+- **Boss HP is locked when the fight starts.** A raid has a planning phase (create tasks, invite members), then the leader starts the fight. At that moment max HP is calculated from the planned tasks (task damage total / 0.65, so ~65% from tasks and ~35% from focus time) and stored once. It never changes after that. Current HP is still derived from the attack log.
+  - Tasks added after the start still deal damage but are marked as late additions (shown in the report, for honesty).
+- **Team size: 1-5 people.** Solo is a raid with one member. Joining is refused when a raid already has 5 members. The per-person daily cap stays in, so one person can't carry the team.
 
 ## Concept
 Deadlines and group projects are boss fights. Finishing tasks and spending focused time on a project deal damage to the boss. Works in single player (personal deadlines) and multiplayer raids (group projects, WoW-style).
@@ -66,7 +78,7 @@ Backend options for multiplayer:
 Data model sketch:
 - `Raid`, `Member`, `Task`, `Attack`
 - `Attack` has `kind` (`.task` / `.focus`), `damage`, `timestamp`, `memberID`, and either `taskID` or `durationSeconds`
-- Boss HP is **derived** (total HP minus sum of attacks), not a stored mutable value, so it stays consistent across devices
+- Boss HP is **derived** (locked max HP minus sum of attacks), not a stored mutable value, so it stays consistent across devices
 - Daily caps computed at attack creation time from that member's attacks that day
 - Put all damage rules in one pure `DamageCalculator` struct so it's unit-testable and easy to tune
 
@@ -79,21 +91,18 @@ Data model sketch:
 6. Boss phases based on the deadline
 7. End-of-raid report
 
-Stretch: push notifications for boss phases/teammate attacks, home-screen widget with boss HP, Live Activity countdown, solo mode, loot/cosmetics from finished raids, streak multipliers.
+Also in scope (moved up from stretch): solo mode, widgets, Live Activity, Control Center control, App Intents, accessibility.
 
-## Suggested build order
-1. Local only: tasks and boss HP bar (single player)
-2. Focus timer creating attacks
-3. `DamageCalculator` (caps, multipliers) with unit tests
-4. Backend sync for raids (attacks as an append-only log)
-5. Live Activity and widget
+Stretch: push notifications for boss phases/teammate attacks, Live Activity push updates for teammates' attacks, loot/cosmetics from finished raids, streak multipliers.
+
+## Build order
+See the milestones (M0–M8) in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#9-milestones-revised).
 
 ## iOS features this covers
-SwiftUI, SwiftData, notifications, widgets, Live Activities, haptics, scenePhase handling, Sign in with Apple, real-time backend sync.
+SwiftUI with Liquid Glass, SwiftData (shared App Group store), App Intents (Siri, Shortcuts, Spotlight, Action button), interactive widgets (Home, Lock Screen, StandBy), Control Center controls, Live Activities + Dynamic Island, haptics, accessibility (VoiceOver, Dynamic Type, Reduce Motion, Voice Control, accessibility audits), scenePhase handling, Sign in with Apple, notifications, real-time backend sync.
 
 ## Open questions
-- Team size and project duration? Any course requirements (SwiftUI, backend, ML)?
-- Backend choice: Firebase vs CloudKit
+- Project duration? Any course requirements (SwiftUI, backend, ML)?
 - Final boss/class theming and art style
 - Exact damage numbers (tune with playtesting)
 - How to handle task honesty (peer confirmation or trust)
