@@ -4,6 +4,9 @@
     "%@ (you)" : {
 
     },
+    "%@ of focus damage left today" : {
+
+    },
     "%@ survived with %lld HP." : {
       "localizations" : {
         "en" : {
@@ -75,6 +78,9 @@
     "Attacking" : {
 
     },
+    "Attacking: 2 damage per minute" : {
+
+    },
     "Be honest: bigger tasks hit harder, and teammates see the size." : {
 
     },
@@ -103,6 +109,9 @@
 
     },
     "Complete task" : {
+
+    },
+    "Complete Task" : {
 
     },
     "Completed" : {
@@ -177,10 +186,34 @@
     "Finish tasks and focus to deal damage. Beat the boss before the deadline, alone or with up to 4 friends." : {
 
     },
+    "Focus" : {
+
+    },
     "Focus paused" : {
 
     },
+    "Focus paused at %@" : {
+
+    },
     "Focus paused because you left the app for more than 2 minutes." : {
+
+    },
+    "Focus paused." : {
+
+    },
+    "Focus running, %@" : {
+
+    },
+    "Focus started." : {
+
+    },
+    "Focus stopped. No damage: today's focus limit is used up or the session was too short." : {
+
+    },
+    "Focus time %@" : {
+
+    },
+    "Focus timer" : {
 
     },
     "Haptics" : {
@@ -286,10 +319,25 @@
     "Open (%lld)" : {
 
     },
+    "Opens the focus timer." : {
+
+    },
     "Other raids" : {
 
     },
     "Past raids" : {
+
+    },
+    "Pause" : {
+
+    },
+    "Pause focus" : {
+
+    },
+    "Paused" : {
+
+    },
+    "Paused · %@" : {
 
     },
     "Planning" : {
@@ -319,10 +367,16 @@
     "Random boss name" : {
 
     },
+    "Ready when you are" : {
+
+    },
     "Reopen" : {
 
     },
     "Result" : {
+
+    },
+    "Resume" : {
 
     },
     "Save" : {
@@ -356,10 +410,25 @@
     "Someone" : {
 
     },
+    "Start" : {
+
+    },
     "Start fight" : {
 
     },
+    "Start focus" : {
+
+    },
+    "Start Focus" : {
+
+    },
     "Status" : {
+
+    },
+    "Stop and attack" : {
+
+    },
+    "Stop Focus" : {
 
     },
     "Task" : {

@@ -7,6 +7,16 @@ import DDPersistence
 struct RaidTabView: View {
     let raidID: UUID
 
+    @Query private var raids: [RaidRecord]
+    @State private var showFocus = false
+
+    init(raidID: UUID) {
+        self.raidID = raidID
+        _raids = Query(filter: #Predicate<RaidRecord> { $0.id == raidID })
+    }
+
+    private var isFighting: Bool { raids.first?.status == .active }
+
     enum TabID: Hashable { case boss, tasks, raid }
     @State private var selection: TabID = Self.initialTab
 
@@ -34,5 +44,23 @@ struct RaidTabView: View {
             }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
+        .modifier(FocusAccessoryModifier(enabled: isFighting) {
+            FocusTimerAccessory(raidID: raidID) { showFocus = true }
+        })
+        .sheet(isPresented: $showFocus) { FocusView(raidID: raidID) }
+    }
+}
+
+/// Shows the focus mini-player above the tab bar only while the fight is on.
+private struct FocusAccessoryModifier<Accessory: View>: ViewModifier {
+    let enabled: Bool
+    @ViewBuilder let accessory: () -> Accessory
+
+    func body(content: Content) -> some View {
+        if enabled {
+            content.tabViewBottomAccessory { accessory() }
+        } else {
+            content
+        }
     }
 }

@@ -27,6 +27,9 @@ final class SmokeTests: XCTestCase {
             // labels on glass are ~5:1. Text contrast everywhere else stays strict.
             if issue.auditType == .contrast, let element = issue.element,
                element.elementType == .button || app.buttons[element.label].exists { return true }
+            // Toolbar buttons are capped by the system and use the Large Content Viewer instead.
+            if issue.auditType == .dynamicType, let element = issue.element,
+               app.navigationBars.buttons[element.label].exists { return true }
             // The keyboard's prediction bar is system UI.
             if issue.detailedDescription.contains("TUIPrediction") { return true }
             print("AUDIT [\(screen)] \(issue.compactDescription): \(issue.detailedDescription) | element: \(issue.element.map { "\($0.elementType.rawValue) id=\($0.identifier) label=\($0.label) frame=\($0.frame)" } ?? "nil")")
@@ -113,5 +116,30 @@ final class SmokeTests: XCTestCase {
         // Dynamic Type audit misreads. Checked by hand at AX5 (launch with
         // `-uiTesting -seedDemo -startTab raid`): all text scales and nothing clips.
         try audit(app, "Raid", skipping: .dynamicType)
+    }
+
+    func testFocusTimerSurvivesBackgroundAndStops() throws {
+        let app = launch(["-seedDemo"])
+        let accessory = app.buttons["focusAccessory"]
+        XCTAssertTrue(accessory.waitForExistence(timeout: 5))
+        accessory.tap()
+
+        let start = app.buttons["startFocusButton"]
+        XCTAssertTrue(start.waitForExistence(timeout: 5))
+        try audit(app, "Focus (idle)")
+        start.tap()
+        XCTAssertTrue(app.buttons["pauseFocusButton"].waitForExistence(timeout: 5))
+        try audit(app, "Focus (running)")
+
+        // A short trip to the Home Screen (under the 2-minute grace period) keeps it running.
+        XCUIDevice.shared.press(.home)
+        sleep(3)
+        app.activate()
+        XCTAssertTrue(app.buttons["pauseFocusButton"].waitForExistence(timeout: 5))
+
+        app.buttons["pauseFocusButton"].tap()
+        XCTAssertTrue(app.buttons["resumeFocusButton"].waitForExistence(timeout: 5))
+        app.buttons["stopFocusButton"].tap()
+        XCTAssertTrue(app.buttons["startFocusButton"].waitForExistence(timeout: 5))
     }
 }

@@ -1,22 +1,17 @@
+import AppIntents
 import SwiftUI
 import WidgetKit
+import DDIntents
 
 @main
 struct DDWidgetsBundle: WidgetBundle {
     var body: some Widget {
-        PlaceholderWidget()
+        FocusLiveActivity()
+        FocusControl()
     }
 }
 
-struct PlaceholderWidget: Widget {
-    var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "placeholder", provider: PlaceholderProvider()) { _ in Text("Boss") }
-    }
-}
-
-struct PlaceholderProvider: TimelineProvider {
-    struct Entry: TimelineEntry { let date: Date }
-    func placeholder(in context: Context) -> Entry { Entry(date: .now) }
-    func getSnapshot(in context: Context, completion: @escaping (Entry) -> Void) { completion(Entry(date: .now)) }
-    func getTimeline(in context: Context, completion: @escaping (Timeline<Entry>) -> Void) { completion(Timeline(entries: [Entry(date: .now)], policy: .never)) }
+/// Lets the extension find the intents defined in the DDKit package.
+struct WidgetIntentsPackages: AppIntentsPackage {
+    static var includedPackages: [any AppIntentsPackage.Type] { [DDIntentsPackage.self] }
 }
