@@ -46,7 +46,7 @@ struct ReportView: View {
             .navigationTitle("Raid report")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) { Button(role: .close) { dismiss() }.accessibilityIdentifier("closeButton") }
                 if let report {
                     ToolbarItem(placement: .primaryAction) { ShareReportButton(report: report) }
                 }

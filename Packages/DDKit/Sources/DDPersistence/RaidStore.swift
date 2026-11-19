@@ -10,6 +10,9 @@ public enum StoreError: LocalizedError, Equatable {
     case noTasks
     case notOwner
     case raidFull
+    case notFinished
+    case noOpenTasks
+    case deadlineInPast
 
     public var errorDescription: String? {
         switch self {
@@ -20,6 +23,9 @@ public enum StoreError: LocalizedError, Equatable {
         case .noTasks: String(localized: "Add at least one task before starting the fight.")
         case .notOwner: String(localized: "Only the raid leader can do this.")
         case .raidFull: String(localized: "This raid already has 5 members.")
+        case .notFinished: String(localized: "The fight is still on.")
+        case .noOpenTasks: String(localized: "Add a follow-up task first.")
+        case .deadlineInPast: String(localized: "Pick a deadline in the future.")
         }
     }
 }
@@ -159,6 +165,30 @@ public final class RaidStore {
         return raid
     }
 
+    /// Brings a finished boss back for follow-up tasks: it returns with health from the
+    /// open (follow-up) tasks, on top of whatever it had left, and a new deadline.
+    /// Earlier hits stay in the log; phases restart from now.
+    @discardableResult
+    public func resumeFight(_ raidID: UUID, by memberID: String, deadline: Date) throws -> Raid {
+        guard let record = raidRecord(raidID) else { throw StoreError.raidNotFound }
+        var raid = record.model
+        guard raid.ownerID == memberID else { throw StoreError.notOwner }
+        guard raid.status == .won || raid.status == .lost else { throw StoreError.notFinished }
+        let now = clock()
+        guard deadline > now else { throw StoreError.deadlineInPast }
+        let followUps = tasks(raidID).filter { !$0.isDone }
+        let extra = BossEngine.lockHP(tasks: followUps, config: config)
+        guard extra > 0 else { throw StoreError.noOpenTasks }
+        let dealt = attacks(raidID).reduce(0) { $0 + $1.damage }
+        raid.lockedMaxHP = max(raid.lockedMaxHP ?? 0, dealt) + extra
+        raid.status = .active
+        raid.startedAt = now
+        raid.deadline = deadline
+        record.update(from: raid, syncState: .pending)
+        try context.save()
+        return raid
+    }
+
     /// Moves an active raid to won/lost when its state says so. Returns the new status if it changed.
     @discardableResult
     public func settleOutcome(_ raidID: UUID) throws -> RaidStatus? {
@@ -248,7 +278,7 @@ public final class RaidStore {
     @discardableResult
     public func addTask(raidID: UUID, title: String, size: TaskSize, assigneeID: String? = nil) throws -> RaidTask {
         guard let raid = raid(raidID) else { throw StoreError.raidNotFound }
-        guard raid.status == .planning || raid.status == .active else { throw StoreError.notActive }
+        // Any status: finished raids collect follow-up tasks before a resumed fight.
         let next = (tasks(raidID).map(\.sortIndex).max() ?? -1) + 1
         let task = RaidTask(raidID: raidID, title: title, size: size, assigneeID: assigneeID, createdAt: clock(), sortIndex: next)
         context.insert(TaskRecord(task, syncState: .pending))

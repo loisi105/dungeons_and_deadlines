@@ -36,9 +36,10 @@ final class SmokeTests: XCTestCase {
             // System segmented controls cap their font; the meter hides its switch at
             // accessibility sizes (checked at AX5 with -seedDemo -fakeTeammates -startTab meter).
             if issue.auditType == .dynamicType, issue.element == nil || issue.element?.elementType == .segmentedControl { return true }
-            // Toolbar buttons are capped by the system and use the Large Content Viewer instead.
-            if issue.auditType == .dynamicType, let element = issue.element,
-               app.navigationBars.buttons[element.label].exists { return true }
+            // Toolbar buttons and inline navigation titles are capped by the system and use the
+            // Large Content Viewer instead.
+            if issue.auditType == .dynamicType || issue.auditType == .textClipped, let element = issue.element,
+               app.navigationBars.buttons[element.label].exists || app.navigationBars.staticTexts[element.label].exists { return true }
             // Inside the system DatePicker (its compact date label) is Apple's UI.
             if issue.detailedDescription.contains("_UIDatePicker") { return true }
             // The keyboard's prediction bar is system UI.
@@ -303,5 +304,37 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(notNow.exists, "The paywall closed by itself")
         notNow.tap()
         XCTAssertFalse(notNow.waitForExistence(timeout: 2))
+    }
+
+    func testFollowUpTasksResumeTheFight() throws {
+        let app = launch(["-seedFinished"])
+        XCTAssertTrue(app.buttons["seeReportButton"].waitForExistence(timeout: 10))
+
+        // The report closes with the native close button.
+        app.buttons["seeReportButton"].tap()
+        let close = app.buttons["closeButton"]
+        XCTAssertTrue(close.waitForExistence(timeout: 5))
+        XCTAssertTrue(close.isHittable)
+        close.tap()
+
+        // Follow-up work after the win: add a task, then resume.
+        let add = app.buttons["addFollowUpButton"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        add.tap()
+        let title = app.descendants(matching: .any)["taskTitleField"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.tap()
+        title.typeText("Fix review comments")
+        app.buttons["saveTaskButton"].tap()
+
+        app.buttons["resumeFightButton"].tap()
+        let confirm = app.buttons["confirmResumeButton"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
+        try audit(app, "Resume the fight")
+        confirm.tap()
+
+        // The boss is back with health from all open tasks: 2 small left over + the new medium (250 / 0.65 = 385).
+        XCTAssertTrue(hpLabel(app, contains: "385 / ").waitForExistence(timeout: 5))
+        try audit(app, "Boss (resumed)")
     }
 }

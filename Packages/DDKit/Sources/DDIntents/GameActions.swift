@@ -39,6 +39,12 @@ public enum GameActions {
         changed(id)
     }
 
+    /// Brings a finished boss back for follow-up tasks with a new deadline.
+    public static func resumeFight(_ raidID: UUID, deadline: Date) throws {
+        try store.resumeFight(raidID, by: me.memberID, deadline: deadline)
+        changed(raidID)
+    }
+
     @discardableResult
     public static func startFocus(_ raidID: UUID?) throws -> FocusSession {
         let id = try self.raidID(raidID)

@@ -146,6 +146,69 @@ struct RaidStoreTests {
     }
 }
 
+@Suite("Follow-up fights") @MainActor
+struct ResumeFightTests {
+    @Test("A slain boss comes back with HP from the follow-up tasks only")
+    func resumeAfterWin() throws {
+        let clock = TestClock()
+        let store = try makeStore(clock)
+        let raid = try store.createRaid(name: "R", bossName: "B", deadline: clock.now.addingTimeInterval(86_400), multiplayer: false, owner: owner)
+        let t = try store.addTask(raidID: raid.id, title: "T", size: .s)
+        try store.startFight(raid.id, by: "a")
+        try store.completeTask(t.id, by: "a")
+        try store.insertAttack(Attack(raidID: raid.id, memberID: "a", kind: .focus(seconds: 1800), damage: 60, createdAt: clock.now, localDay: "x"))
+        #expect(store.raid(raid.id)?.status == .won)
+
+        // Follow-up work found after the win.
+        let followUp = try store.addTask(raidID: raid.id, title: "Fix review comments", size: .m)
+        #expect(throws: StoreError.notOwner) { try store.resumeFight(raid.id, by: "b", deadline: clock.now.addingTimeInterval(3600)) }
+        #expect(throws: StoreError.deadlineInPast) { try store.resumeFight(raid.id, by: "a", deadline: clock.now.addingTimeInterval(-1)) }
+        let resumed = try store.resumeFight(raid.id, by: "a", deadline: clock.now.addingTimeInterval(86_400 * 3))
+        #expect(resumed.status == .active)
+        let state = try #require(store.bossState(raid.id))
+        #expect(state.outcome == .ongoing)
+        #expect(state.currentHP == 231) // 150 / 0.65, only the follow-up
+        #expect(state.phase == .calm)
+        #expect(store.attacks(raid.id).count == 2) // history kept
+
+        // Beating it again works as usual.
+        clock.advance(60)
+        try store.completeTask(followUp.id, by: "a")
+        #expect(store.bossState(raid.id)?.currentHP == 81)
+    }
+
+    @Test("After a lost deadline, follow-ups add to the HP that was left")
+    func resumeAfterLoss() throws {
+        let clock = TestClock()
+        let store = try makeStore(clock)
+        let raid = try store.createRaid(name: "R", bossName: "B", deadline: clock.now.addingTimeInterval(100), multiplayer: false, owner: owner)
+        _ = try store.addTask(raidID: raid.id, title: "Big", size: .l)
+        try store.startFight(raid.id, by: "a")
+        clock.advance(200)
+        try store.settleOutcome(raid.id)
+        #expect(store.raid(raid.id)?.status == .lost)
+        #expect(throws: StoreError.noOpenTasks) {
+            // The open task from before still counts as a follow-up; delete it to test the guard.
+            let open = store.tasks(raid.id).first!
+            try store.deleteTask(open.id)
+            try store.resumeFight(raid.id, by: "a", deadline: clock.now.addingTimeInterval(3600))
+        }
+        _ = try store.addTask(raidID: raid.id, title: "Extra", size: .s)
+        try store.resumeFight(raid.id, by: "a", deadline: clock.now.addingTimeInterval(3600))
+        #expect(store.bossState(raid.id)?.currentHP == 616 + 77)
+    }
+
+    @Test("Resuming an ongoing fight is refused")
+    func notFinished() throws {
+        let clock = TestClock()
+        let store = try makeStore(clock)
+        let raid = try store.createRaid(name: "R", bossName: "B", deadline: clock.now.addingTimeInterval(86_400), multiplayer: false, owner: owner)
+        _ = try store.addTask(raidID: raid.id, title: "T", size: .s)
+        try store.startFight(raid.id, by: "a")
+        #expect(throws: StoreError.notFinished) { try store.resumeFight(raid.id, by: "a", deadline: clock.now.addingTimeInterval(3600)) }
+    }
+}
+
 @Suite("Outbox and merge") @MainActor
 struct SyncStoreTests {
     @Test("Multiplayer changes land in the outbox until marked synced")

@@ -25,6 +25,8 @@ struct BossView: View {
     @State private var shake: CGFloat = 0
     @State private var errorMessage: String?
     @State private var showReport = false
+    @State private var showResume = false
+    @State private var addFollowUp = false
 
     init(raidID: UUID, showTasks: @escaping () -> Void = {}) {
         self.raidID = raidID
@@ -55,6 +57,8 @@ struct BossView: View {
                     ToolbarItem(placement: .topBarTrailing) { BossSwitcher(currentRaidID: raidID) }
                 }
                 .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
+                .sheet(isPresented: $showResume) { ResumeFightView(raidID: raidID) }
+                .sheet(isPresented: $addFollowUp) { TaskEditorView(raidID: raidID, mode: .add) }
             } else {
                 ContentUnavailableView("Raid not found", systemImage: "questionmark.circle")
             }
@@ -209,6 +213,19 @@ struct BossView: View {
                 .primaryActionStyle()
                 .controlSize(.large)
                 .accessibilityIdentifier("seeReportButton")
+            // Follow-up work after the deadline: add tasks and bring the boss back.
+            if raid.ownerID == me {
+                Button("Add follow-up task", systemImage: "plus") { addFollowUp = true }
+                    .secondaryActionStyle()
+                    .accessibilityIdentifier("addFollowUpButton")
+                Button("Resume the fight", systemImage: "flame") { showResume = true }
+                    .secondaryActionStyle()
+                    .accessibilityIdentifier("resumeFightButton")
+            } else {
+                Text("Found more work? The raid leader can add follow-up tasks and resume the fight.")
+                    .readableFootnote()
+                    .multilineTextAlignment(.center)
+            }
         }
         .frame(maxWidth: .infinity)
         .dungeonPanel()

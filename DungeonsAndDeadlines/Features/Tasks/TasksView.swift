@@ -23,6 +23,7 @@ struct TasksView: View {
     @State private var completedCount = 0
     /// A task the player tried to complete while the raid is still planning.
     @State private var needsFightStart: RaidTask?
+    @State private var showResume = false
     @Namespace private var zoom
 
     init(raidID: UUID) {
@@ -38,7 +39,9 @@ struct TasksView: View {
     private var config: DamageConfig { DDStore.shared.config }
     /// Completing is offered while planning too; it asks to start the fight first.
     private var canComplete: Bool { raid?.status == .active || raid?.status == .planning }
-    private var canEdit: Bool { raid?.status == .planning || raid?.status == .active }
+    /// Tasks can always be added and edited; finished bosses collect follow-ups.
+    private var canEdit: Bool { raid != nil }
+    private var isFinished: Bool { raid?.status == .won || raid?.status == .lost }
 
     var body: some View {
         NavigationStack {
@@ -55,6 +58,7 @@ struct TasksView: View {
                 }
                 .sensoryFeedback(.impact(weight: .heavy), trigger: completedCount) { _, _ in hapticsOn }
                 .startFightPrompt(task: $needsFightStart, raid: raid) { task in complete(task) }
+                .sheet(isPresented: $showResume) { ResumeFightView(raidID: raidID) }
                 .alert("Couldn't do that", isPresented: errorBinding) {
                     Button("OK") { errorMessage = nil }
                 } message: {
@@ -69,6 +73,7 @@ struct TasksView: View {
 
     private var taskList: some View {
         List {
+            followUpSection
             planningSection
             openSection
             doneSection
@@ -86,6 +91,27 @@ struct TasksView: View {
                 Button("Add task", systemImage: "plus") { editing = .add }
                     .accessibilityIdentifier("addTaskButton")
             }
+        }
+    }
+
+    @ViewBuilder
+    private var followUpSection: some View {
+        if isFinished, let raid {
+            Section {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(raid.status == .won ? "Boss defeated" : "Deadline passed")
+                        .font(.headline)
+                    Text("Found more work after the deadline? Add follow-up tasks, then resume the fight. The boss comes back with health from the open tasks.")
+                        .readableFootnote()
+                    if raid.ownerID == LocalIdentity.current.memberID {
+                        Button("Resume the fight", systemImage: "flame") { showResume = true }
+                            .primaryActionStyle()
+                            .disabled(open.isEmpty)
+                            .accessibilityIdentifier("tasksResumeFightButton")
+                    }
+                }
+            }
+            .dungeonRow()
         }
     }
 
