@@ -10,16 +10,16 @@ struct FocusLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FocusActivityAttributes.self) { context in
             LockScreenFocusView(context: context)
-                .activityBackgroundTint(Color.black.opacity(0.35))
+                .activityBackgroundTint(Color(hex: 0x150C2B).opacity(0.85))
                 .activitySystemActionForegroundColor(.white)
         } dynamicIsland: { context in
             let state = context.state
             return DynamicIsland {
                 DynamicIslandExpandedRegion(.leading) {
-                    Label {
+                    HStack(spacing: 4) {
+                        PixelArtView(BossKind.forName(context.attributes.bossName).art, eyeColor: state.phase.eyeColor)
+                            .frame(width: 28, height: 28)
                         Text("\(percent(state))%")
-                    } icon: {
-                        Image(systemName: "lizard.fill").foregroundStyle(state.phase.tint)
                     }
                     .font(.headline)
                     .accessibilityLabel("Boss health \(percent(state)) percent")
@@ -44,8 +44,8 @@ struct FocusLiveActivity: Widget {
                     }
                 }
             } compactLeading: {
-                Image(systemName: "lizard.fill")
-                    .foregroundStyle(state.phase.tint)
+                PixelArtView(BossKind.forName(context.attributes.bossName).art, eyeColor: state.phase.eyeColor)
+                    .frame(width: 22, height: 22)
                     .accessibilityLabel("\(context.attributes.bossName), \(percent(state)) percent")
             } compactTrailing: {
                 FocusTimerText(state: state)
@@ -87,10 +87,10 @@ struct LockScreenFocusView: View {
         let state = context.state
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Label {
-                    Text(context.attributes.bossName).font(.headline)
-                } icon: {
-                    Image(systemName: "lizard.fill").foregroundStyle(state.phase.tint)
+                HStack(spacing: 8) {
+                    PixelArtView(BossKind.forName(context.attributes.bossName).art, eyeColor: state.phase.eyeColor)
+                        .frame(width: 40, height: 40)
+                    Text(context.attributes.bossName).font(.headline).fontDesign(.serif)
                 }
                 Spacer()
                 FocusTimerText(state: state)

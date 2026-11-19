@@ -6,6 +6,7 @@ import DDIntents
 @main
 struct DDWidgetsBundle: WidgetBundle {
     var body: some Widget {
+        BossWidget()
         FocusLiveActivity()
         FocusControl()
     }

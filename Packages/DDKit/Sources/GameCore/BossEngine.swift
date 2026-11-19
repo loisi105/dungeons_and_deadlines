@@ -34,6 +34,15 @@ public struct BossState: Sendable, Hashable {
     /// Sorted by total damage, highest first.
     public var memberStats: [MemberStats]
 
+    public init(maxHP: Int, currentHP: Int, phase: Phase, outcome: Outcome, totalDamage: Int, memberStats: [MemberStats]) {
+        self.maxHP = maxHP
+        self.currentHP = currentHP
+        self.phase = phase
+        self.outcome = outcome
+        self.totalDamage = totalDamage
+        self.memberStats = memberStats
+    }
+
     public var fraction: Double { maxHP > 0 ? Double(currentHP) / Double(maxHP) : 0 }
     public var percent: Int { Int((fraction * 100).rounded()) }
 }

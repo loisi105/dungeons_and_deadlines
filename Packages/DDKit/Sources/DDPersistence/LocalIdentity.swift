@@ -6,6 +6,11 @@ public struct LocalIdentity: Sendable, Equatable {
     public var memberID: String
     public var nickname: String
 
+    public init(memberID: String, nickname: String) {
+        self.memberID = memberID
+        self.nickname = nickname
+    }
+
     private enum Keys {
         static let memberID = "identity.memberID"
         static let nickname = "identity.nickname"

@@ -23,7 +23,7 @@ public struct RaidEntity: AppEntity, Sendable {
     }
 
     public var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(title: "\(name)", subtitle: "Boss: \(bossName)", image: .init(systemName: "lizard.fill"))
+        DisplayRepresentation(title: "\(name)", subtitle: "Boss: \(bossName)", image: .init(systemName: "flame.fill"))
     }
 }
 
