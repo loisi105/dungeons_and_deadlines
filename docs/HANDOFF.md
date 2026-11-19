@@ -27,7 +27,7 @@ Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.
 | `ec6c24c` | M7: end-of-raid report with titles |
 | `a381a11` | Tasks: one-tap checkbox, completing during planning asks to start the fight, no double hits |
 | `78c6445` | Boss switcher on the Boss and Tasks tabs |
-| (next) | Soft paywall: free = 1 active solo boss, Premium = group raids + unlimited bosses (StoreKit 2) |
+| `0737c4c` | Soft paywall: free = 1 active solo boss, Premium = group raids + unlimited bosses (StoreKit 2) |
 
 ## Decisions that changed since the plan docs
 
