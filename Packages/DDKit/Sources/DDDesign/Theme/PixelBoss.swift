@@ -20,7 +20,10 @@ public struct BossAvatar: View {
     let phase: Phase
     let defeated: Bool
     let hitCount: Int
-    @ScaledMetric(relativeTo: .largeTitle) private var size: CGFloat = 160
+    @ScaledMetric(relativeTo: .largeTitle) private var baseSize: CGFloat = 160
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    /// Bigger on iPad, where there's room for it.
+    private var size: CGFloat { horizontalSizeClass == .regular ? baseSize * 1.6 : baseSize }
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(bossName: String = "Deadline", phase: Phase, defeated: Bool = false, hitCount: Int = 0) {

@@ -51,7 +51,7 @@ struct IntentsTests {
 
 @Suite("Widget snapshot", .serialized) @MainActor
 struct BossSnapshotTests {
-    @Test("Snapshot shows up to 3 open tasks and refresh dates at phase changes")
+    @Test("Snapshot carries up to 6 open tasks and refresh dates at phase changes")
     func snapshot() throws {
         let store = RaidStore(container: try SharedContainer.make(inMemory: true))
         let me = LocalIdentity(memberID: "a", nickname: "Ada")
@@ -59,7 +59,7 @@ struct BossSnapshotTests {
         let raid = try store.createRaid(name: "Thesis", bossName: "Dragon", deadline: start.addingTimeInterval(1000), multiplayer: false, owner: me)
         for i in 0..<5 { try store.addTask(raidID: raid.id, title: "T\(i)", size: .s) }
         let planning = try #require(BossSnapshot.make(raidID: raid.id, at: start, store: store))
-        #expect(planning.openTasks.count == 3)
+        #expect(planning.openTasks.count == 5) // up to 6 for the large widget
         #expect(!planning.canComplete)
         #expect(planning.refreshDates(after: start).isEmpty)
 

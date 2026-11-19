@@ -58,6 +58,7 @@ struct TaskDetailView: View {
             }
             .headerProminence(.increased)
             .dungeonScreen()
+            .readableContentWidth()
             .navigationTitle("Task")
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {

@@ -92,6 +92,7 @@ struct ReportContent: View {
             }
         }
         .dungeonScreen()
+            .readableContentWidth()
     }
 
     private var header: some View {

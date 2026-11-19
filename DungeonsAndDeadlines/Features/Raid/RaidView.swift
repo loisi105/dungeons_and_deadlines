@@ -51,6 +51,7 @@ struct RaidView: View {
             }
             .headerProminence(.increased)
             .dungeonScreen()
+            .readableContentWidth()
             .navigationTitle("Party")
             .toolbar {
                 Menu("New", systemImage: "plus") {

@@ -45,10 +45,10 @@ public struct HPBar: View {
         .overlay(PixelCornerShape(step: 3).stroke(Theme.outline, lineWidth: contrast == .increased ? 3 : 2))
         .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: filled)
         .accessibilityRepresentation {
-            ProgressView(value: Double(current), total: Double(Swift.max(max, 1))) {
-                Text("\(bossName) health")
-            }
-            .accessibilityValue(Text("\(current) of \(max), \(Int((fraction * 100).rounded())) percent"))
+            // Label set directly (no hidden Text child that the audit would measure).
+            ProgressView(value: Double(current), total: Double(Swift.max(max, 1)))
+                .accessibilityLabel(Text("\(bossName) health"))
+                .accessibilityValue(Text("\(current) of \(max), \(Int((fraction * 100).rounded())) percent"))
         }
     }
 }

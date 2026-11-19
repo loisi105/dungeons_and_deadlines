@@ -81,6 +81,7 @@ struct TasksView: View {
         }
         .headerProminence(.increased)
             .dungeonScreen()
+            .readableContentWidth()
     }
 
     @ToolbarContentBuilder

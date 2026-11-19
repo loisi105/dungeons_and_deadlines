@@ -52,19 +52,11 @@ public struct DungeonBackground: View {
     public init() {}
 
     public var body: some View {
-        ZStack {
-            Theme.parchment
-            if contrast != .increased && !reduceTransparency {
-                // No pattern behind text: specks and bricks made text measure as
-                // low-contrast. Texture lives in framed art (boss window, panels).
-                RadialGradient(
-                    colors: [.clear, Theme.parchmentDeep.opacity(scheme == .dark ? 0.7 : 0.55)],
-                    center: .center, startRadius: 200, endRadius: 700
-                )
-            }
-        }
-        .ignoresSafeArea()
-        .accessibilityHidden(true)
+        // Solid on purpose: any gradient or texture behind text made it measure as
+        // low contrast (especially on iPad). Texture lives in the framed art instead.
+        Theme.parchment
+            .ignoresSafeArea()
+            .accessibilityHidden(true)
     }
 }
 

@@ -14,6 +14,7 @@ struct BossView: View {
     @Environment(AppEnvironment.self) private var environment
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
 
     @Query private var raids: [RaidRecord]
@@ -89,17 +90,26 @@ struct BossView: View {
     @ViewBuilder
     private func content(raid: Raid, state: BossState) -> some View {
         ScrollView {
-            VStack(spacing: 20) {
+            // iPad (regular width): the boss on the left, the battle info on the right.
+            // iPhone: one column.
+            let wide = horizontalSizeClass == .regular
+            let layout = wide
+                ? AnyLayout(HStackLayout(alignment: .top, spacing: 28))
+                : AnyLayout(VStackLayout(spacing: 20))
+            layout {
                 header(raid: raid, state: state)
-                switch state.outcome {
-                case .planning: planningCard(raid: raid, state: state)
-                case .won, .lost: outcomeCard(raid: raid, state: state)
-                case .ongoing: EmptyView()
+                    .frame(maxWidth: wide ? 560 : 640)
+                VStack(spacing: 20) {
+                    switch state.outcome {
+                    case .planning: planningCard(raid: raid, state: state)
+                    case .won, .lost: outcomeCard(raid: raid, state: state)
+                    case .ongoing: EmptyView()
+                    }
+                    recentHits
                 }
-                recentHits
+                .frame(maxWidth: wide ? 440 : 640)
             }
-            .padding()
-            .frame(maxWidth: 640)
+            .padding(wide ? 28 : 16)
             .frame(maxWidth: .infinity)
         }
         .scrollIndicators(.hidden)

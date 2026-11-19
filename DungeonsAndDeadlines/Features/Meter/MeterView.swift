@@ -84,6 +84,7 @@ struct MeterView: View {
             }
             .headerProminence(.increased)
             .dungeonScreen()
+            .readableContentWidth()
             .navigationTitle("Meter")
         }
     }

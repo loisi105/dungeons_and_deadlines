@@ -44,6 +44,7 @@ struct WelcomeView: View {
             }
             .headerProminence(.increased)
             .dungeonScreen()
+            .readableContentWidth()
             .navigationTitle("Dungeons & Deadlines")
             .safeAreaInset(edge: .bottom) {
                 GlassEffectContainer(spacing: 12) {

@@ -33,6 +33,9 @@ final class SmokeTests: XCTestCase {
                 let chrome = [app.tabBars.firstMatch, app.buttons["focusAccessory"]].filter(\.exists).map(\.frame)
                 if chrome.contains(where: { $0.insetBy(dx: 0, dy: -12).intersects(element.frame) }) { return true }
             }
+            // iPad sheets float over the dimmed screen; the audit then reports the dimmed
+            // text behind them without naming an element. Nothing to act on there.
+            if [.elementDetection, .textClipped, .contrast].contains(issue.auditType), issue.element == nil { return true }
             // System segmented controls cap their font; the meter hides its switch at
             // accessibility sizes (checked at AX5 with -seedDemo -fakeTeammates -startTab meter).
             if issue.auditType == .dynamicType, issue.element == nil || issue.element?.elementType == .segmentedControl { return true }
@@ -65,8 +68,16 @@ final class SmokeTests: XCTestCase {
         app.buttons["createRaidButton"].tap()
     }
 
+    /// The tab's button: bottom tab bar on iPhone, top tab bar (plain buttons) on iPad.
+    func tabButton(_ app: XCUIApplication, _ name: String) -> XCUIElement {
+        let bottom = app.tabBars.buttons[name]
+        if bottom.waitForExistence(timeout: 2) { return bottom }
+        let matches = app.buttons.matching(NSPredicate(format: "label == %@", name))
+        return matches.allElementsBoundByIndex.first(where: \.isHittable) ?? matches.firstMatch
+    }
+
     func tab(_ app: XCUIApplication, _ name: String) {
-        let button = app.tabBars.buttons[name]
+        let button = tabButton(app, name)
         XCTAssertTrue(button.waitForExistence(timeout: 5), "Missing tab \(name)")
         button.tap()
     }
@@ -135,7 +146,7 @@ final class SmokeTests: XCTestCase {
         startAndComplete.tap()
         // Completing jumps straight to the boss for the attack.
         XCTAssertTrue(hpLabel(app, contains: "312 / 462 HP").waitForExistence(timeout: 5))
-        XCTAssertTrue(app.tabBars.buttons["Boss"].isSelected)
+        XCTAssertTrue(tabButton(app, "Boss").isSelected)
         try audit(app, "Boss (fighting)")
 
         // Swiping right completes too.
@@ -234,7 +245,7 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(dragon.waitForExistence(timeout: 5))
         dragon.tap()
         XCTAssertTrue(app.descendants(matching: .any)["task-Literature review"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.tabBars.buttons["Tasks"].isSelected)
+        XCTAssertTrue(tabButton(app, "Tasks").isSelected)
     }
 
     func testFreePlanSoftPaywall() throws {
@@ -382,7 +393,7 @@ final class SmokeTests: XCTestCase {
         checkbox.tap()
 
         // The app switches to the boss and plays the spell; the hit lands and it stays there.
-        XCTAssertTrue(app.tabBars.buttons["Boss"].isSelected)
+        XCTAssertTrue(tabButton(app, "Boss").isSelected)
         Thread.sleep(forTimeInterval: 0.4)
         let midFlight = XCTAttachment(screenshot: app.screenshot())
         midFlight.name = "Attack mid-flight"
@@ -391,7 +402,7 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(hpLabel(app, contains: "550 / 1.000 HP").waitForExistence(timeout: 5)
                       || hpLabel(app, contains: "550 / 1,000 HP").exists)
         Thread.sleep(forTimeInterval: 1.5)
-        XCTAssertTrue(app.tabBars.buttons["Boss"].isSelected)
+        XCTAssertTrue(tabButton(app, "Boss").isSelected)
         try audit(app, "Boss (after attack)")
     }
 

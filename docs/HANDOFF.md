@@ -4,13 +4,14 @@ Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.
 
 ## TL;DR
 
-- **Done and committed on `main`:** M0–M7, the pixel-art theme, Game Center, a boss switcher, one-tap task completion and a soft paywall ([MONETIZATION.md](MONETIZATION.md)).
+- **Done and committed on `main`:** M0–M7, the pixel-art theme, Game Center, a boss switcher, one-tap task completion, a soft paywall ([MONETIZATION.md](MONETIZATION.md)), follow-up fights after the deadline, deleting old bosses, class attack animations, keyboard dismissal, and an iPad layout (sidebar, two-column boss, large widget).
   - Solo and multiplayer raids (multiplayer uses Firebase over REST).
   - Focus timer, Live Activity, Control Center toggle, Siri shortcuts, widgets.
   - Damage meter, end-of-raid report, achievements and leaderboards.
 - **Tests:** all 65 package tests and all 8 UI flows (each with accessibility audits) pass.
 - **What's left:** setup that needs accounts (Firebase project, App Store Connect, a signing team), checks that need a person or the simulator tool, and the M8 stretch goals. See [What's left](#whats-left).
 - **Rule from the user:** commit after each milestone.
+- **Devices:** an iPhone 17 and an iPad mini (A17 Pro) are used for testing; both build and sign under the FH team.
 
 ## Commits
 
@@ -28,6 +29,19 @@ Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.
 | `a381a11` | Tasks: one-tap checkbox, completing during planning asks to start the fight, no double hits |
 | `78c6445` | Boss switcher on the Boss and Tasks tabs |
 | `0737c4c` | Soft paywall: free = 1 active solo boss, Premium = group raids + unlimited bosses (StoreKit 2) |
+
+### Since the paywall
+
+| Commit | Change |
+|---|---|
+| `fdf1660` | Device builds: `at.fhooe.sail` bundle IDs, FH team signing |
+| `83597b3` | Tapping outside a text field hides the keyboard (app-wide) |
+| `36bc772` | Fix: paywall from the Party tab closed right after opening |
+| `7d88739` | Tab bar stays fixed while scrolling |
+| `8e0afae` | Follow-up tasks after a win/loss and "Resume the fight"; native close buttons |
+| `1905eff` | Delete old solo bosses (frees the free-plan slot) |
+| `3269e3d` | Completing a task jumps to the boss and plays a class attack |
+| (next) | iPad: sidebar with Bosses, two-column Boss tab, readable list widths, large widget |
 
 ## Decisions that changed since the plan docs
 
@@ -101,6 +115,7 @@ cd Packages/DDKit && swift test
 | `-meterAsList` | Damage meter opens in list mode |
 | `-premium` | Acts as a Premium subscriber |
 | `-showPaywall` | Opens the paywall on launch |
+| `-slowMotion` | (debug) Plays the task attack 5× slower, for reviewing it |
 | `-useFirebaseEmulator` | Use the local Firebase emulator (works without `GoogleService-Info.plist`) |
 
 Example: check a screen at the largest text size:
@@ -154,6 +169,8 @@ These need a person (or the simulator tool once `xcode-select` is fixed):
 ## Gotchas learned the hard way
 
 **Accessibility audits** (`performAccessibilityAudit`; see the comments in `SmokeTests.audit`):
+- **The page background is a solid color.** Every gradient or texture behind text eventually measured as low contrast, on iPad most of all.
+- **Run the suite on an iPad too:** `SIMULATOR="iPad Pro 13-inch (M5)" ./build.sh test …`. iPad sheets float over the dimmed screen, so findings without an element are skipped there.
 - **Text must never sit on texture.** Parchment specks and dungeon bricks made text "fail" contrast, so page backgrounds are plain. Put texture only in framed art.
 - **Use solid colors for secondary text** (`Theme.inkSoft` / `.readableSecondary`), not opacity.
 - **Notes belong inside list rows, not in section footers** over the custom page background.

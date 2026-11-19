@@ -46,7 +46,8 @@ public struct BossSnapshot: Sendable {
     public static func make(raidID: UUID?, at date: Date, store: RaidStore = DDStore.shared) -> BossSnapshot? {
         guard let raid = raidID.flatMap({ store.raid($0) }) ?? store.currentRaid(),
               let state = store.bossState(raid.id, at: date) else { return nil }
-        let open = store.tasks(raid.id).filter { !$0.isDone }.prefix(3).map {
+        // Up to 6 for the large (iPad) widget; the medium one shows the first 3.
+        let open = store.tasks(raid.id).filter { !$0.isDone }.prefix(6).map {
             TaskInfo(id: $0.id, title: $0.title, sizeLetter: $0.size.rawValue.uppercased(), damage: store.config.baseDamage(for: $0.size))
         }
         return BossSnapshot(

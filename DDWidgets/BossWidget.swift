@@ -15,7 +15,7 @@ struct BossWidget: Widget {
         }
         .configurationDisplayName("Boss")
         .description("Your boss's health, phase and next tasks.")
-        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge, .accessoryCircular, .accessoryRectangular, .accessoryInline])
     }
 }
 
@@ -29,6 +29,7 @@ struct BossWidgetView: View {
             if let snapshot = entry.snapshot {
                 switch family {
                 case .systemMedium: MediumBossView(snapshot: snapshot, date: entry.date)
+                case .systemLarge: LargeBossView(snapshot: snapshot, date: entry.date)
                 case .accessoryCircular: CircularBossView(snapshot: snapshot)
                 case .accessoryRectangular: RectangularBossView(snapshot: snapshot, date: entry.date)
                 case .accessoryInline: InlineBossView(snapshot: snapshot, date: entry.date)
@@ -117,12 +118,67 @@ struct MediumBossView: View {
                 if snapshot.openTasks.isEmpty {
                     Text("No open tasks").font(.caption).foregroundStyle(.secondary)
                 }
-                ForEach(snapshot.openTasks) { task in
+                ForEach(snapshot.openTasks.prefix(3)) { task in
                     TaskButton(task: task, snapshot: snapshot)
                 }
                 Spacer(minLength: 0)
             }
             .padding(8)
+            .background(PixelCornerShape(step: 2).fill(Theme.card))
+            .foregroundStyle(Theme.ink)
+        }
+    }
+}
+
+/// iPad Home Screen: a big boss, its health, and up to 6 tasks to complete with a tap.
+struct LargeBossView: View {
+    let snapshot: BossSnapshot
+    let date: Date
+    @Environment(\.widgetRenderingMode) private var renderingMode
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .center, spacing: 12) {
+                PixelArtView(
+                    BossKind.forName(snapshot.bossName).art,
+                    eyeColor: snapshot.state.outcome == .won ? nil : snapshot.state.phase.eyeColor
+                )
+                .grayscale(snapshot.state.outcome == .won ? 1 : 0)
+                .frame(width: 96, height: 96)
+                .widgetAccentable(false)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(snapshot.bossName)
+                        .font(.title3.weight(.black))
+                        .fontDesign(.serif)
+                        .foregroundStyle(renderingMode == .fullColor ? Color(hex: 0xFFF6D6) : .primary)
+                        .widgetAccentable()
+                    Text(snapshot.raidName)
+                        .font(.subheadline)
+                        .foregroundStyle(renderingMode == .fullColor ? Color(hex: 0xD6CBEE) : .secondary)
+                    MiniHPBar(state: snapshot.state)
+                    StatusLine(snapshot: snapshot, date: date)
+                        .font(.caption)
+                        .foregroundStyle(renderingMode == .fullColor ? Color(hex: 0xD6CBEE) : .secondary)
+                }
+            }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(A11yText.boss(name: snapshot.bossName, state: snapshot.state))
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(snapshot.state.outcome == .planning ? "Planned quests" : "Next hits")
+                    .font(.caption.weight(.bold))
+                    .fontDesign(.serif)
+                    .foregroundStyle(.secondary)
+                if snapshot.openTasks.isEmpty {
+                    Text("No open tasks").font(.caption).foregroundStyle(.secondary)
+                }
+                ForEach(snapshot.openTasks) { task in
+                    TaskButton(task: task, snapshot: snapshot)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(PixelCornerShape(step: 2).fill(Theme.card))
             .foregroundStyle(Theme.ink)
         }
@@ -266,5 +322,6 @@ struct InlineBossView: View {
 
 #Preview("Small", as: .systemSmall) { BossWidget() } timeline: { BossEntry.preview }
 #Preview("Medium", as: .systemMedium) { BossWidget() } timeline: { BossEntry.preview }
+#Preview("Large", as: .systemLarge) { BossWidget() } timeline: { BossEntry.preview }
 #Preview("Circular", as: .accessoryCircular) { BossWidget() } timeline: { BossEntry.preview }
 #Preview("Rectangular", as: .accessoryRectangular) { BossWidget() } timeline: { BossEntry.preview }

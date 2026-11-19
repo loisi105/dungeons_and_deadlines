@@ -4,7 +4,11 @@ import DDIntents
 import GameCore
 
 /// The game's tabs.
-enum AppTab: Hashable { case boss, tasks, meter, raid }
+enum AppTab: Hashable {
+    case boss, tasks, meter, raid
+    /// A boss in the iPad sidebar's Bosses section; selecting it switches to that boss.
+    case bossItem(UUID)
+}
 
 /// Launch arguments used by UI tests and debugging.
 enum LaunchOptions {

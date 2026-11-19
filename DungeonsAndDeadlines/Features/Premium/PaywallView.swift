@@ -39,6 +39,7 @@ struct PaywallView: View {
                             Text("Purchases aren't available right now. Check your connection and try again later.")
                                 .multilineTextAlignment(.center)
                                 .foregroundStyle(.readableSecondary)
+                                .dungeonPanel()
                                 .padding(.horizontal)
                         } else {
                             ProgressView("Loading plans…")
@@ -62,6 +63,8 @@ struct PaywallView: View {
         .fontDesign(.serif)
         .foregroundStyle(Theme.ink)
         .tint(Theme.accent)
+        // Page-size sheet on iPad, so the whole paywall fits instead of a cramped form sheet.
+        .presentationSizing(.page)
         .task {
             let products = (try? await Product.products(for: Entitlements.productIDs)) ?? []
             storeAvailable = !products.isEmpty

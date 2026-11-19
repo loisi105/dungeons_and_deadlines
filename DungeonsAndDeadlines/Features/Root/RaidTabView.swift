@@ -3,11 +3,12 @@ import SwiftData
 import GameCore
 import DDPersistence
 
-/// The game: Liquid Glass tab bar over the Boss, Tasks and Raid tabs.
+/// The game: Liquid Glass tabs (bottom bar on iPhone, top bar or sidebar on iPad)
+/// over the Boss, Tasks, Meter and Party tabs, plus a Bosses section in the iPad sidebar.
 struct RaidTabView: View {
     let raidID: UUID
 
-    @Query private var raids: [RaidRecord]
+    @Query(sort: \RaidRecord.createdAt, order: .reverse) private var raids: [RaidRecord]
     @State private var showFocus = false
     #if DEBUG
     @Environment(FakeTeammates.self) private var fakeTeammates
@@ -20,6 +21,7 @@ struct RaidTabView: View {
     private var isFighting: Bool { raids.first { $0.id == raidID }?.status == .active }
 
     @Environment(AppEnvironment.self) private var environment
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
         @Bindable var environment = environment
@@ -36,8 +38,27 @@ struct RaidTabView: View {
             Tab("Raid", systemImage: "person.3.fill", value: AppTab.raid) {
                 RaidView(raidID: raidID).id(raidID)
             }
+            // iPad sidebar: every boss, one tap to switch. Only in regular width, so the
+            // iPhone tab bar keeps its four tabs (the Boss tab's switcher covers the same).
+            if horizontalSizeClass == .regular {
+                TabSection("Bosses") {
+                    ForEach(raids) { raid in
+                        Tab(raid.bossName, systemImage: raid.id == raidID ? "flame.fill" : "flame", value: AppTab.bossItem(raid.id)) {
+                            BossView(raidID: raid.id).id(raid.id)
+                        }
+                    }
+                }
+            }
         }
+        .tabViewStyle(.sidebarAdaptable)
         .tabBarMinimizeBehavior(.never) // the tab bar stays put while scrolling
+        .onChange(of: environment.selectedTab) { _, tab in
+            // Picking a boss in the sidebar makes it the current boss and shows its Boss tab.
+            if case .bossItem(let id) = tab {
+                LocalIdentity.currentRaidID = id
+                environment.selectedTab = .boss
+            }
+        }
         .modifier(FocusAccessoryModifier(enabled: isFighting) {
             FocusTimerAccessory(raidID: raidID) { showFocus = true }.id(raidID)
         })
