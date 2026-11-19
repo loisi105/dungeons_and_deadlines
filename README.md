@@ -5,10 +5,12 @@ Platform: iOS (SwiftUI), student project
 Last updated: 2026-11-19
 
 ## Status
-Ideation done, concept chosen, core technical decisions made (see "Decisions"). No code written yet. Next step: Xcode project setup and the `GameCore` package (models + `DamageCalculator`) with unit tests.
+M0–M4 and the pixel-art theme are built and committed; M5 (damage meter) is in progress. Game Center, M6 (multiplayer) and M7 (full report) are next. **Start with [docs/HANDOFF.md](docs/HANDOFF.md)**: current state, how to build and test, next steps and gotchas.
 
 ## Decisions (2026-11-19)
-- **Backend:** Firebase (Auth + Firestore)
+- **Backend:** Firebase (Auth + Firestore), called over **REST without the iOS SDK**. The SDK added ~1.4 s to every launch.
+- **Art style:** pixel fantasy based on the icon art in `docs/icon/` (64×64 pixel art, cream/gold/night-purple palette). The app icon uses the background and boss layers, without the sword.
+- **Game Center:** sign-in, achievements and leaderboards (see [docs/GAME_CENTER.md](docs/GAME_CENTER.md)). Raids stay on Firebase.
 - **Minimum iOS: 26.0**, the lowest version that supports every planned feature:
   - Liquid Glass APIs (`.glassEffect`, `GlassEffectContainer`, `.buttonStyle(.glass)`, `.tabViewBottomAccessory`): iOS 26. This is what sets the minimum.
   - Control Center / Lock Screen controls: iOS 18

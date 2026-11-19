@@ -1,5 +1,7 @@
 # Dungeons & Deadlines — Architecture
 
+> Some details changed during implementation: Firebase is called over REST instead of the SDK, `RaidStore` runs on the main actor, write intents run in the app process, in-content buttons use the pixel theme instead of glass, and Game Center was added. See [HANDOFF.md](HANDOFF.md#decisions-that-changed-since-the-plan-docs).
+
 Last updated: 2026-11-19. Decisions behind this document are in the README ("Decisions").
 
 ## 1. Principles

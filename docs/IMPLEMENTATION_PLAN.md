@@ -3,6 +3,8 @@
 Last updated: 2026-11-19
 Related: [README](../README.md) (concept and decisions), [ARCHITECTURE.md](ARCHITECTURE.md) (structure and design rules)
 
+> **Current status and the decisions that changed since this plan was written** (Firebase over REST instead of the SDK, Xcode 27, the pixel-art theme, Game Center) are in [HANDOFF.md](HANDOFF.md). Where they disagree, HANDOFF.md wins.
+
 This plan breaks the architecture into milestones M0–M8. Each milestone has a goal, a task checklist with file paths, tests, accessibility checks, its dependencies and a size. Sizes are relative (**S** ≈ a few days for one person, **M** ≈ 1–2 weeks, **L** ≈ 2–3 weeks), since the project's duration isn't set yet.
 
 ---

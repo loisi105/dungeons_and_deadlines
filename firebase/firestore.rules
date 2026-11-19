@@ -1,0 +1,83 @@
+rules_version = '2';
+
+// Dungeons & Deadlines. See docs/IMPLEMENTATION_PLAN.md, Appendix C.
+// Keep MAX_MEMBERS and MAX_HIT in sync with DamageConfig (maxMembers, maxSingleAttackDamage).
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function maxMembers() { return 5; }
+    function maxHit() { return 480; }
+
+    function signedIn() { return request.auth != null; }
+    function raidData(raidId) { return get(/databases/$(db)/documents/raids/$(raidId)).data; }
+    function isMember(raidId) { return signedIn() && request.auth.uid in raidData(raidId).memberIDs; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    match /raids/{raidId} {
+      allow read: if signedIn() && request.auth.uid in resource.data.memberIDs;
+
+      allow create: if signedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.memberIDs == [request.auth.uid]
+        && request.resource.data.status == 'planning';
+
+      allow update: if signedIn() && (
+        // Join: add only yourself while the raid is open and not full.
+        (changed().hasOnly(['memberIDs'])
+          && resource.data.status in ['planning', 'active']
+          && request.resource.data.memberIDs.size() <= maxMembers()
+          && request.resource.data.memberIDs.removeAll(resource.data.memberIDs) == [request.auth.uid]
+          && resource.data.memberIDs.removeAll(request.resource.data.memberIDs).size() == 0)
+        // Leader: rename, start the fight (locks HP), change the deadline. Can't change owner or members.
+        || (resource.data.ownerId == request.auth.uid
+          && !changed().hasAny(['ownerId', 'memberIDs']))
+        // Any member: settle the outcome once the boss is dead or the deadline passed.
+        || (request.auth.uid in resource.data.memberIDs
+          && resource.data.status == 'active'
+          && changed().hasOnly(['status'])
+          && request.resource.data.status in ['won', 'lost'])
+      );
+
+      allow delete: if false;
+
+      match /members/{uid} {
+        allow read: if isMember(raidId);
+        allow create, update: if isMember(raidId) && uid == request.auth.uid
+          && request.resource.data.nickname is string
+          && request.resource.data.nickname.size() <= 40;
+        allow delete: if uid == request.auth.uid;
+      }
+
+      match /tasks/{taskId} {
+        allow read: if isMember(raidId);
+        allow create, update: if isMember(raidId)
+          && request.resource.data.title is string
+          && request.resource.data.title.size() <= 200
+          && request.resource.data.size in ['s', 'm', 'l']
+          && (request.resource.data.completedBy == null || request.resource.data.completedBy is string);
+        allow delete: if false; // deletions are tombstones (deleted: true)
+      }
+
+      match /attacks/{attackId} {
+        allow read: if isMember(raidId);
+        // Add-only log: you can only hit as yourself, only while the fight is on.
+        allow create: if isMember(raidId)
+          && request.resource.data.memberId == request.auth.uid
+          && raidData(raidId).status == 'active'
+          && request.resource.data.kind in ['task', 'focus']
+          && request.resource.data.damage is int
+          && request.resource.data.damage > 0
+          && request.resource.data.damage <= maxHit();
+        allow update, delete: if false;
+      }
+    }
+
+    match /inviteCodes/{code} {
+      allow get: if signedIn();
+      allow list: if false;
+      allow create: if signedIn()
+        && request.resource.data.raidId is string
+        && code.size() == 6;
+      allow update, delete: if false;
+    }
+  }
+}
