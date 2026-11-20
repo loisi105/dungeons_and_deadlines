@@ -36,18 +36,7 @@ struct JoinRaidView: View {
             .dungeonScreen()
             .navigationTitle("Join raid")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", role: .cancel) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if isJoining {
-                        ProgressView()
-                    } else {
-                        Button("Join", action: join).disabled(code.count < 6)
-                    }
-                }
-            }
+            .sheetCancelConfirm("Join", confirmIdentifier: "joinRaidButton", isEnabled: code.count >= 6, isWorking: isJoining, onConfirm: join)
         }
     }
 

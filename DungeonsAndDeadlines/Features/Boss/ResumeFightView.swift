@@ -41,16 +41,7 @@ struct ResumeFightView: View {
             .dungeonScreen()
             .navigationTitle("Resume the fight")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", role: .cancel) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Resume") { resume() }
-                        .disabled(tasks.isEmpty)
-                        .accessibilityIdentifier("confirmResumeButton")
-                }
-            }
+            .sheetCancelConfirm("Resume", confirmIdentifier: "confirmResumeButton", isEnabled: !tasks.isEmpty) { resume() }
         }
         .presentationDetents([.large])
     }

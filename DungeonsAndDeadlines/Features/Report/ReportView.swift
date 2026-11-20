@@ -10,7 +10,6 @@ import DDDesign
 /// Doubles as the "group project judge". Shareable as an image with a text description.
 struct ReportView: View {
     let raidID: UUID
-    @Environment(\.dismiss) private var dismiss
 
     // Queries keep the report live while teammates' last hits arrive.
     @Query private var attacks: [AttackRecord]
@@ -45,8 +44,8 @@ struct ReportView: View {
             }
             .navigationTitle("Raid report")
             .navigationBarTitleDisplayMode(.inline)
+            .sheetCloseButton()
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button(role: .close) { dismiss() }.accessibilityIdentifier("closeButton") }
                 if let report {
                     ToolbarItem(placement: .primaryAction) { ShareReportButton(report: report) }
                 }

@@ -11,7 +11,6 @@ struct FocusView: View {
     let raidID: UUID
 
     @Environment(Announcer.self) private var announcer
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
@@ -57,9 +56,7 @@ struct FocusView: View {
             .navigationTitle("Focus")
             .dungeonScreen()
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) { Button(role: .close) { dismiss() }.accessibilityIdentifier("closeButton") }
-            }
+            .sheetCloseButton()
             .sensoryFeedback(.impact(weight: .medium), trigger: feedbackTrigger) { _, _ in hapticsOn }
             .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
                 Button("OK") { errorMessage = nil }

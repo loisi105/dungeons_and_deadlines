@@ -84,16 +84,7 @@ struct TaskEditorView: View {
             .dungeonScreen()
             .navigationTitle(isEditing ? "Edit task" : "New task")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", role: .cancel) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
-                        .disabled(trimmed.isEmpty)
-                        .accessibilityIdentifier("saveTaskButton")
-                }
-            }
+            .sheetCancelConfirm("Save", confirmIdentifier: "saveTaskButton", isEnabled: !trimmed.isEmpty, onConfirm: save)
             .onAppear { titleFocused = !isEditing }
         }
         .presentationDetents([.medium, .large])

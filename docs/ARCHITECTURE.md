@@ -86,6 +86,13 @@ Dependency direction: `app / widgets → DDIntents → DDPersistence → GameCor
   - The boss phase can tint one element: `.glassEffect(.regular.tint(phase.tint).interactive())`. Never tint everything.
 - **Never put glass on top of glass.** Don't put custom backgrounds behind system bars; let `.backgroundExtensionEffect()` extend boss art under the bars instead.
 
+### Dismissing overlays
+Every sheet and full-screen cover dismisses the same way, through the helpers in `DDDesign/SheetToolbar.swift`. Don't write dismiss buttons by hand.
+- **Sheets that only show things** (report, focus timer, paywall, boss picker, the phase-details sheet): `.sheetCloseButton()`, an X (`Button(role: .close)`) on the leading side.
+- **Sheets that edit or create something** (new boss, task editor, join raid, resume fight): `.sheetCancelConfirm("Save") { … }`, a cancel X (`Button(role: .cancel)`) on the leading side and a labelled confirm action (`role: .confirm`) on the trailing side. Other trailing items such as Share go in `.primaryAction`.
+- **Popovers** dismiss by tapping outside and get no X. When one adapts to a sheet (accessibility text sizes), that sheet gets the close X.
+- **Alerts and confirmation dialogs** keep the system's text buttons ("Cancel", "Not yet").
+
 ### App structure
 - A `TabView` with **Boss**, **Tasks**, **Meter** and **Raid** tabs, plus `.tabBarMinimizeBehavior(.onScrollDown)`.
 - `.tabViewBottomAccessory { FocusTimerAccessory() }` shows a running timer on every tab, like a music mini-player. Tapping it opens the full timer sheet.
