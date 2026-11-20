@@ -149,7 +149,9 @@ struct FocusView: View {
             .font(.subheadline)
             .multilineTextAlignment(.center)
             .fixedSize(horizontal: false, vertical: true)
-            .frame(maxWidth: .infinity)
+            // 44 pt tap target (the text alone is ~18 pt tall).
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .contentShape(.rect)
         }
         .buttonStyle(.borderless)
         .accessibilityLabel(isBlocking
