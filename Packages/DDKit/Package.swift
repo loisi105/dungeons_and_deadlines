@@ -11,6 +11,7 @@ let package = Package(
         .library(name: "DDIntents", targets: ["DDIntents"]),
         .library(name: "DDDesign", targets: ["DDDesign"]),
         .library(name: "DDSync", targets: ["DDSync"]),
+        .library(name: "DDScreenTime", targets: ["DDScreenTime"]),
     ],
     targets: [
         .target(name: "GameCore"),
@@ -18,6 +19,8 @@ let package = Package(
         .target(name: "DDIntents", dependencies: ["DDPersistence", "GameCore", "DDDesign"]),
         .target(name: "DDDesign", dependencies: ["GameCore"]),
         .target(name: "DDSync", dependencies: ["GameCore", "DDPersistence"]),
+        // Screen Time blocking (iOS only code); also linked by the two Screen Time extensions.
+        .target(name: "DDScreenTime", dependencies: ["GameCore", "DDPersistence"]),
         .testTarget(name: "GameCoreTests", dependencies: ["GameCore"]),
         .testTarget(name: "DDPersistenceTests", dependencies: ["DDPersistence"]),
         .testTarget(name: "DDIntentsTests", dependencies: ["DDIntents", "DDPersistence"]),

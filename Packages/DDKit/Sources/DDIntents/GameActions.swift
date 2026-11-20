@@ -92,9 +92,10 @@ public enum GameActions {
         return try self.raidID(nil)
     }
 
-    /// Refresh widgets, controls and the Live Activity, then let the app sync.
+    /// Refresh widgets, controls, the Screen Time shield and the Live Activity, then let the app sync.
     public static func changed(_ raidID: UUID?) {
         reloadSystemSurfaces()
+        FocusShield.reconcile()
         #if os(iOS)
         if let raidID { LiveActivityController.sync(raidID: raidID) }
         #endif

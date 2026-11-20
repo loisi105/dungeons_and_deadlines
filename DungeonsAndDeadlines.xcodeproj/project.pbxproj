@@ -17,6 +17,11 @@
 		DD0000000000000000000213 /* DDIntents in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000113 /* DDIntents */; };
 		DD0000000000000000000214 /* DDDesign in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000114 /* DDDesign */; };
 		DD0000000000000000000220 /* DDWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD00000000000000000000A2 /* DDWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DD0000000000000000000208 /* DDScreenTime in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000108 /* DDScreenTime */; };
+		DD0000000000000000000231 /* DDScreenTime in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000131 /* DDScreenTime */; };
+		DD0000000000000000000221 /* DDFocusMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD00000000000000000000A5 /* DDFocusMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DD0000000000000000000241 /* DDScreenTime in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000141 /* DDScreenTime */; };
+		DD0000000000000000000222 /* DDShieldConfig.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD00000000000000000000A6 /* DDShieldConfig.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +39,20 @@
 			remoteGlobalIDString = DD00000000000000000000D1;
 			remoteInfo = DungeonsAndDeadlines;
 		};
+		DD0000000000000000000303 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DD00000000000000000000D0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DD00000000000000000000D4;
+			remoteInfo = DDFocusMonitor;
+		};
+		DD0000000000000000000304 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DD00000000000000000000D0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DD00000000000000000000D5;
+			remoteInfo = DDShieldConfig;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -44,6 +63,8 @@
 			dstSubfolderSpec = 13;
 			files = (
 				DD0000000000000000000220 /* DDWidgetsExtension.appex in Embed Foundation Extensions */,
+				DD0000000000000000000221 /* DDFocusMonitor.appex in Embed Foundation Extensions */,
+				DD0000000000000000000222 /* DDShieldConfig.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -55,6 +76,8 @@
 		DD00000000000000000000A2 /* DDWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DDWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD00000000000000000000A3 /* DungeonsAndDeadlinesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = DungeonsAndDeadlinesUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD00000000000000000000A4 /* DDKit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DDKit; path = Packages/DDKit; sourceTree = "<group>"; };
+		DD00000000000000000000A5 /* DDFocusMonitor.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DDFocusMonitor.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DD00000000000000000000A6 /* DDShieldConfig.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = DDShieldConfig.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -78,6 +101,16 @@
 			path = Config;
 			sourceTree = "<group>";
 		};
+		DD00000000000000000000B5 /* DDFocusMonitor */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DDFocusMonitor;
+			sourceTree = "<group>";
+		};
+		DD00000000000000000000B6 /* DDShieldConfig */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = DDShieldConfig;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,6 +123,7 @@
 				DD0000000000000000000203 /* DDIntents in Frameworks */,
 				DD0000000000000000000204 /* DDDesign in Frameworks */,
 				DD0000000000000000000207 /* DDSync in Frameworks */,
+				DD0000000000000000000208 /* DDScreenTime in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -111,6 +145,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DD00000000000000000000EB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DD0000000000000000000231 /* DDScreenTime in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD00000000000000000000EE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DD0000000000000000000241 /* DDScreenTime in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -119,6 +169,8 @@
 			children = (
 				DD00000000000000000000B1 /* DungeonsAndDeadlines */,
 				DD00000000000000000000B2 /* DDWidgets */,
+				DD00000000000000000000B5 /* DDFocusMonitor */,
+				DD00000000000000000000B6 /* DDShieldConfig */,
 				DD00000000000000000000B3 /* DungeonsAndDeadlinesUITests */,
 				DD00000000000000000000B4 /* Config */,
 				DD00000000000000000000A4 /* DDKit */,
@@ -132,6 +184,8 @@
 				DD00000000000000000000A1 /* DungeonsAndDeadlines.app */,
 				DD00000000000000000000A2 /* DDWidgetsExtension.appex */,
 				DD00000000000000000000A3 /* DungeonsAndDeadlinesUITests.xctest */,
+				DD00000000000000000000A5 /* DDFocusMonitor.appex */,
+				DD00000000000000000000A6 /* DDShieldConfig.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -152,6 +206,8 @@
 			);
 			dependencies = (
 				DD0000000000000000000311 /* PBXTargetDependency */,
+				DD0000000000000000000313 /* PBXTargetDependency */,
+				DD0000000000000000000314 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				DD00000000000000000000B1 /* DungeonsAndDeadlines */,
@@ -163,6 +219,7 @@
 				DD0000000000000000000103 /* DDIntents */,
 				DD0000000000000000000104 /* DDDesign */,
 				DD0000000000000000000107 /* DDSync */,
+				DD0000000000000000000108 /* DDScreenTime */,
 			);
 			productName = DungeonsAndDeadlines;
 			productReference = DD00000000000000000000A1 /* DungeonsAndDeadlines.app */;
@@ -215,6 +272,52 @@
 			productReference = DD00000000000000000000A3 /* DungeonsAndDeadlinesUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		DD00000000000000000000D4 /* DDFocusMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD0000000000000000000440 /* Build configuration list for PBXNativeTarget "DDFocusMonitor" */;
+			buildPhases = (
+				DD00000000000000000000EC /* Sources */,
+				DD00000000000000000000EB /* Frameworks */,
+				DD00000000000000000000ED /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DD00000000000000000000B5 /* DDFocusMonitor */,
+			);
+			name = DDFocusMonitor;
+			packageProductDependencies = (
+				DD0000000000000000000131 /* DDScreenTime */,
+			);
+			productName = DDFocusMonitor;
+			productReference = DD00000000000000000000A5 /* DDFocusMonitor.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		DD00000000000000000000D5 /* DDShieldConfig */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DD0000000000000000000450 /* Build configuration list for PBXNativeTarget "DDShieldConfig" */;
+			buildPhases = (
+				DD00000000000000000000EF /* Sources */,
+				DD00000000000000000000EE /* Frameworks */,
+				DD00000000000000000000F2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DD00000000000000000000B6 /* DDShieldConfig */,
+			);
+			name = DDShieldConfig;
+			packageProductDependencies = (
+				DD0000000000000000000141 /* DDScreenTime */,
+			);
+			productName = DDShieldConfig;
+			productReference = DD00000000000000000000A6 /* DDShieldConfig.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -234,6 +337,12 @@
 					DD00000000000000000000D3 = {
 						CreatedOnToolsVersion = 27.0;
 						TestTargetID = DD00000000000000000000D1;
+					};
+					DD00000000000000000000D4 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					DD00000000000000000000D5 = {
+						CreatedOnToolsVersion = 27.2;
 					};
 				};
 			};
@@ -257,6 +366,8 @@
 				DD00000000000000000000D1 /* DungeonsAndDeadlines */,
 				DD00000000000000000000D2 /* DDWidgetsExtension */,
 				DD00000000000000000000D3 /* DungeonsAndDeadlinesUITests */,
+				DD00000000000000000000D4 /* DDFocusMonitor */,
+				DD00000000000000000000D5 /* DDShieldConfig */,
 			);
 		};
 /* End PBXProject section */
@@ -277,6 +388,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		DD00000000000000000000EA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD00000000000000000000ED /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD00000000000000000000F2 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -307,6 +432,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DD00000000000000000000EC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DD00000000000000000000EF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -319,6 +458,16 @@
 			isa = PBXTargetDependency;
 			target = DD00000000000000000000D1 /* DungeonsAndDeadlines */;
 			targetProxy = DD0000000000000000000302 /* PBXContainerItemProxy */;
+		};
+		DD0000000000000000000313 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DD00000000000000000000D4 /* DDFocusMonitor */;
+			targetProxy = DD0000000000000000000303 /* PBXContainerItemProxy */;
+		};
+		DD0000000000000000000314 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DD00000000000000000000D5 /* DDShieldConfig */;
+			targetProxy = DD0000000000000000000304 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -542,6 +691,106 @@
 			};
 			name = Release;
 		};
+		DD0000000000000000000441 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/DDFocusMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/DDFocusMonitor-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dungeons & Deadlines";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = at.fhooe.sail.dungeonsanddeadlines.focusmonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DD0000000000000000000442 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/DDFocusMonitor.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/DDFocusMonitor-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dungeons & Deadlines";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = at.fhooe.sail.dungeonsanddeadlines.focusmonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DD0000000000000000000451 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/DDShieldConfig.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/DDShieldConfig-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dungeons & Deadlines";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = at.fhooe.sail.dungeonsanddeadlines.shieldconfig;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DD0000000000000000000452 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Config/DDShieldConfig.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = UBQ8UHSHKQ;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/DDShieldConfig-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Dungeons & Deadlines";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = at.fhooe.sail.dungeonsanddeadlines.shieldconfig;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -577,6 +826,24 @@
 			buildConfigurations = (
 				DD0000000000000000000431 /* Debug */,
 				DD0000000000000000000432 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DD0000000000000000000440 /* Build configuration list for PBXNativeTarget "DDFocusMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DD0000000000000000000441 /* Debug */,
+				DD0000000000000000000442 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DD0000000000000000000450 /* Build configuration list for PBXNativeTarget "DDShieldConfig" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DD0000000000000000000451 /* Debug */,
+				DD0000000000000000000452 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -626,6 +893,18 @@
 		DD0000000000000000000114 /* DDDesign */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DDDesign;
+		};
+		DD0000000000000000000108 /* DDScreenTime */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DDScreenTime;
+		};
+		DD0000000000000000000131 /* DDScreenTime */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DDScreenTime;
+		};
+		DD0000000000000000000141 /* DDScreenTime */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DDScreenTime;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
