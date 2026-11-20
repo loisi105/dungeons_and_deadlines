@@ -25,6 +25,7 @@ struct RaidView: View {
     @State private var showJoin = false
     @State private var removing: Raid?
     @State private var showReport = false
+    @FocusState private var nicknameFocused: Bool
 
     init(raidID: UUID) {
         self.raidID = raidID
@@ -50,6 +51,7 @@ struct RaidView: View {
                 extraSections
             }
             .headerProminence(.increased)
+            .scrollDismissesKeyboard(.interactively)
             .dungeonScreen()
             .readableContentWidth()
             .navigationTitle("Party")
@@ -149,7 +151,15 @@ struct RaidView: View {
     private var youSection: some View {
         Section {
             TextField("Nickname", text: $nickname)
-                .onSubmit { try? DDStore.shared.renameMember(me, to: nickname); GameActions.changed(raidID) }
+                .focused($nicknameFocused)
+                .textContentType(.nickname)
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .submitLabel(.done)
+                .onSubmit(commitNickname)
+                // Settings-style: the name is kept when you tap away or leave the tab, not only on Return.
+                .onChange(of: nicknameFocused) { _, focused in if !focused { commitNickname() } }
+                .onDisappear(perform: commitNickname)
             if let mine = members.first(where: { $0.memberID == me }) {
                 RolePickerRow(role: Binding(
                     get: { mine.model.role },
@@ -160,12 +170,21 @@ struct RaidView: View {
                 ))
             }
             Toggle("Haptics", isOn: $hapticsOn)
+                .sensoryFeedback(.selection, trigger: hapticsOn)
             PhaseAlertsSetting()
             FocusBlockingSetting()
         } header: {
             Text("You").font(.headline)
         }
         .dungeonRow()
+    }
+
+    private func commitNickname() {
+        let name = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, members.first(where: { $0.memberID == me })?.nickname != name else { return }
+        nickname = name
+        try? DDStore.shared.renameMember(me, to: name)
+        GameActions.changed(raidID)
     }
 
     private var premiumSection: some View {

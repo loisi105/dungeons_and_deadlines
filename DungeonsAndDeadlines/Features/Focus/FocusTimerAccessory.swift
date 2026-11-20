@@ -14,6 +14,8 @@ struct FocusTimerAccessory: View {
     @Environment(\.tabViewBottomAccessoryPlacement) private var placement
     @Environment(Announcer.self) private var announcer
     @Query private var sessions: [FocusSessionRecord]
+    @State private var toggles = 0
+    @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
 
     init(raidID: UUID, open: @escaping () -> Void) {
         self.raidID = raidID
@@ -52,14 +54,17 @@ struct FocusTimerAccessory: View {
 
             Button(action: toggle) {
                 Image(systemName: session.state == .running ? "pause.fill" : "play.fill")
+                    .contentTransition(.symbolEffect(.replace))
                     .frame(minWidth: 44, minHeight: 44)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .sensoryFeedback(.impact(weight: .medium), trigger: toggles) { _, _ in hapticsOn }
             .accessibilityLabel(session.state == .running ? Text("Pause focus") : Text("Start focus"))
             .accessibilityInputLabels(session.state == .running ? ["Pause", "Pause focus"] : ["Start", "Focus", "Start focus"])
         }
         .padding(.horizontal, 16)
+        .animation(.smooth, value: session.state)
     }
 
     private var accessibilityLabel: Text {
@@ -71,6 +76,7 @@ struct FocusTimerAccessory: View {
     }
 
     private func toggle() {
+        toggles += 1
         do {
             if session.state == .running {
                 try GameActions.pauseFocus(raidID)

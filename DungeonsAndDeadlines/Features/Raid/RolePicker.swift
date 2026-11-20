@@ -1,5 +1,6 @@
 import SwiftUI
 import GameCore
+import DDPersistence
 import DDDesign
 
 /// Class selection as a navigation row + list. Unlike the system picker row,
@@ -27,6 +28,8 @@ struct RolePickerRow: View {
 struct RoleList: View {
     @Binding var role: Role?
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
+    @State private var picks = 0
 
     var body: some View {
         List {
@@ -38,11 +41,13 @@ struct RoleList: View {
         }
         .dungeonScreen()
         .navigationTitle("Class")
+        .sensoryFeedback(.selection, trigger: picks) { _, _ in hapticsOn }
     }
 
     private func option(_ value: Role?) -> some View {
         Button {
             role = value
+            picks += 1
             dismiss()
         } label: {
             HStack {

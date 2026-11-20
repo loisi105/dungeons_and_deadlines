@@ -22,6 +22,7 @@ struct FocusView: View {
     @Namespace private var glass
     @State private var errorMessage: String?
     @State private var feedbackTrigger = 0
+    @State private var feedback: SensoryFeedback = .impact(weight: .medium)
     @ScaledMetric(relativeTo: .largeTitle) private var timerSize: CGFloat = 72
 
     init(raidID: UUID) {
@@ -63,7 +64,7 @@ struct FocusView: View {
             .focusBlockPicker(.focusTimer, blocking: blocking)
             // A picker requested while the sheet closed (during the access prompt) must not pop up later.
             .onDisappear { if blocking.showPicker == .focusTimer { blocking.showPicker = nil } }
-            .sensoryFeedback(.impact(weight: .medium), trigger: feedbackTrigger) { _, _ in hapticsOn }
+            .sensoryFeedback(trigger: feedbackTrigger) { _, _ in hapticsOn ? feedback : nil }
             .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
                 Button("OK") { errorMessage = nil }
             } message: {
@@ -81,6 +82,7 @@ struct FocusView: View {
                     Text(timerInterval: session.timerReferenceDate(at: .now)...Date.distantFuture, countsDown: false)
                 } else {
                     Text(Duration.seconds(Int(session.elapsed(at: .now))), format: .time(pattern: .hourMinuteSecond))
+                        .contentTransition(.numericText())
                 }
             }
             .font(.system(size: timerSize, weight: .bold, design: .rounded))
@@ -94,7 +96,9 @@ struct FocusView: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
                 .foregroundStyle(.readableSecondary)
+                .contentTransition(.opacity)
         }
+        .animation(reduceMotion ? nil : .smooth, value: session.state)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("focusTimer")
     }
@@ -211,6 +215,7 @@ struct FocusView: View {
     private func start() {
         do {
             try GameActions.startFocus(raidID)
+            feedback = .impact(weight: .medium)
             feedbackTrigger += 1
             announcer.announce(String(localized: "Focus started."))
         } catch { errorMessage = error.localizedDescription }
@@ -219,6 +224,7 @@ struct FocusView: View {
     private func pause() {
         do {
             try GameActions.pauseFocus(raidID)
+            feedback = .impact(weight: .medium)
             feedbackTrigger += 1
             announcer.announce(String(localized: "Focus paused."))
         } catch { errorMessage = error.localizedDescription }
@@ -227,6 +233,7 @@ struct FocusView: View {
     private func stop() {
         do {
             let attack = try GameActions.stopFocus(raidID)
+            feedback = attack == nil ? .impact(weight: .medium) : .success
             feedbackTrigger += 1
             if let attack {
                 announcer.announceOwnHit(attack)
