@@ -167,8 +167,9 @@ struct TasksView: View {
             let name = nickname(id) ?? String(localized: "Former member")
             return TaskGroup(id: id, title: String(localized: "\(name) (\(tasks.count))"), tasks: tasks)
         }
+        // Unassigned tasks come first: they're the ones still waiting for someone.
         if let unassigned = byAssignee[nil] {
-            groups.append(TaskGroup(id: "unassigned", title: String(localized: "Unassigned (\(unassigned.count))"), tasks: unassigned))
+            groups.insert(TaskGroup(id: "unassigned", title: String(localized: "Unassigned (\(unassigned.count))"), tasks: unassigned), at: 0)
         }
         return groups
     }
@@ -230,22 +231,26 @@ struct TasksView: View {
         // with the name underneath.
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             if !task.isDone && canComplete {
-                Button { attemptComplete(task) } label: { Label("Complete", systemImage: "checkmark") }
+                Button { attemptComplete(task) } label: { Label("Complete", systemImage: "checkmark")
+                    .labelStyle(.titleAndIcon) }
                     // Deeper than system green, so the white label reads (~5:1).
                     .tint(Color(hex: 0x1F7A3A))
             } else if task.isDone && canEdit {
                 // Like Reminders: a finished item swipes back open.
-                Button { reopen(task) } label: { Label("Reopen", systemImage: "arrow.uturn.backward") }
+                Button { reopen(task) } label: { Label("Reopen", systemImage: "arrow.uturn.backward")
+                    .labelStyle(.titleAndIcon) }
                     .tint(Color(hex: 0x4A3F8F))
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             if !task.isDone && canEdit {
                 // First listed = outermost = the full-swipe action.
-                Button(role: .destructive) { delete(task) } label: { Label("Delete", systemImage: "trash.fill") }
+                Button(role: .destructive) { delete(task) } label: { Label("Delete", systemImage: "trash.fill")
+                    .labelStyle(.titleAndIcon) }
                     // Without a tint the destructive button takes the app's gold accent at night.
                     .tint(Theme.dangerTop)
-                Button { editing = .edit(task) } label: { Label("Details", systemImage: "info.circle.fill") }
+                Button { editing = .edit(task) } label: { Label("Details", systemImage: "info.circle.fill")
+                    .labelStyle(.titleAndIcon) }
                     .tint(Color(hex: 0x8A5A12))
             }
         }
