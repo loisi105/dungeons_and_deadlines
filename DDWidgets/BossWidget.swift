@@ -157,6 +157,21 @@ struct TaskCard: ViewModifier {
 extension View {
     func nameplate() -> some View { modifier(Nameplate()) }
     func taskCard() -> some View { modifier(TaskCard()) }
+    func cardSecondary() -> some View { modifier(CardSecondary()) }
+}
+
+/// Secondary text on the task card. The system gray is only ~3.4:1 on the cream
+/// card, so full color uses inkSoft (8.9:1 light, 10.1:1 dark).
+struct CardSecondary: ViewModifier {
+    @Environment(\.widgetRenderingMode) private var renderingMode
+
+    func body(content: Content) -> some View {
+        if renderingMode == .fullColor {
+            content.foregroundStyle(Theme.inkSoft)
+        } else {
+            content.foregroundStyle(.secondary)
+        }
+    }
 }
 
 struct MediumBossView: View {
@@ -171,9 +186,9 @@ struct MediumBossView: View {
                 Text(snapshot.state.outcome == .planning ? "Planned quests" : "Next hits")
                     .font(.caption.weight(.bold))
                     .fontDesign(.serif)
-                    .foregroundStyle(.secondary)
+                    .cardSecondary()
                 if snapshot.openTasks.isEmpty {
-                    Text("No open tasks").font(.caption).foregroundStyle(.secondary)
+                    Text("No open tasks").font(.caption).cardSecondary()
                 }
                 ForEach(snapshot.openTasks.prefix(3)) { task in
                     TaskButton(task: task, snapshot: snapshot)
@@ -221,9 +236,9 @@ struct LargeBossView: View {
                 Text(snapshot.state.outcome == .planning ? "Planned quests" : "Next hits")
                     .font(.caption.weight(.bold))
                     .fontDesign(.serif)
-                    .foregroundStyle(.secondary)
+                    .cardSecondary()
                 if snapshot.openTasks.isEmpty {
-                    Text("No open tasks").font(.caption).foregroundStyle(.secondary)
+                    Text("No open tasks").font(.caption).cardSecondary()
                 }
                 ForEach(snapshot.openTasks) { task in
                     TaskButton(task: task, snapshot: snapshot)
@@ -247,14 +262,14 @@ struct TaskButton: View {
         Button(intent: CompleteTaskIntent(task: entity)) {
             HStack(spacing: 6) {
                 Image(systemName: "circle")
-                    .foregroundStyle(.secondary)
+                    .cardSecondary()
                 Text(task.title)
                     .font(.caption)
                     .lineLimit(1)
                 Spacer(minLength: 0)
                 Text(task.sizeLetter)
                     .font(.caption2.bold())
-                    .foregroundStyle(.secondary)
+                    .cardSecondary()
             }
         }
         .buttonStyle(.plain)
@@ -318,7 +333,7 @@ struct NoRaidView: View {
                 .font(.headline)
             Text("Create a raid in the app.")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .cardSecondary()
         }
         .multilineTextAlignment(.center)
         .accessibilityElement(children: .combine)
