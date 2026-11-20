@@ -231,6 +231,9 @@
     "Add tasks" : {
 
     },
+    "Add the steps for this deadline." : {
+
+    },
     "Add the tasks for this deadline. When the fight starts, the boss's health is locked at %lld HP from the planned tasks." : {
 
     },
@@ -705,7 +708,7 @@
     "No report" : {
 
     },
-    "No tasks yet. Add the steps for this deadline." : {
+    "No tasks yet" : {
 
     },
     "Nobody" : {
@@ -1127,7 +1130,7 @@
     "Your nickname" : {
 
     },
-    "Your picked apps are blocked while you focus" : {
+    "Your picked apps are blocked while you focus. Change" : {
 
     },
     "Your sword hits for %lld damage." : {

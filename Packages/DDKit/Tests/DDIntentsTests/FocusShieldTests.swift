@@ -76,7 +76,7 @@ struct FocusShieldTests {
     @Test("Intents (Live Activity, Control Center, Siri) drive the shield too")
     func intents() async throws {
         defer { tearDown() }
-        var toggle = ToggleFocusIntent()
+        let toggle = ToggleFocusIntent()
         toggle.value = true
         _ = try await toggle.perform()
         #expect(shielder.isShielding)

@@ -66,7 +66,7 @@ final class FakeTeammates {
 
         let open = store.tasks(raidID).filter { !$0.isDone }
         if Bool.random(), Int.random(in: 0..<3) == 0, let task = open.randomElement() {
-            try? store.completeTask(task.id, by: member.id)
+            _ = try? store.completeTask(task.id, by: member.id)
         } else {
             // A 5–20 minute focus chunk. Toggle "attacking" so the meter and Live Activity show it.
             let minutes = Int.random(in: 5...20)

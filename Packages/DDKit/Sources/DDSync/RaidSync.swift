@@ -215,7 +215,7 @@ public final class RaidSync {
             c.attacks = max(c.attacks ?? .distantPast, doc["serverCreatedAt"]?.date ?? .distantPast)
         }
         cursors[raidID] = c
-        if changed { try? store.settleOutcome(raidID) }
+        if changed { _ = try? store.settleOutcome(raidID) }
         return changed
     }
 }

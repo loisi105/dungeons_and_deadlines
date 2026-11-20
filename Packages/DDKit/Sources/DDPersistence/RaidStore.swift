@@ -292,7 +292,7 @@ public final class RaidStore {
 
     @discardableResult
     public func addTask(raidID: UUID, title: String, size: TaskSize, assigneeID: String? = nil) throws -> RaidTask {
-        guard let raid = raid(raidID) else { throw StoreError.raidNotFound }
+        guard raid(raidID) != nil else { throw StoreError.raidNotFound }
         // Any status: finished raids collect follow-up tasks before a resumed fight.
         let next = (tasks(raidID).map(\.sortIndex).max() ?? -1) + 1
         let task = RaidTask(raidID: raidID, title: title, size: size, assigneeID: assigneeID, createdAt: clock(), sortIndex: next)

@@ -73,8 +73,8 @@ extension LaunchOptions {
         ) else { return }
         let titles: [(String, TaskSize)] = [("Outline", .s), ("Literature review", .l), ("Draft chapter 1", .m), ("Fix citations", .s)]
         let tasks = titles.compactMap { try? store.addTask(raidID: raid.id, title: $0.0, size: $0.1) }
-        try? store.startFight(raid.id, by: me.memberID)
-        if let first = tasks.first { try? store.completeTask(first.id, by: me.memberID) }
+        _ = try? store.startFight(raid.id, by: me.memberID)
+        if let first = tasks.first { _ = try? store.completeTask(first.id, by: me.memberID) }
     }
 }
 
@@ -96,7 +96,7 @@ extension LaunchOptions {
         ) else { return }
         let tasks = [("Outline", TaskSize.s), ("Literature review", .l), ("Draft chapter 1", .m), ("Final read-through", .s)]
             .compactMap { try? store.addTask(raidID: raid.id, title: $0.0, size: $0.1) }
-        try? store.startFight(raid.id, by: me.memberID)
+        _ = try? store.startFight(raid.id, by: me.memberID)
         let crew = [("fake-mia", "Mia", Role.healer), ("fake-leo", "Leo", .tank), ("fake-zoe", "Zoe", .rogue)]
         for (id, name, role) in crew {
             store.mergeRemote(member: Member(id: id, raidID: raid.id, nickname: name, role: role, joinedAt: start))
@@ -166,7 +166,7 @@ final class AppEnvironment {
     /// Runs when the app returns to the foreground and refreshes everything that may
     /// have changed while away. A running focus timer just keeps counting.
     func didBecomeActive() {
-        if let raid = store.currentRaid() { try? store.settleOutcome(raid.id) }
+        if let raid = store.currentRaid() { _ = try? store.settleOutcome(raid.id) }
         #if os(iOS)
         LiveActivityController.reconcile()
         #endif
