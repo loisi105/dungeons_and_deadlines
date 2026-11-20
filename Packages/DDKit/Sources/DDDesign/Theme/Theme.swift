@@ -96,19 +96,21 @@ struct DungeonPanel: ViewModifier {
 
 extension View {
     /// Keeps list and scroll content at a comfortable reading width on iPad,
-    /// centered, while backgrounds still fill the screen. No effect on iPhone.
-    public func readableContentWidth(_ maxWidth: CGFloat = 760) -> some View {
-        modifier(ReadableContentWidth(maxWidth: maxWidth))
+    /// centered, while backgrounds still fill the screen. On iPhone the margin is
+    /// `minMargin` (0 lets rows run edge to edge).
+    public func readableContentWidth(_ maxWidth: CGFloat = 760, minMargin: CGFloat = 0) -> some View {
+        modifier(ReadableContentWidth(maxWidth: maxWidth, minMargin: minMargin))
     }
 }
 
 struct ReadableContentWidth: ViewModifier {
     let maxWidth: CGFloat
+    let minMargin: CGFloat
     @State private var width: CGFloat = 0
 
     func body(content: Content) -> some View {
         content
-            .contentMargins(.horizontal, max(0, (width - maxWidth) / 2), for: .scrollContent)
+            .contentMargins(.horizontal, max(minMargin, (width - maxWidth) / 2), for: .scrollContent)
             .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
     }
 }

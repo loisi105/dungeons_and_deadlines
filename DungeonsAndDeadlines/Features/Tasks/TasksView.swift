@@ -79,9 +79,12 @@ struct TasksView: View {
             openSection
             doneSection
         }
+        .listStyle(.insetGrouped)
+        // Each task is its own cell-sized card, so swipe buttons line up with it.
+        .listRowSpacing(8)
         .headerProminence(.increased)
-            .dungeonScreen()
-            .readableContentWidth()
+        .dungeonScreen()
+        .readableContentWidth(minMargin: 16)
     }
 
     @ToolbarContentBuilder
@@ -113,7 +116,7 @@ struct TasksView: View {
                     }
                 }
             }
-            .dungeonRow()
+            .questCard()
         }
     }
 
@@ -129,7 +132,7 @@ struct TasksView: View {
                         .readableFootnote()
                 }
             }
-            .dungeonRow()
+            .questCard()
         }
     }
 
@@ -138,6 +141,7 @@ struct TasksView: View {
             if open.isEmpty {
                 Text(tasks.isEmpty ? "No tasks yet. Add the steps for this deadline." : "All tasks done!")
                     .foregroundStyle(.readableSecondary)
+                    .questCard()
             }
             ForEach(open) { task in
                 row(task).moveDisabled(!canEdit)
@@ -146,7 +150,6 @@ struct TasksView: View {
         } header: {
             Text("Open (\(open.count))")
         }
-        .dungeonRow()
     }
 
     @ViewBuilder
@@ -157,7 +160,6 @@ struct TasksView: View {
             } header: {
                 Text("Done (\(done.count))").font(.headline)
             }
-            .dungeonRow()
         }
     }
 
@@ -171,15 +173,20 @@ struct TasksView: View {
             }
         }
         .matchedTransitionSource(id: task.id, in: zoom)
+        .questCard(leading: 6)
+        // Mail/Reminders style: full swipe right completes (green, like the checkbox),
+        // full swipe left deletes.
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             if !task.isDone && canComplete {
                 Button("Complete", systemImage: "checkmark") { attemptComplete(task) }
                     .tint(.green)
             }
         }
-        .swipeActions(edge: .trailing) {
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             if !task.isDone && canEdit {
                 Button("Delete", systemImage: "trash", role: .destructive) { delete(task) }
+                    // Without a tint the destructive button takes the app's gold accent at night.
+                    .tint(Theme.dangerTop)
             }
         }
         .contextMenu {
@@ -264,6 +271,36 @@ struct TasksView: View {
         var ids = open.map(\.id)
         ids.move(fromOffsets: source, toOffset: destination)
         do { try DDStore.shared.moveTasks(raidID: raidID, orderedIDs: ids); GameActions.changed(raidID) } catch { errorMessage = error.localizedDescription }
+    }
+}
+
+extension View {
+    /// Quest Log rows as separate cards (inset grouped cells with row spacing), the way
+    /// iOS 26 draws a swiped cell: the card slides aside and the system's rounded swipe
+    /// buttons sit beside it on the page, the same shape and height, instead of opening a
+    /// rectangular hole in a strip of rows. `leading` is the content's inset in the card;
+    /// task rows pass less, since the checkbox's 44 pt tap target already pads the circle.
+    fileprivate func questCard(leading: CGFloat = 14) -> some View {
+        modifier(QuestCard(leading: leading))
+    }
+}
+
+private struct QuestCard: ViewModifier {
+    let leading: CGFloat
+    @Environment(\.colorSchemeContrast) private var contrast
+
+    func body(content: Content) -> some View {
+        content
+            .listRowInsets(EdgeInsets(top: 8, leading: leading, bottom: 8, trailing: 14))
+            .listRowSeparator(.hidden)
+            .listRowBackground(
+                // At least the system cell's corner radius, so its clip never shaves the
+                // edge. No border by default: mid-swipe the clip stays put while the card
+                // slides, and a border would show the cut.
+                RoundedRectangle(cornerRadius: 26, style: .continuous)
+                    .fill(Theme.card)
+                    .strokeBorder(contrast == .increased ? Theme.cardBorder : .clear, lineWidth: 2)
+            )
     }
 }
 
