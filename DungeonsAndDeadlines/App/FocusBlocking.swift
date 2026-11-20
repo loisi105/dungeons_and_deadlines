@@ -11,9 +11,10 @@ final class AppFocusShielder: FocusShielding {
     /// Side of the boss icon the shield screen shows, in pixels (64-pixel art, scaled 3×).
     static let iconSize = 192
 
-    func engage(until: Date, bossName: String) {
+    func engage(until: Date, bossName: String) -> Bool {
+        guard ScreenTimeShield.isAuthorized else { return false }
         Self.writeBossIcon(bossName: bossName)
-        ScreenTimeShield.engage(until: until, bossName: bossName)
+        return ScreenTimeShield.engage(until: until, bossName: bossName)
     }
 
     func release() {
@@ -108,6 +109,7 @@ final class FocusBlocking {
             return
         }
         isDenied = false
+        FocusShield.reconcile() // access may be new: put up a shield that couldn't go up before
         showPicker = place
     }
 
@@ -117,6 +119,7 @@ final class FocusBlocking {
         guard !LaunchOptions.isUITesting else { return }
         if ScreenTimeShield.isAuthorized {
             isDenied = false
+            FocusShield.reconcile() // access granted in Settings while a timer runs
         } else if isEnabled {
             isDenied = true
         }

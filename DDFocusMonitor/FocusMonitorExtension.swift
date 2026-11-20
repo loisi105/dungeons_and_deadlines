@@ -8,6 +8,6 @@ final class FocusMonitorExtension: DeviceActivityMonitor {
     override func intervalDidEnd(for activity: DeviceActivityName) {
         super.intervalDidEnd(for: activity)
         guard activity == .focusSafetyNet else { return }
-        ScreenTimeShield.clearShield()
+        ScreenTimeShield.clearShieldIfDue()
     }
 }

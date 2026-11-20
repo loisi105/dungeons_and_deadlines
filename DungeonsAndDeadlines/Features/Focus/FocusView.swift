@@ -61,6 +61,8 @@ struct FocusView: View {
             .sheetCloseButton()
             // This screen is a sheet, so it presents its own app picker.
             .focusBlockPicker(.focusTimer, blocking: blocking)
+            // A picker requested while the sheet closed (during the access prompt) must not pop up later.
+            .onDisappear { if blocking.showPicker == .focusTimer { blocking.showPicker = nil } }
             .sensoryFeedback(.impact(weight: .medium), trigger: feedbackTrigger) { _, _ in hapticsOn }
             .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
                 Button("OK") { errorMessage = nil }
@@ -151,7 +153,7 @@ struct FocusView: View {
         }
         .buttonStyle(.borderless)
         .accessibilityLabel(isBlocking
-            ? Text("Your picked apps are blocked while you focus")
+            ? Text("Your picked apps are blocked while you focus. Change")
             : Text("Block distracting apps while you focus"))
         .accessibilityHint(isBlocking
             ? Text("Changes which apps are blocked.")

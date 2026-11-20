@@ -75,6 +75,15 @@ struct FocusShieldPlanTests {
         #expect(short == DateInterval(start: tenAM.addingTimeInterval(300 - 900), end: tenAM.addingTimeInterval(300)))
     }
 
+    @Test("Shield ending at midnight: window ends 23:59:59 and is still 15 minutes long")
+    func safetyNetAtMidnight() {
+        let midnight = calendar.date(from: DateComponents(year: 2026, month: 11, day: 21))!
+        let w = FocusShieldPlan.safetyNetInterval(until: midnight, now: midnight.addingTimeInterval(-300), calendar: calendar)
+        #expect(w.end == midnight.addingTimeInterval(-1))
+        #expect(w.duration >= 900)
+        #expect(calendar.isDate(w.start, inSameDayAs: w.end))
+    }
+
     @Test("Safety-net window just after midnight stays inside the day")
     func safetyNetAfterMidnight() {
         let midnight = calendar.date(from: DateComponents(year: 2026, month: 11, day: 20))!

@@ -7,7 +7,8 @@ import DDPersistence
 @MainActor
 public protocol FocusShielding: AnyObject {
     /// Blocks the picked apps until `until` (a safety net lifts the block then, even if the app is gone).
-    func engage(until: Date, bossName: String)
+    /// Returns false if it couldn't (no Screen Time access), so the next reconcile tries again.
+    func engage(until: Date, bossName: String) -> Bool
     /// Lifts the block.
     func release()
 }
@@ -47,14 +48,15 @@ public enum FocusShield {
         guard let shielder else { return }
         let plan = plan(now: now ?? GameActions.store.clock())
         guard plan != current else { return }
-        current = plan
         switch plan {
         case .off:
             shielder.release()
+            current = plan
         case .on(let until):
             let session = GameActions.store.activeFocusSession(memberID: GameActions.me.memberID)
             let bossName = session.flatMap { GameActions.store.raid($0.raidID)?.bossName } ?? ""
-            shielder.engage(until: until, bossName: bossName)
+            // Not cached when it didn't apply (access missing), so granting access later works.
+            current = shielder.engage(until: until, bossName: bossName) ? plan : nil
         }
     }
 

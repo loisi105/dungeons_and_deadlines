@@ -20,6 +20,9 @@ public enum ScreenTimeShield {
             .appendingPathComponent("shield-boss.png")
     }
 
+    /// When the current shield should end; the monitor only clears a shield that is due.
+    public static let untilKey = "screenTime.shield.until"
+
     public static var bossName: String? {
         AppGroup.defaults.string(forKey: bossNameKey)
     }
@@ -85,9 +88,13 @@ extension ScreenTimeShield {
     // MARK: Shield on and off
 
     /// Blocks the picked apps and schedules the safety net that lifts the block at `until`.
-    @MainActor
-    public static func engage(until: Date, bossName: String, now: Date = .now) {
-        guard isAuthorized else { return }
+    /// Returns false without Screen Time access.
+    @MainActor @discardableResult
+    public static func engage(until: Date, bossName: String, now: Date = .now) -> Bool {
+        guard isAuthorized else { return false }
+        AppGroup.defaults.set(until.timeIntervalSince1970, forKey: untilKey)
+        // The net first: stopping an old net can end it, and its monitor must not clear the new shield.
+        scheduleSafetyNet(until: until, now: now)
         let picked = selection
         let store = ManagedSettingsStore(named: .dungeonsFocus)
         store.shield.applications = picked.applicationTokens.isEmpty ? nil : picked.applicationTokens
@@ -95,19 +102,28 @@ extension ScreenTimeShield {
         store.shield.webDomains = picked.webDomainTokens.isEmpty ? nil : picked.webDomainTokens
         store.shield.webDomainCategories = picked.categoryTokens.isEmpty ? nil : .specific(picked.categoryTokens)
         AppGroup.defaults.set(bossName, forKey: bossNameKey)
-        scheduleSafetyNet(until: until, now: now)
+        return true
     }
 
     /// Lifts the block and cancels the safety net.
     @MainActor
     public static func release() {
-        // Never granted (or revoked, which clears the store anyway): nothing to lift.
-        guard isAuthorized else { return }
+        // Not guarded by access: at launch the status can read "not determined" for a moment,
+        // and clearing our own store is harmless.
+        AppGroup.defaults.removeObject(forKey: untilKey)
         DeviceActivityCenter().stopMonitoring([.focusSafetyNet])
         clearShield()
     }
 
-    /// Lifts the block. Safe to call from the monitor extension.
+    /// Lifts the block if it is due (or has no end recorded). For the monitor extension:
+    /// an old safety net that ends early because a new one replaced it must not clear the new shield.
+    public static func clearShieldIfDue(now: Date = .now) {
+        let until = AppGroup.defaults.double(forKey: untilKey)
+        guard until == 0 || now.timeIntervalSince1970 >= until - 60 else { return }
+        clearShield()
+    }
+
+    /// Lifts the block.
     public static func clearShield() {
         ManagedSettingsStore(named: .dungeonsFocus).clearAllSettings()
     }
@@ -118,13 +134,11 @@ extension ScreenTimeShield {
     static func scheduleSafetyNet(until: Date, now: Date) {
         let calendar = Calendar.current
         let window = FocusShieldPlan.safetyNetInterval(until: until, now: now, calendar: calendar)
-        // Hour/minute/second only, so both ends must be on the same day: midnight becomes 23:59:59.
-        var end = window.end
-        if end == calendar.startOfDay(for: end) { end = end.addingTimeInterval(-1) }
+        // Hour/minute/second only: `safetyNetInterval` keeps both ends on the same day.
         let parts: Set<Calendar.Component> = [.hour, .minute, .second]
         let schedule = DeviceActivitySchedule(
             intervalStart: calendar.dateComponents(parts, from: window.start),
-            intervalEnd: calendar.dateComponents(parts, from: end),
+            intervalEnd: calendar.dateComponents(parts, from: window.end),
             repeats: false
         )
         let center = DeviceActivityCenter()

@@ -9,11 +9,15 @@ import DDPersistence
 final class FakeShielder: FocusShielding {
     enum Call: Equatable { case engage(until: Date, boss: String), release }
     var calls: [Call] = []
+    var canEngage = true
     var isShielding: Bool {
         if case .engage = calls.last { return true }
         return false
     }
-    func engage(until: Date, bossName: String) { calls.append(.engage(until: until, boss: bossName)) }
+    func engage(until: Date, bossName: String) -> Bool {
+        calls.append(.engage(until: until, boss: bossName))
+        return canEngage
+    }
     func release() { calls.append(.release) }
 }
 
@@ -131,6 +135,18 @@ struct FocusShieldTests {
         try store.deleteRaidLocally(raid.id)
         GameActions.reloadSystemSurfaces()
         #expect(shielder.calls.last == .release)
+    }
+
+    @Test("A shield that couldn't go up (no Screen Time access) is retried on the next reconcile")
+    func retriesWithoutAccess() throws {
+        defer { tearDown() }
+        shielder.canEngage = false
+        try GameActions.startFocus(raid.id)
+        #expect(FocusShield.current == nil)
+        shielder.canEngage = true // access granted in Settings, app comes back
+        GameActions.reloadSystemSurfaces()
+        #expect(shielder.calls.count == 2)
+        #expect(FocusShield.current != nil)
     }
 
     @Test("Without a shielder (tests, widgets, -uiTesting) nothing is touched")

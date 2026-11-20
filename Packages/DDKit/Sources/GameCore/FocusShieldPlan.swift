@@ -27,9 +27,11 @@ public enum FocusShieldPlan: Equatable, Sendable {
 
     /// The window for the safety-net schedule: ends at `until`, and starts early enough to be
     /// at least `minimumScheduleSeconds` long (a start in the past is fine), but not before
-    /// the start of `until`'s day, so the schedule never crosses midnight.
+    /// the start of `until`'s day, so the schedule never crosses midnight. An `until` of exactly
+    /// midnight becomes 23:59:59 first (schedules use hour/minute/second of one day).
     public static func safetyNetInterval(until: Date, now: Date, calendar: Calendar = .current) -> DateInterval {
-        let dayStart = calendar.startOfDay(for: until == calendar.startOfDay(for: until) ? until.addingTimeInterval(-1) : until)
+        let until = until == calendar.startOfDay(for: until) ? until.addingTimeInterval(-1) : until
+        let dayStart = calendar.startOfDay(for: until)
         var start = min(now, until.addingTimeInterval(-minimumScheduleSeconds))
         start = max(start, dayStart)
         var end = until
