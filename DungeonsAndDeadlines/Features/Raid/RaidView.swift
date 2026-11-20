@@ -60,8 +60,8 @@ struct RaidView: View {
                         .disabled(!sync.isAvailable)
                 }
             }
-            .onAppear { gameCenter.showAccessPoint(true) }
-            .onDisappear { gameCenter.showAccessPoint(false) }
+            // No floating Game Center access point here: it's a fixed overlay that sits on
+            // top of this scrolling list. The Game Center rows below open the same dashboard.
             .sheet(isPresented: $showJoin) { JoinRaidView() }
             .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
             // Screen level, not on the Premium row: sheets attached to list rows get
@@ -192,6 +192,9 @@ struct RaidView: View {
                 } icon: {
                     Image(systemName: "gamecontroller.fill")
                 }
+                Button("Game Center", systemImage: "person.crop.circle") { gameCenter.openDashboard(.dashboard) }
+                    .accessibilityHint(Text("Shows your Game Center profile and friends"))
+                    .accessibilityIdentifier("gameCenterDashboardButton")
                 Button("Achievements", systemImage: "trophy.fill") { gameCenter.openDashboard(.achievements) }
                 Button("Leaderboards", systemImage: "list.number") { gameCenter.openDashboard(.leaderboards) }
             } else {
