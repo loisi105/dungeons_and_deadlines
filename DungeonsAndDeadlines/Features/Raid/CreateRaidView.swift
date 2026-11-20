@@ -111,16 +111,8 @@ struct CreateRaidView: View {
             .deleteBossConfirmation($removing)
             .navigationTitle("New raid")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel", role: .cancel) { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Create", action: create)
-                        .disabled(trimmedName.isEmpty || isSaving)
-                        .accessibilityIdentifier("createRaidButton")
-                }
-            }
+            .sheetCancelConfirm("Create", confirmIdentifier: "createRaidButton",
+                                isEnabled: !trimmedName.isEmpty && !isSaving, onConfirm: create)
         }
     }
 

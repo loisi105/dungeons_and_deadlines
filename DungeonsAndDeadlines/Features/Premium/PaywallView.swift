@@ -3,7 +3,7 @@ import SwiftUI
 import GameCore
 import DDDesign
 
-/// Soft paywall: explains what Premium adds and can always be dismissed ("Not now").
+/// Soft paywall: explains what Premium adds and can always be dismissed (the close X).
 /// Purchasing uses Apple's native SubscriptionStoreView (prices, trial, restore).
 struct PaywallView: View {
     /// Why the paywall appeared; nil when opened from the Party tab.
@@ -16,53 +16,47 @@ struct PaywallView: View {
     @State private var storeAvailable: Bool?
 
     var body: some View {
-        Group {
-            if storeAvailable == true {
-                SubscriptionStoreView(productIDs: Entitlements.productIDs) {
-                    header
-                }
-                .subscriptionStoreControlStyle(.prominentPicker)
-                .subscriptionStoreButtonLabel(.multiline)
-                .storeButton(.visible, for: .restorePurchases)
-                .storeButton(.hidden, for: .cancellation)
-                .containerBackground(Theme.parchment, for: .subscriptionStore)
-                .onInAppPurchaseCompletion { _, _ in
-                    await entitlements.refresh()
-                    if entitlements.isPremium { dismiss() }
-                }
-            } else {
-                // Offline, another storefront, or products not set up yet: still explain Premium.
-                ScrollView {
-                    VStack(spacing: 16) {
+        NavigationStack {
+            Group {
+                if storeAvailable == true {
+                    SubscriptionStoreView(productIDs: Entitlements.productIDs) {
                         header
-                        if storeAvailable == false {
-                            Text("Purchases aren't available right now. Check your connection and try again later.")
-                                .multilineTextAlignment(.center)
-                                .foregroundStyle(.readableSecondary)
-                                .dungeonPanel()
-                                .padding(.horizontal)
-                        } else {
-                            ProgressView("Loading plans…")
-                        }
                     }
-                    .padding(.bottom, 24)
+                    .subscriptionStoreControlStyle(.prominentPicker)
+                    .subscriptionStoreButtonLabel(.multiline)
+                    .storeButton(.visible, for: .restorePurchases)
+                    .storeButton(.hidden, for: .cancellation)
+                    .containerBackground(Theme.parchment, for: .subscriptionStore)
+                    .onInAppPurchaseCompletion { _, _ in
+                        await entitlements.refresh()
+                        if entitlements.isPremium { dismiss() }
+                    }
+                } else {
+                    // Offline, another storefront, or products not set up yet: still explain Premium.
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            header
+                            if storeAvailable == false {
+                                Text("Purchases aren't available right now. Check your connection and try again later.")
+                                    .multilineTextAlignment(.center)
+                                    .foregroundStyle(.readableSecondary)
+                                    .dungeonPanel()
+                                    .padding(.horizontal)
+                            } else {
+                                ProgressView("Loading plans…")
+                            }
+                        }
+                        .padding(.bottom, 24)
+                    }
                 }
             }
+            .background(DungeonBackground())
+            .fontDesign(.serif)
+            .foregroundStyle(Theme.ink)
+            .tint(Theme.accent)
+            .navigationBarTitleDisplayMode(.inline)
+            .sheetCloseButton(identifier: "paywallNotNow")
         }
-        .safeAreaInset(edge: .top) {
-            HStack {
-                Spacer()
-                Button("Not now") { dismiss() }
-                    .secondaryActionStyle()
-                    .accessibilityIdentifier("paywallNotNow")
-            }
-            .padding(.horizontal)
-            .padding(.top, 8)
-        }
-        .background(DungeonBackground())
-        .fontDesign(.serif)
-        .foregroundStyle(Theme.ink)
-        .tint(Theme.accent)
         // Page-size sheet on iPad, so the whole paywall fits instead of a cramped form sheet.
         .presentationSizing(.page)
         .task {

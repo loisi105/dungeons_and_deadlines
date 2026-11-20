@@ -111,12 +111,7 @@ struct BossPickerSheet: View {
             .dungeonScreen()
             .navigationTitle("Choose your boss")
             .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                        .accessibilityIdentifier("bossPickerDoneButton")
-                }
-            }
+            .sheetCloseButton(identifier: "bossPickerDoneButton")
         }
         .sheet(item: $paywall) { PaywallView(reason: $0.block) }
         // Full height: a medium detent clips the grid at large text sizes.
