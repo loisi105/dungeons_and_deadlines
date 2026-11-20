@@ -135,7 +135,7 @@ struct Stat: View {
 
     var body: some View {
         VStack {
-            Text(value).font(.title2.bold()).monospacedDigit()
+            Text(value).font(.title2.bold()).monospacedDigit().contentTransition(.numericText())
             Text(label).font(.caption).foregroundStyle(.readableSecondary)
         }
         .accessibilityElement(children: .combine)

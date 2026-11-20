@@ -43,7 +43,7 @@ public struct RPGButtonStyle: ButtonStyle {
                             shape.inset(by: 3).stroke(.white.opacity(isEnabled ? 0.25 : 0.1), lineWidth: 1)
                         }
                         .overlay { shape.stroke(Theme.outline, lineWidth: contrast == .increased ? 3 : 2) }
-                        .brightness(pressed && reduceMotion ? -0.12 : 0)
+                        .brightness(pressed ? -0.12 : 0)
                 }
                 .offset(y: pressed && !reduceMotion ? ledge : 0)
                 .background {
@@ -51,7 +51,7 @@ public struct RPGButtonStyle: ButtonStyle {
                 }
                 .padding(.bottom, ledge)
                 .contentShape(Rectangle())
-                .animation(reduceMotion ? nil : .easeOut(duration: 0.08), value: pressed)
+                .animation(reduceMotion ? nil : .snappy(duration: 0.12), value: pressed)
         }
 
         private var fill: [Color] {

@@ -13,6 +13,7 @@ struct MeterView: View {
 
     @AppStorage("settings.meterAsList", store: AppGroup.defaults) private var asList = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @Query private var attacks: [AttackRecord]
     @Query private var members: [MemberRecord]
@@ -57,6 +58,7 @@ struct MeterView: View {
                             Label("List", systemImage: "list.number").tag(true)
                         }
                         .pickerStyle(.segmented)
+                        .sensoryFeedback(.selection, trigger: asList)
                     }
                     .dungeonRow()
                 }
@@ -86,6 +88,9 @@ struct MeterView: View {
             .dungeonScreen()
             .readableContentWidth()
             .navigationTitle("Meter")
+            // Rows re-rank and numbers tick up as hits arrive.
+            .animation(reduceMotion ? nil : .snappy, value: rows.map(\.stats.total))
+            .animation(reduceMotion ? nil : .snappy, value: asList)
         }
     }
 
@@ -109,6 +114,7 @@ struct MeterView: View {
                             Text("\(row.stats.total)")
                                 .font(.caption.bold())
                                 .monospacedDigit()
+                                .contentTransition(.numericText())
                         }
                 }
             }
@@ -137,6 +143,7 @@ struct MeterView: View {
                     Text("\(index + 1). \(row.name): \(row.stats.total)")
                         .font(.headline)
                         .monospacedDigit()
+                        .contentTransition(.numericText())
                     Group {
                         if dynamicTypeSize.isAccessibilitySize {
                             VStack(alignment: .leading, spacing: 4) {

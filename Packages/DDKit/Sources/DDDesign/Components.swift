@@ -43,7 +43,7 @@ public struct HPBar: View {
         .frame(height: height)
         .background(PixelCornerShape(step: 3).fill(Theme.card))
         .overlay(PixelCornerShape(step: 3).stroke(Theme.outline, lineWidth: contrast == .increased ? 3 : 2))
-        .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: filled)
+        .animation(reduceMotion ? nil : .smooth(duration: 0.35), value: filled)
         .accessibilityRepresentation {
             // Label set directly (no hidden Text child that the audit would measure).
             ProgressView(value: Double(current), total: Double(Swift.max(max, 1)))

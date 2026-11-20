@@ -131,6 +131,7 @@ struct BossView: View {
             .frame(maxWidth: .infinity)
         }
         .scrollIndicators(.hidden)
+        .scrollBounceBehavior(.basedOnSize)
         .dungeonScreen()
     }
 
@@ -182,6 +183,7 @@ struct BossView: View {
                 layout {
                     Text("\(state.currentHP) / \(state.maxHP) HP")
                         .monospacedDigit()
+                        .contentTransition(.numericText(countsDown: true))
                     if !dynamicTypeSize.isAccessibilitySize { Spacer() }
                     deadlineText(raid: raid)
                 }
@@ -192,6 +194,7 @@ struct BossView: View {
             }
         }
         .sensoryFeedback(.impact(weight: .heavy), trigger: hitCount) { _, _ in hapticsOn }
+        .animation(reduceMotion ? nil : .smooth, value: state.currentHP)
     }
 
     /// The phase badge opens how long the phase lasts, what's next, and (for the leader)
