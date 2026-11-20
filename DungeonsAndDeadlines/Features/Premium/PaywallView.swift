@@ -86,6 +86,7 @@ struct PaywallView: View {
             VStack(alignment: .leading, spacing: 10) {
                 benefit("person.3.fill", "Raid with up to 4 friends", "Create group raids and share an invite code.")
                 benefit("rectangle.stack.fill", "Unlimited solo bosses", "Fight several deadlines at once.")
+                benefit("square.grid.3x3.fill", "All \(BossKind.allCases.count) bosses", "Krakens, liches, mimics and more. The Clock, Dragon and Goblin are free.")
                 benefit("heart.fill", "Support the party", "Keep new bosses and features coming.")
                 Text("Joining a friend's raid is always free.")
                     .readableFootnote()
@@ -102,6 +103,8 @@ struct PaywallView: View {
             String(localized: "Creating a group raid is a Premium feature.")
         case .soloLimitReached:
             String(localized: "The free plan has \(PlanLimits.freeActiveSoloRaids) active solo boss at a time. Finish it, or go Premium for more.")
+        case .premiumBoss:
+            String(localized: "Free raids can fight the Clock, Dragon or Goblin. Premium unlocks all \(BossKind.allCases.count) bosses.")
         }
     }
 

@@ -31,14 +31,47 @@ struct SpriteTests {
         ("Procrastination Wraith", .lich), ("Slide Deck Golem", .golem), ("Group Project Kraken", .kraken),
         ("Citation Goblin", .goblin), ("Midterm Mimic", .mimic), ("Wifi Phantom", .ghost),
         ("Syntax Spider", .spider), ("Burnout Shroom", .mushroom), ("Proctor Cyclops", .cyclops),
+        ("Kraken", .kraken), ("Unfinished Citation Goblin", .goblin), // the -uiTesting name, a free look
     ])
     func mapping(name: String, kind: BossKind) {
         #expect(BossKind.forName(name) == kind)
     }
 
+    @Test("Suggested names show the look they're listed under", arguments: BossKind.allCases)
+    func suggestedNames(kind: BossKind) {
+        #expect(kind.suggestedNames.count >= 2)
+        for name in kind.suggestedNames {
+            #expect(BossKind.forName(name) == kind, "\"\(name)\" shows \(BossKind.forName(name)), not \(kind)")
+        }
+    }
+
     @Test("Unknown names always get the same look")
     func stableFallback() {
         #expect(BossKind.forName("Mysterious Thing") == BossKind.forName("Mysterious Thing"))
+    }
+
+    @Test("Only the Clock, Dragon and Goblin are free")
+    func freeKinds() {
+        #expect(BossKind.freeKinds == [.alarmClock, .dragon, .goblin])
+        #expect(BossKind.allCases.filter(\.isFree) == BossKind.freeKinds)
+        #expect(BossKind.allCases.count(where: { !$0.isFree }) == 9)
+    }
+
+    @Test("Names without a keyword get a free look, the same one every time")
+    func fallbackIsFree() {
+        let names = ["Mysterious Thing", "Bob", "Q3 Taxes", "Moving Day", "Färdig", "🔥🔥🔥", "a", "Zzz"]
+            + (0..<200).map { "Untitled \($0)" }
+        var seen = Set<BossKind>()
+        for name in names {
+            let kind = BossKind.forName(name)
+            #expect(kind.isFree, "\"\(name)\" shows \(kind), a Premium look")
+            #expect(BossKind.forName(name) == kind)
+            seen.insert(kind)
+        }
+        // The hash still spreads custom names over all three free looks.
+        #expect(seen == Set(BossKind.freeKinds))
+        // Pinned, so the fallback can't drift and change the look of existing bosses.
+        #expect(BossKind.forName("Mysterious Thing") == BossKind.forName("mysterious thing"))
     }
 
     /// Writes every boss as a PNG for visual review: `DD_DUMP_ART=/some/dir swift test`.

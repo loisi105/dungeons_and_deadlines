@@ -5,8 +5,15 @@ import Foundation
 public enum BossKind: String, CaseIterable, Sendable {
     case alarmClock, dragon, slime, lich, golem, kraken, goblin, mimic, ghost, spider, mushroom, cyclops
 
-    /// Picks the look from the boss's name ("Thesis Hydra" → dragon). Unknown names
-    /// always map to the same boss.
+    /// The looks on the free plan; the others need Premium (the rule is
+    /// `PlanLimits.check(bossIsFree:plan:)` in GameCore, which can't see this type).
+    public static let freeKinds: [BossKind] = [.alarmClock, .dragon, .goblin]
+
+    /// Free-plan players can create raids with this look.
+    public var isFree: Bool { Self.freeKinds.contains(self) }
+
+    /// Picks the look from the boss's name ("Thesis Hydra" → dragon). Names without a
+    /// keyword always map to the same free look, so a custom name never needs Premium.
     public static func forName(_ name: String) -> BossKind {
         let n = name.lowercased()
         let table: [(BossKind, [String])] = [
@@ -24,8 +31,8 @@ public enum BossKind: String, CaseIterable, Sendable {
             (.slime, ["slime", "blob", "ooze", "jelly"]),
         ]
         for (kind, words) in table where words.contains(where: n.contains) { return kind }
-        let all = BossKind.allCases
-        return all[n.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) & 0xFFFF } % all.count]
+        let pool = freeKinds
+        return pool[n.unicodeScalars.reduce(0) { ($0 &* 31 &+ Int($1.value)) & 0xFFFF } % pool.count]
     }
 
     public var art: PixelArt {

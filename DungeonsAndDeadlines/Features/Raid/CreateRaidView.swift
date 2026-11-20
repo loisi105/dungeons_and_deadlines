@@ -20,6 +20,11 @@ struct CreateRaidView: View {
     @State private var role: Role?
     @State private var isSaving = false
     @State private var errorMessage: String?
+    @State private var choosingBoss = false
+    /// Bumped to rebuild the Mode picker, so it snaps back to Solo after a free player picks Raid.
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// The boss preview grows a little with the text size, up to 72pt.
+    @ScaledMetric(relativeTo: .body) private var thumbnailSize: CGFloat = 44
 
     var body: some View {
         NavigationStack {
@@ -27,11 +32,9 @@ struct CreateRaidView: View {
                 if let block = currentBlock {
                     Section {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(block == .multiplayerRequiresPremium ? "Group raids are Premium" : "Free plan: 1 active solo boss")
+                            Text(noticeTitle(block))
                                 .font(.headline)
-                            Text(block == .multiplayerRequiresPremium
-                                 ? "Joining a friend's raid stays free."
-                                 : "Finish or delete your current boss, or go Premium for unlimited bosses.")
+                            Text(noticeDetail(block))
                                 .readableFootnote()
                             Button { paywall = PaywallReason(block: block) } label: {
                                 Text("See Premium").frame(maxWidth: .infinity)
@@ -52,16 +55,16 @@ struct CreateRaidView: View {
                 Section {
                     TextField("Project or deadline", text: $name, axis: .vertical)
                         .accessibilityIdentifier("raidNameField")
-                    HStack {
-                        TextField("Boss name", text: $bossName, axis: .vertical)
-                            .accessibilityIdentifier("bossNameField")
-                        Button {
-                            bossName = BossNames.random()
-                        } label: {
-                            Image(systemName: "dice")
-                        }
-                        .buttonStyle(.borderless)
-                        .accessibilityLabel("Random boss name")
+                }
+                .dungeonRow()
+
+                Section {
+                    bossRow
+                    if let locked = lockedBoss {
+                        // The thumbnail's lock is hidden from VoiceOver, so this note says it.
+                        Text("\(Image(systemName: "lock.fill")) \(Text(locked.title)) is a Premium boss. Free raids can fight the Clock, Dragon or Goblin.")
+                            .readableFootnote()
+                            .accessibilityIdentifier("premiumBossNote")
                     }
                 }
                 .dungeonRow()
@@ -73,16 +76,20 @@ struct CreateRaidView: View {
                 .dungeonRow()
 
                 Section {
-                    Picker("Mode", selection: $multiplayer) {
+                    Picker("Mode", selection: modeSelection) {
                         Text("Solo").tag(false)
-                        Text("Raid (up to 5)").tag(true)
+                        raidModeLabel.tag(true)
                     }
                     .pickerStyle(.segmented)
-                    .disabled(!sync.isAvailable)
-                    .accessibilityHint(entitlements.isPremium ? Text("") : Text("Group raids need Premium."))
+                    // Free players can always tap Raid: it opens the paywall instead.
+                    .disabled(entitlements.isPremium && !sync.isAvailable)
+                    .accessibilityHint(entitlements.isPremium ? Text("") : Text("Group raids need Premium. Choosing Raid shows Premium."))
+                    .accessibilityIdentifier("modePicker")
                     RolePickerRow(role: $role)
                     Group {
-                        if sync.isAvailable {
+                        if !entitlements.isPremium {
+                            Text("Group raids for up to 5 come with Premium. Joining a friend's raid stays free.")
+                        } else if sync.isAvailable {
                             Text("A raid gets an invite code to share with your group.")
                         } else {
                             Text("Multiplayer needs Firebase; this build is solo only.")
@@ -100,6 +107,7 @@ struct CreateRaidView: View {
             .headerProminence(.increased)
             .dungeonScreen()
             .sheet(item: $paywall) { PaywallView(reason: $0.block) }
+            .sheet(isPresented: $choosingBoss) { BossPickerSheet(bossName: $bossName) }
             .deleteBossConfirmation($removing)
             .navigationTitle("New raid")
             .navigationBarTitleDisplayMode(.inline)
@@ -116,7 +124,121 @@ struct CreateRaidView: View {
         }
     }
 
+    // MARK: Boss row
+
+    /// Preview, name and buttons in one row; the full boss grid opens as a sheet.
+    /// At accessibility sizes the field gets its own line so it isn't squeezed.
+    @ViewBuilder private var bossRow: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: 16) {
+                    bossThumbnailButton
+                    Spacer()
+                    bossButtons
+                }
+                bossNameField
+            }
+            .padding(.vertical, 4)
+        } else {
+            HStack(spacing: 12) {
+                bossThumbnailButton
+                bossNameField
+                bossButtons
+            }
+        }
+    }
+
+    /// Dice and grid side by side; each keeps a 44pt hit area.
+    private var bossButtons: some View {
+        HStack(spacing: 0) {
+            randomBossButton
+            chooseBossButton
+        }
+    }
+
+    /// Same action as the grid button, so VoiceOver skips it.
+    private var bossThumbnailButton: some View {
+        Button { choosingBoss = true } label: {
+            BossThumbnail(kind: BossNames.kind(forName: bossName), isLocked: lockedBoss != nil, size: min(thumbnailSize, 72))
+        }
+        .buttonStyle(.plain)
+        .accessibilityHidden(true)
+    }
+
+    private var bossNameField: some View {
+        TextField("Boss name", text: $bossName, axis: .vertical)
+            .accessibilityIdentifier("bossNameField")
+    }
+
+    private var randomBossButton: some View {
+        Button {
+            bossName = BossNames.random(isPremium: entitlements.isPremium)
+        } label: {
+            Image(systemName: "dice")
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Random boss name")
+    }
+
+    private var chooseBossButton: some View {
+        Button { choosingBoss = true } label: {
+            Image(systemName: "square.grid.2x2")
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel("Choose boss")
+        .accessibilityIdentifier("chooseBossButton")
+    }
+
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    /// Segmented pickers show text only, so the Premium mark is in the label.
+    /// At accessibility sizes it's dropped to fit; the hint and footnote still say it.
+    private var raidModeLabel: Text {
+        if entitlements.isPremium { return Text("Raid (up to 5)") }
+        return dynamicTypeSize.isAccessibilitySize ? Text("Raid") : Text("Raid · Premium")
+    }
+
+    /// Choosing Raid on the free plan stays on Solo and offers Premium right away. The binding
+    /// keeps `multiplayer` false, so the control redraws on Solo (checked by the UI test). Don't
+    /// force it with `.id()`: rebuilding the picker made the accessibility audit flag the rows below it.
+    private var modeSelection: Binding<Bool> {
+        Binding {
+            multiplayer
+        } set: { wantsRaid in
+            if wantsRaid && !entitlements.isPremium {
+                paywall = PaywallReason(block: .multiplayerRequiresPremium)
+            } else {
+                multiplayer = wantsRaid
+            }
+        }
+    }
+
+    /// The Premium boss the current name turns into, if the player is on the free plan.
+    /// Only creating is gated; joined and existing raids keep any look.
+    private var lockedBoss: BossKind? {
+        guard let kind = BossNames.kind(forName: bossName), entitlements.block(bossIsFree: kind.isFree) != nil else { return nil }
+        return kind
+    }
+
+    private func noticeTitle(_ block: PlanLimits.Block) -> LocalizedStringKey {
+        switch block {
+        case .multiplayerRequiresPremium: "Group raids are Premium"
+        case .soloLimitReached: "Free plan: 1 active solo boss"
+        case .premiumBoss: "Premium bosses"
+        }
+    }
+
+    private func noticeDetail(_ block: PlanLimits.Block) -> LocalizedStringKey {
+        switch block {
+        case .multiplayerRequiresPremium: "Joining a friend's raid stays free."
+        case .soloLimitReached: "Finish or delete your current boss, or go Premium for unlimited bosses."
+        case .premiumBoss: "Free raids can fight the Clock, Dragon or Goblin. Premium unlocks all \(BossKind.allCases.count)."
+        }
+    }
 
     /// The unfinished solo boss that uses up the free slot.
     private var activeSoloRaid: Raid? {
@@ -134,6 +256,10 @@ struct CreateRaidView: View {
             paywall = PaywallReason(block: block)
             return
         }
+        if lockedBoss != nil {
+            paywall = PaywallReason(block: .premiumBoss)
+            return
+        }
         isSaving = true
         errorMessage = nil
         let boss = bossName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -141,7 +267,7 @@ struct CreateRaidView: View {
             defer { isSaving = false }
             do {
                 let raid = try DDStore.shared.createRaid(
-                    name: trimmedName, bossName: boss.isEmpty ? BossNames.random() : boss,
+                    name: trimmedName, bossName: boss.isEmpty ? BossNames.random(isPremium: entitlements.isPremium) : boss,
                     deadline: deadline, multiplayer: multiplayer, owner: LocalIdentity.current, role: role
                 )
                 if multiplayer { try await sync.publish(raid) }
@@ -154,14 +280,24 @@ struct CreateRaidView: View {
 }
 
 enum BossNames {
-    static let all = [
-        "Deadline Clock", "Exam Dragon", "Thesis Hydra", "Slide Deck Golem", "Essay Wyrm",
-        "Lab Report Ogre", "Group Project Kraken", "Citation Goblin", "Procrastination Wraith",
-        "Midterm Mimic", "Wifi Phantom", "Syntax Spider", "Burnout Shroom", "Proctor Cyclops", "Homework Slime",
-    ]
-    /// UI tests always get the longest name, the worst case for layout.
-    static func random() -> String {
-        LaunchOptions.isUITesting ? "Procrastination Wraith" : (all.randomElement() ?? "Exam Dragon")
+    /// A name with a random look: any of the 12 on Premium, only the free looks otherwise.
+    /// UI tests always get the longest free name, the worst case for layout.
+    static func random(isPremium: Bool = false) -> String {
+        if LaunchOptions.isUITesting { return "Unfinished Citation Goblin" }
+        let kinds = isPremium ? BossKind.allCases : BossKind.freeKinds
+        return random(for: kinds.randomElement() ?? .dragon)
+    }
+
+    /// A name that shows this boss's look.
+    static func random(for kind: BossKind) -> String {
+        kind.suggestedNames.randomElement() ?? kind.rawValue
+    }
+
+    /// The boss a name turns into: the same trimmed name that create() saves.
+    /// An empty name is no boss yet.
+    static func kind(forName bossName: String) -> BossKind? {
+        let name = bossName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return name.isEmpty ? nil : BossKind.forName(name)
     }
 }
 

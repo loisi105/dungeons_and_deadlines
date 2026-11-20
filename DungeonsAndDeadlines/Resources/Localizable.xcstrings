@@ -4,6 +4,9 @@
     "" : {
 
     },
+    "%@ %@ is a Premium boss. Free raids can fight the Clock, Dragon or Goblin." : {
+
+    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -109,6 +112,9 @@
     "%@, done" : {
 
     },
+    "%@, Premium" : {
+
+    },
     "%@: %@" : {
       "localizations" : {
         "en" : {
@@ -166,6 +172,48 @@
       }
     },
     "%lld%% HP" : {
+
+    },
+    "All %lld bosses" : {
+
+    },
+    "Choose boss" : {
+
+    },
+    "Choose your boss" : {
+
+    },
+    "Done" : {
+
+    },
+    "Free raids can fight the Clock, Dragon or Goblin. Premium unlocks all %lld bosses." : {
+
+    },
+    "Free raids can fight the Clock, Dragon or Goblin. Premium unlocks all %lld." : {
+
+    },
+    "Group raids for up to 5 come with Premium. Joining a friend's raid stays free." : {
+
+    },
+    "Group raids need Premium. Choosing Raid shows Premium." : {
+
+    },
+    "Krakens, liches, mimics and more. The Clock, Dragon and Goblin are free." : {
+
+    },
+    "Names your boss" : {
+
+    },
+    "Premium bosses" : {
+
+    },
+    "Raid · Premium" : {
+
+    },
+    "Shows Premium" : {
+
+    },
+    "The boss's look follows its name. Pick one, or type your own name." : {
 
     },
     "−%lld" : {
@@ -462,9 +510,6 @@
 
     },
     "Group raids are Premium" : {
-
-    },
-    "Group raids need Premium." : {
 
     },
     "Haptics" : {

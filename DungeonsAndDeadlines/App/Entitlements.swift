@@ -2,8 +2,8 @@ import StoreKit
 import SwiftUI
 import GameCore
 
-/// Premium status from StoreKit 2. Premium unlocks creating multiplayer raids and
-/// unlimited solo bosses; everything else (including joining raids) is free.
+/// Premium status from StoreKit 2. Premium unlocks creating multiplayer raids,
+/// unlimited solo bosses and all 12 boss looks; everything else (including joining raids) is free.
 ///
 /// Products are set up in App Store Connect (docs/MONETIZATION.md) and, for local
 /// testing, in Config/Products.storekit (selected in the scheme's Run action).
@@ -49,5 +49,10 @@ final class Entitlements {
     /// Nil if the player may create this raid; otherwise the reason to show the paywall.
     func block(createMultiplayer: Bool, raids: [Raid], playerID: String) -> PlanLimits.Block? {
         PlanLimits.check(createMultiplayer: createMultiplayer, plan: plan, raids: raids, playerID: playerID)
+    }
+
+    /// Nil if the player may create a raid with this boss look (`BossKind.isFree`); otherwise `.premiumBoss`.
+    func block(bossIsFree: Bool) -> PlanLimits.Block? {
+        PlanLimits.check(bossIsFree: bossIsFree, plan: plan)
     }
 }

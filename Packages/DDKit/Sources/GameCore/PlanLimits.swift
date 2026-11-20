@@ -1,6 +1,7 @@
 import Foundation
 
-/// Free vs Premium. Premium unlocks creating multiplayer raids and unlimited solo bosses.
+/// Free vs Premium. Premium unlocks creating multiplayer raids, unlimited solo bosses
+/// and every boss look.
 public enum Plan: String, Sendable {
     case free, premium
 }
@@ -16,6 +17,8 @@ public enum PlanLimits {
         case multiplayerRequiresPremium
         /// A free player already has an unfinished solo boss.
         case soloLimitReached
+        /// A free player picked a boss look that needs Premium.
+        case premiumBoss
     }
 
     /// Nil if the player may create this raid; otherwise why not.
@@ -23,6 +26,13 @@ public enum PlanLimits {
         guard plan == .free else { return nil }
         if createMultiplayer { return .multiplayerRequiresPremium }
         return activeSoloRaids(raids, playerID: playerID) >= freeActiveSoloRaids ? .soloLimitReached : nil
+    }
+
+    /// Nil if the player may create a raid with this boss look; otherwise why not.
+    /// Which looks are free is `BossKind.isFree` in DDDesign (Clock, Dragon, Goblin), which
+    /// GameCore can't see. Only creating is gated: joining a raid or keeping a boss is always free.
+    public static func check(bossIsFree: Bool, plan: Plan) -> Block? {
+        plan == .free && !bossIsFree ? .premiumBoss : nil
     }
 
     /// Solo raids this player owns that aren't finished.

@@ -27,4 +27,12 @@ struct PlanLimitsTests {
         #expect(PlanLimits.check(createMultiplayer: true, plan: .premium, raids: [raid(.active)], playerID: "me") == nil)
         #expect(PlanLimits.check(createMultiplayer: false, plan: .premium, raids: [raid(.active), raid(.active)], playerID: "me") == nil)
     }
+
+    @Test("Free can only create free boss looks; Premium gets every look")
+    func bossLooks() {
+        #expect(PlanLimits.check(bossIsFree: true, plan: .free) == nil)
+        #expect(PlanLimits.check(bossIsFree: false, plan: .free) == .premiumBoss)
+        #expect(PlanLimits.check(bossIsFree: false, plan: .premium) == nil)
+        #expect(PlanLimits.check(bossIsFree: true, plan: .premium) == nil)
+    }
 }

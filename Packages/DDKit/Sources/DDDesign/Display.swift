@@ -134,3 +134,22 @@ extension Outcome {
         }
     }
 }
+
+extension BossKind {
+    public var title: LocalizedStringResource {
+        switch self {
+        case .alarmClock: "Clock"
+        case .dragon: "Dragon"
+        case .slime: "Slime"
+        case .lich: "Lich"
+        case .golem: "Golem"
+        case .kraken: "Kraken"
+        case .goblin: "Goblin"
+        case .mimic: "Mimic"
+        case .ghost: "Ghost"
+        case .spider: "Spider"
+        case .mushroom: "Shroom"
+        case .cyclops: "Cyclops"
+        }
+    }
+}
