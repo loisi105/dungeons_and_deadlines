@@ -226,26 +226,26 @@ struct TasksView: View {
         // intermittently reports the row's text as not scaling with Dynamic Type.
         .listRowInsets(EdgeInsets(top: 8, leading: 6, bottom: 8, trailing: 14))
         // Full swipe right completes (green, like the checkbox), full swipe left deletes.
-        // Title-only buttons, like Notes: iOS 26 draws the text inside the capsule
-        // (with an icon it draws an icon circle and puts the text underneath).
+        // Apple's own symbols and names (Reminders/Mail): iOS 26 draws the icon in the capsule
+        // with the name underneath.
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             if !task.isDone && canComplete {
-                Button { attemptComplete(task) } label: { Text("Complete") }
+                Button { attemptComplete(task) } label: { Label("Complete", systemImage: "checkmark") }
                     // Deeper than system green, so the white label reads (~5:1).
                     .tint(Color(hex: 0x1F7A3A))
             } else if task.isDone && canEdit {
                 // Like Reminders: a finished item swipes back open.
-                Button { reopen(task) } label: { Text("Reopen") }
+                Button { reopen(task) } label: { Label("Reopen", systemImage: "arrow.uturn.backward") }
                     .tint(Color(hex: 0x4A3F8F))
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             if !task.isDone && canEdit {
                 // First listed = outermost = the full-swipe action.
-                Button(role: .destructive) { delete(task) } label: { Text("Delete") }
+                Button(role: .destructive) { delete(task) } label: { Label("Delete", systemImage: "trash.fill") }
                     // Without a tint the destructive button takes the app's gold accent at night.
                     .tint(Theme.dangerTop)
-                Button { editing = .edit(task) } label: { Text("Edit") }
+                Button { editing = .edit(task) } label: { Label("Details", systemImage: "info.circle.fill") }
                     .tint(Color(hex: 0x8A5A12))
             }
         }
