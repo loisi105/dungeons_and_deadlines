@@ -28,6 +28,8 @@ struct OnboardingView: View {
                             .font(.headline)
                         TextField("e.g. Ada", text: $name)
                             .textContentType(.nickname)
+                            .textInputAutocapitalization(.words)
+                            .autocorrectionDisabled()
                             .submitLabel(.continue)
                             .focused($nameFocused)
                             .onSubmit(save)
@@ -58,6 +60,7 @@ struct OnboardingView: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .dungeonScreen()
+            .sensoryFeedback(.error, trigger: showValidation) { _, new in new }
         }
     }
 

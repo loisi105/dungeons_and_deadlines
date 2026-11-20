@@ -21,6 +21,10 @@ struct CreateRaidView: View {
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var choosingBoss = false
+    private enum Field { case name, boss }
+    @FocusState private var focus: Field?
+    /// The boss name the sheet opened with, to tell whether the user changed anything.
+    @State private var initialBossName = ""
     /// Bumped to rebuild the Mode picker, so it snaps back to Solo after a free player picks Raid.
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// The boss preview grows a little with the text size, up to 72pt.
@@ -54,6 +58,10 @@ struct CreateRaidView: View {
                 }
                 Section {
                     TextField("Project or deadline", text: $name, axis: .vertical)
+                        .focused($focus, equals: .name)
+                        .textInputAutocapitalization(.sentences)
+                        .submitLabel(.next)
+                        .onSubmit { focus = .boss }
                         .accessibilityIdentifier("raidNameField")
                 }
                 .dungeonRow()
@@ -105,14 +113,19 @@ struct CreateRaidView: View {
                 }
             }
             .headerProminence(.increased)
+            .scrollDismissesKeyboard(.interactively)
             .dungeonScreen()
+            .onAppear {
+                if initialBossName.isEmpty { initialBossName = bossName }
+                focus = .name
+            }
             .sheet(item: $paywall) { PaywallView(reason: $0.block) }
             .sheet(isPresented: $choosingBoss) { BossPickerSheet(bossName: $bossName) }
             .deleteBossConfirmation($removing)
             .navigationTitle("New raid")
             .navigationBarTitleDisplayMode(.inline)
             .sheetCancelConfirm("Create", confirmIdentifier: "createRaidButton",
-                                isEnabled: !trimmedName.isEmpty && !isSaving, onConfirm: create)
+                                isEnabled: !trimmedName.isEmpty && !isSaving, hasChanges: !trimmedName.isEmpty || (!initialBossName.isEmpty && bossName != initialBossName), onConfirm: create)
         }
     }
 
@@ -159,6 +172,10 @@ struct CreateRaidView: View {
 
     private var bossNameField: some View {
         TextField("Boss name", text: $bossName, axis: .vertical)
+            .focused($focus, equals: .boss)
+            .textInputAutocapitalization(.words)
+            .submitLabel(.done)
+            .onSubmit { focus = nil }
             .accessibilityIdentifier("bossNameField")
     }
 

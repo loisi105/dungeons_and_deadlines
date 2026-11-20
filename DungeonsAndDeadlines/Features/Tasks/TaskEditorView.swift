@@ -47,6 +47,8 @@ struct TaskEditorView: View {
                 Section {
                     TextField("What needs doing?", text: $title, axis: .vertical)
                         .focused($titleFocused)
+                        .textInputAutocapitalization(.sentences)
+                        .submitLabel(.done)
                         .accessibilityIdentifier("taskTitleField")
                 }
                 .dungeonRow()
@@ -81,13 +83,23 @@ struct TaskEditorView: View {
                 }
             }
             .headerProminence(.increased)
+            .scrollDismissesKeyboard(.interactively)
             .dungeonScreen()
             .navigationTitle(isEditing ? "Edit task" : "New task")
             .navigationBarTitleDisplayMode(.inline)
-            .sheetCancelConfirm("Save", confirmIdentifier: "saveTaskButton", isEnabled: !trimmed.isEmpty, onConfirm: save)
+            .sheetCancelConfirm("Save", confirmIdentifier: "saveTaskButton", isEnabled: !trimmed.isEmpty, hasChanges: hasChanges, onConfirm: save)
             .onAppear { titleFocused = !isEditing }
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    /// Anything differs from what the sheet opened with.
+    private var hasChanges: Bool {
+        switch mode {
+        case .add: !trimmed.isEmpty || size != .m || assigneeID != nil
+        case .edit(let task): trimmed != task.title || size != task.size || assigneeID != task.assigneeID
+        }
     }
 
     private var isEditing: Bool { if case .edit = mode { true } else { false } }

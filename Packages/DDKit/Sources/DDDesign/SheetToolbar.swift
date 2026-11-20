@@ -41,6 +41,8 @@ extension View {
     ///   - isEnabled: Whether the confirm action can run yet.
     ///   - isWorking: Shows a spinner in place of the confirm button while it runs.
     ///   - cancelIdentifier: Accessibility identifier of the X.
+    ///   - hasChanges: The user typed or changed something. A drag can't close the sheet
+    ///     then, and the X asks "Discard Changes?" first (like Notes and Reminders).
     ///   - onCancel: What the X does. Defaults to dismissing the presentation.
     ///   - onConfirm: The confirm action. It dismisses the sheet itself when it succeeds.
     public func sheetCancelConfirm(
@@ -48,11 +50,13 @@ extension View {
         confirmIdentifier: String? = nil,
         isEnabled: Bool = true,
         isWorking: Bool = false,
+        hasChanges: Bool = false,
         cancelIdentifier: String = "cancelButton",
         onCancel: (() -> Void)? = nil,
         onConfirm: @escaping () -> Void
     ) -> some View {
-        modifier(SheetDismissToolbar(role: .cancel, identifier: cancelIdentifier, action: onCancel))
+        modifier(SheetDismissToolbar(role: .cancel, identifier: cancelIdentifier, action: onCancel, confirmDiscard: hasChanges))
+            .interactiveDismissDisabled(hasChanges)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     if isWorking {
@@ -72,17 +76,28 @@ private struct SheetDismissToolbar: ViewModifier {
     let role: ButtonRole
     let identifier: String
     let action: (() -> Void)?
+    var confirmDiscard = false
 
     @Environment(\.dismiss) private var dismiss
+    @State private var askingToDiscard = false
 
     func body(content: Content) -> some View {
-        content.toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button(role: role) {
-                    if let action { action() } else { dismiss() }
+        content
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(role: role) {
+                        if confirmDiscard { askingToDiscard = true } else { leave() }
+                    }
+                    .accessibilityIdentifier(identifier)
                 }
-                .accessibilityIdentifier(identifier)
             }
-        }
+            .confirmationDialog("Discard changes?", isPresented: $askingToDiscard, titleVisibility: .visible) {
+                Button("Discard Changes", role: .destructive) { leave() }
+                Button("Keep Editing", role: .cancel) {}
+            }
+    }
+
+    private func leave() {
+        if let action { action() } else { dismiss() }
     }
 }

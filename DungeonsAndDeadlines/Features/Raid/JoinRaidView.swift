@@ -10,6 +10,7 @@ struct JoinRaidView: View {
     @State private var role: Role?
     @State private var isJoining = false
     @State private var errorMessage: String?
+    @FocusState private var codeFocused: Bool
 
     var body: some View {
         NavigationStack {
@@ -18,6 +19,10 @@ struct JoinRaidView: View {
                     TextField("Invite code", text: $code)
                         .textInputAutocapitalization(.characters)
                         .autocorrectionDisabled()
+                        .keyboardType(.asciiCapable)
+                        .submitLabel(.join)
+                        .focused($codeFocused)
+                        .onSubmit { if code.count >= 6, !isJoining { join() } }
                         .font(.title2.monospaced())
                         .accessibilityHint("Six letters and numbers from the raid leader.")
                     Text("Ask the raid leader for the 6-character code. Raids hold up to 5 people.").readableFootnote()
@@ -33,10 +38,12 @@ struct JoinRaidView: View {
                 }
             }
             .headerProminence(.increased)
+            .scrollDismissesKeyboard(.interactively)
             .dungeonScreen()
+            .onAppear { codeFocused = true }
             .navigationTitle("Join raid")
             .navigationBarTitleDisplayMode(.inline)
-            .sheetCancelConfirm("Join", confirmIdentifier: "joinRaidButton", isEnabled: code.count >= 6, isWorking: isJoining, onConfirm: join)
+            .sheetCancelConfirm("Join", confirmIdentifier: "joinRaidButton", isEnabled: code.count >= 6, isWorking: isJoining, hasChanges: !code.isEmpty, onConfirm: join)
         }
     }
 
