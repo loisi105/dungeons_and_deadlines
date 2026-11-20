@@ -64,6 +64,10 @@ final class FocusBlocking {
     private(set) var pickedCount: Int
     /// Screen Time access was declined (or turned off later) while blocking is wanted.
     private(set) var isDenied = false
+    /// Why access couldn't be granted, in words the player can act on (shown with `isDenied`).
+    private(set) var deniedMessage = FocusBlocking.accessOffMessage
+
+    static let accessOffMessage = String(localized: "Screen Time access is off for Dungeons & Deadlines. Turn it on in Settings > Screen Time > Apps with Screen Time Access.")
     /// Asking for Screen Time access; the toggle shows on meanwhile.
     private(set) var isTurningOn = false
     /// Which picker is open, if any.
@@ -87,11 +91,10 @@ final class FocusBlocking {
         }
         isTurningOn = true
         defer { isTurningOn = false }
-        guard await ScreenTimeShield.requestAuthorization() else {
-            isDenied = true
+        guard await authorize() else {
+            setEnabled(false) // stays off until access works
             return
         }
-        isDenied = false
         setEnabled(true)
         if pickedCount == 0 { showPicker = place }
     }
@@ -104,11 +107,7 @@ final class FocusBlocking {
     /// Does nothing in `-uiTesting`.
     func choose(from place: PickerPlace = .root) async {
         guard !LaunchOptions.isUITesting else { return }
-        guard await ScreenTimeShield.requestAuthorization() else {
-            isDenied = true
-            return
-        }
-        isDenied = false
+        guard await authorize() else { return }
         FocusShield.reconcile() // access may be new: put up a shield that couldn't go up before
         showPicker = place
     }
@@ -121,7 +120,50 @@ final class FocusBlocking {
             isDenied = false
             FocusShield.reconcile() // access granted in Settings while a timer runs
         } else if isEnabled {
+            deniedMessage = Self.accessOffMessage
             isDenied = true
+        }
+    }
+
+    /// Asks for Screen Time access. On failure sets `isDenied` and a message that says what to do.
+    private func authorize() async -> Bool {
+        do {
+            try await ScreenTimeShield.requestAuthorization()
+            isDenied = false
+            return true
+        } catch {
+            deniedMessage = Self.message(for: error)
+            isDenied = true
+            return false
+        }
+    }
+
+    /// A readable reason for a failed Screen Time authorization.
+    static func message(for error: Error) -> String {
+        guard let error = error as? FamilyControlsError else {
+            if error is ScreenTimeShield.AuthorizationFailure { return accessOffMessage }
+            let ns = error as NSError
+            return String(localized: "Screen Time access failed (\(ns.domain) \(ns.code)): \(error.localizedDescription)")
+        }
+        switch error {
+        case .authorizationCanceled:
+            return String(localized: "Screen Time access wasn't allowed. Turn the setting on again to retry, or allow it in Settings > Screen Time > Apps with Screen Time Access.")
+        case .restricted:
+            return String(localized: "Screen Time access is restricted on this device, e.g. by Content & Privacy Restrictions or a device management profile.")
+        case .unavailable:
+            return String(localized: "Screen Time isn't available. Turn on Screen Time in Settings, and make sure you're signed in with your Apple Account.")
+        case .invalidAccountType:
+            return String(localized: "This Apple Account can't give Screen Time access (for example, a Managed Apple Account).")
+        case .invalidArgument:
+            return String(localized: "This build of the app isn't set up for Screen Time: the Family Controls capability is missing from its signing profile. Rebuild it from Xcode with the FH team.")
+        case .authorizationConflict:
+            return String(localized: "Another app already manages Screen Time on this device. Remove its access in Settings > Screen Time, then try again.")
+        case .networkError:
+            return String(localized: "Couldn't reach Apple to confirm Screen Time access. Check your internet connection and try again.")
+        case .authenticationMethodUnavailable:
+            return String(localized: "Set a device passcode (Settings > Face ID & Passcode) to allow Screen Time access.")
+        @unknown default:
+            return String(localized: "Screen Time access failed: \(error.localizedDescription)")
         }
     }
 
@@ -218,8 +260,9 @@ struct FocusBlockingSetting: View {
         }
 
         if blocking.isDenied {
-            Text("Screen Time access is off for Dungeons & Deadlines. Turn it on in Settings > Screen Time.")
+            Text(blocking.deniedMessage)
                 .readableFootnote()
+                .accessibilityIdentifier("focusBlockDeniedNote")
             Button("Open Settings", systemImage: "gear") {
                 if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
             }

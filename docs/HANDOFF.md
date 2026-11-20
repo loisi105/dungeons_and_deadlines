@@ -211,6 +211,20 @@ with the FH team so the development Family Controls entitlement is in the profil
 6. Turn the setting off while a timer runs → unblocked at once. Revoke access in Settings → Screen
    Time → Apps with Screen Time access → the Party tab shows the "access is off" note.
 
+### If Screen Time access fails on a device
+
+Checked on 2026-11-20: the bundle IDs and signing are correct. The app (`at.fhooe.sail.dungeonsanddeadlines`), `…focusmonitor` and `…shieldconfig` are prefixed with the app's ID. All three are signed with `com.apple.developer.family-controls` and the App Group. The team's development profiles for all three include Family Controls. The extension points match Xcode's templates (`com.apple.deviceactivity.monitor-extension`, `com.apple.ManagedSettingsUI.shield-configuration-service`).
+
+The app now shows the actual reason when access fails, under the Party toggle and as an alert on the focus sheet. It also logs it to Console.app: subsystem `at.fhooe.sail.dungeonsanddeadlines`, category `ScreenTime`. What each reason needs from you:
+
+- **"Screen Time isn't available"** (`unavailable`): turn on Settings → Screen Time on the iPhone, and sign in with an Apple Account.
+- **"restricted"**: Settings → Screen Time → Content & Privacy Restrictions, or a device management profile, blocks it. Remove the restriction.
+- **"Set a device passcode"**: the iPhone needs a passcode.
+- **"Another app already manages Screen Time"** (`authorizationConflict`): remove the other app under Settings → Screen Time → Apps with Screen Time Access.
+- **"capability is missing from its signing profile"** (`invalidArgument`): rebuild from Xcode with the FH team and automatic signing, so Xcode regenerates the profiles. If needed, first delete the old profiles in `~/Library/Developer/Xcode/UserData/Provisioning Profiles`. A wildcard (`*`) profile has no Family Controls.
+- **"wasn't allowed"**: the prompt was declined. Allow access under Settings → Screen Time → Apps with Screen Time Access, or delete and reinstall the app to get the prompt again.
+- **TestFlight/App Store builds:** these always fail until Apple approves the distribution entitlement for all three bundle IDs (see "What's left", item 5). Use a development build from Xcode until then.
+
 ## Not verified yet
 
 These need a person (or the simulator tool once `xcode-select` is fixed):

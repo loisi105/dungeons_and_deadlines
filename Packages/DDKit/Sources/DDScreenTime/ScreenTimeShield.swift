@@ -5,6 +5,7 @@ import DDPersistence
 import FamilyControls
 import ManagedSettings
 import DeviceActivity
+import os
 #endif
 
 /// Screen Time blocking while focusing: the shield (ManagedSettings), the safety-net schedule
@@ -73,17 +74,28 @@ extension ScreenTimeShield {
     }
 
     /// Asks for Screen Time access for this person's own device (no parent needed).
-    /// Returns false if they declined or Screen Time isn't available.
+    /// Throws why it failed (`FamilyControlsError` from the system, or `notApproved`),
+    /// so the app can say what to do instead of a generic "access is off".
     @MainActor
-    public static func requestAuthorization() async -> Bool {
-        if isAuthorized { return true }
+    public static func requestAuthorization() async throws {
+        if isAuthorized { return }
         do {
             try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
         } catch {
-            return false
+            log.error("Screen Time authorization failed: \(String(reflecting: error), privacy: .public)")
+            throw error
         }
-        return isAuthorized
+        guard isAuthorized else {
+            log.error("Screen Time authorization returned without approval: \(String(describing: AuthorizationCenter.shared.authorizationStatus), privacy: .public)")
+            throw AuthorizationFailure.notApproved
+        }
     }
+
+    /// Authorization returned without an error but access still isn't approved.
+    public enum AuthorizationFailure: Error { case notApproved }
+
+    /// Screen Time messages in Console.app: subsystem `at.fhooe.sail.dungeonsanddeadlines`, category `ScreenTime`.
+    static let log = Logger(subsystem: "at.fhooe.sail.dungeonsanddeadlines", category: "ScreenTime")
 
     // MARK: Shield on and off
 

@@ -138,7 +138,7 @@ struct FocusView: View {
                     await blocking.turnOn(from: .focusTimer)
                 }
                 if blocking.isDenied {
-                    errorMessage = String(localized: "Screen Time access is off for Dungeons & Deadlines. Turn it on in Settings > Screen Time.")
+                    errorMessage = blocking.deniedMessage
                 }
             }
         } label: {
