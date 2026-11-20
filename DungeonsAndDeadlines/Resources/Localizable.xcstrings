@@ -4,9 +4,6 @@
     "" : {
 
     },
-    "%@ %@ is a Premium boss. Free raids can fight the Clock, Dragon or Goblin." : {
-
-    },
     "%@ · %@" : {
       "localizations" : {
         "en" : {
@@ -43,6 +40,9 @@
         }
       }
     },
+    "%@ %@ is a Premium boss. Free raids can fight the Clock, Dragon or Goblin." : {
+
+    },
     "%@ %@ of focus damage left today" : {
       "localizations" : {
         "en" : {
@@ -59,6 +59,30 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$@ %2$@, attacking for %3$lld min"
+          }
+        }
+      }
+    },
+    "%@ Block distracting apps while you focus" : {
+
+    },
+    "%@ is %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is %2$@."
+          }
+        }
+      }
+    },
+    "%@ is now %@" : {
+      "comment" : "Phase alert title: boss name, then the phase (Angry, Enraged, Berserk)",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is now %2$@"
           }
         }
       }
@@ -112,6 +136,9 @@
     "%@ was defeated." : {
 
     },
+    "%@ Your picked apps are blocked while you focus. Change" : {
+
+    },
     "%@, done" : {
 
     },
@@ -154,6 +181,9 @@
     "%lld damage" : {
 
     },
+    "%lld picked" : {
+
+    },
     "%lld. %@: %lld" : {
       "localizations" : {
         "en" : {
@@ -175,48 +205,6 @@
       }
     },
     "%lld%% HP" : {
-
-    },
-    "All %lld bosses" : {
-
-    },
-    "Choose boss" : {
-
-    },
-    "Choose your boss" : {
-
-    },
-    "Done" : {
-
-    },
-    "Free raids can fight the Clock, Dragon or Goblin. Premium unlocks all %lld bosses." : {
-
-    },
-    "Free raids can fight the Clock, Dragon or Goblin. Premium unlocks all %lld." : {
-
-    },
-    "Group raids for up to 5 come with Premium. Joining a friend's raid stays free." : {
-
-    },
-    "Group raids need Premium. Choosing Raid shows Premium." : {
-
-    },
-    "Krakens, liches, mimics and more. The Clock, Dragon and Goblin are free." : {
-
-    },
-    "Names your boss" : {
-
-    },
-    "Premium bosses" : {
-
-    },
-    "Raid · Premium" : {
-
-    },
-    "Shows Premium" : {
-
-    },
-    "The boss's look follows its name. Pick one, or type your own name." : {
 
     },
     "−%lld" : {
@@ -255,7 +243,13 @@
     "Added after the fight started" : {
 
     },
+    "All %lld bosses" : {
+
+    },
     "All tasks done!" : {
+
+    },
+    "Apps to block" : {
 
     },
     "Ask the raid leader for the 6-character code. Raids hold up to 5 people." : {
@@ -282,6 +276,15 @@
     "Be honest: bigger tasks hit harder, and teammates see the size." : {
 
     },
+    "Block apps while focusing" : {
+
+    },
+    "Block distracting apps while you focus" : {
+
+    },
+    "Blocks the apps you pick while your focus timer runs." : {
+
+    },
     "Boss" : {
 
     },
@@ -297,6 +300,9 @@
     "Boss health when the fight starts: %lld HP" : {
 
     },
+    "Boss mood" : {
+
+    },
     "Boss name" : {
 
     },
@@ -309,10 +315,22 @@
     "By" : {
 
     },
+    "Calm down" : {
+
+    },
     "Cancel" : {
 
     },
+    "Changes which apps are blocked." : {
+
+    },
     "Chart" : {
+
+    },
+    "Choose boss" : {
+
+    },
+    "Choose your boss" : {
 
     },
     "Class" : {
@@ -402,6 +420,9 @@
     "Delete task" : {
 
     },
+    "Deletes this boss with all its tasks and hits. This can't be undone." : {
+
+    },
     "done" : {
 
     },
@@ -444,13 +465,7 @@
     "Focus" : {
 
     },
-    "Focus paused" : {
-
-    },
     "Focus paused at %@" : {
-
-    },
-    "Focus paused because you left the app for more than 2 minutes." : {
 
     },
     "Focus paused." : {
@@ -477,6 +492,9 @@
     "Focused: %@" : {
 
     },
+    "Follow the deadline" : {
+
+    },
     "Former member" : {
 
     },
@@ -490,6 +508,12 @@
 
     },
     "Free plan: 1 active solo boss, join any raid. Premium adds group raids and unlimited bosses." : {
+
+    },
+    "Free raids can fight the Clock, Dragon or Goblin. Premium unlocks all %lld bosses." : {
+
+    },
+    "Free raids can fight the Clock, Dragon or Goblin. Premium unlocks all %lld." : {
 
     },
     "From %lld to %lld HP" : {
@@ -516,6 +540,12 @@
 
     },
     "Group raids are Premium" : {
+
+    },
+    "Group raids for up to 5 come with Premium. Joining a friend's raid stays free." : {
+
+    },
+    "Group raids need Premium. Choosing Raid shows Premium." : {
 
     },
     "Haptics" : {
@@ -576,6 +606,9 @@
     "Keep new bosses and features coming." : {
 
     },
+    "Krakens, liches, mimics and more. The Clock, Dragon and Goblin are free." : {
+
+    },
     "Late" : {
 
     },
@@ -612,6 +645,9 @@
     "Locks the boss's health and starts the fight." : {
 
     },
+    "Make angrier" : {
+
+    },
     "Manage subscription" : {
 
     },
@@ -627,7 +663,16 @@
     "Mode" : {
 
     },
+    "Moves the boss one phase back, now and for the rest of the fight." : {
+
+    },
+    "Moves the boss one phase further, now and for the rest of the fight." : {
+
+    },
     "Multiplayer needs Firebase; this build is solo only." : {
+
+    },
+    "Names your boss" : {
 
     },
     "New" : {
@@ -669,19 +714,31 @@
     "None" : {
 
     },
-    "Not now" : {
+    "None picked" : {
 
     },
     "Not yet" : {
 
     },
+    "Notifications are off for Dungeons & Deadlines in Settings." : {
+
+    },
     "OK" : {
+
+    },
+    "Only the raid leader can change the boss's mood." : {
 
     },
     "Open (%lld)" : {
 
     },
+    "Open Settings" : {
+
+    },
     "Opens the focus timer." : {
+
+    },
+    "Opens the list of apps, categories and websites to block." : {
 
     },
     "Other raids" : {
@@ -705,10 +762,39 @@
     "Paused · %@" : {
 
     },
+    "Phase %lld: %@. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Phase %1$lld: %2$@. %3$@"
+          }
+        }
+      }
+    },
+    "Phase %lld: %@. Set by the raid leader." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Phase %1$lld: %2$@. Set by the raid leader."
+          }
+        }
+      }
+    },
+    "Phase alerts" : {
+
+    },
+    "Pick apps, categories or websites to block while you focus." : {
+
+    },
     "Planning" : {
 
     },
     "Premium" : {
+
+    },
+    "Premium bosses" : {
 
     },
     "Premium is active" : {
@@ -730,6 +816,9 @@
 
     },
     "Raid" : {
+
+    },
+    "Raid · Premium" : {
 
     },
     "Raid (up to 5)" : {
@@ -756,6 +845,9 @@
     "Ready when you are" : {
 
     },
+    "Removes this raid from your phone. Your teammates keep fighting." : {
+
+    },
     "Reopen" : {
 
     },
@@ -768,10 +860,22 @@
     "Save" : {
 
     },
+    "Screen Time access is off for Dungeons & Deadlines. Turn it on in Settings > Screen Time." : {
+
+    },
     "See Premium" : {
 
     },
     "See report" : {
+
+    },
+    "Sends a notification when a boss changes phase." : {
+
+    },
+    "Set ^[%lld step](inflect: true) angrier than the deadline." : {
+
+    },
+    "Set ^[%lld step](inflect: true) calmer than the deadline." : {
 
     },
     "Share" : {
@@ -781,6 +885,15 @@
 
     },
     "Show as" : {
+
+    },
+    "Shows Premium" : {
+
+    },
+    "Shows when the boss gets angrier" : {
+
+    },
+    "Shows your Game Center profile and friends" : {
 
     },
     "Sign in to Game Center" : {
@@ -833,6 +946,9 @@
 
     },
     "Status" : {
+
+    },
+    "Stays %@ until the deadline." : {
 
     },
     "Stop and attack" : {
@@ -901,10 +1017,16 @@
         }
       }
     },
+    "The boss follows the deadline again." : {
+
+    },
     "The boss gets angrier as the deadline gets closer." : {
 
     },
     "The boss is back. The fight is on!" : {
+
+    },
+    "The boss is now %@." : {
 
     },
     "The boss is now %@. %@" : {
@@ -917,10 +1039,19 @@
         }
       }
     },
+    "The boss's look follows its name. Pick one, or type your own name." : {
+
+    },
+    "The boss's mood follows the time left again." : {
+
+    },
     "The fight has started!" : {
 
     },
     "The fight hasn't started" : {
+
+    },
+    "The fight is over." : {
 
     },
     "The fight isn't over yet." : {
@@ -932,11 +1063,27 @@
     "The party" : {
 
     },
+    "The raid leader set the boss's mood." : {
+
+    },
     "These still dealt damage, but weren't part of the boss's health." : {
+
+    },
+    "They stay blocked while your focus timer runs." : {
 
     },
     "Time" : {
 
+    },
+    "Turns %@ %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Turns %1$@ %2$@."
+          }
+        }
+      }
     },
     "Unassigned (%lld)" : {
 
@@ -974,13 +1121,13 @@
     "You slam your shield for %lld damage." : {
 
     },
-    "You were away for more than 2 minutes, so your focus timer paused when you left. Resume it from the timer." : {
-
-    },
     "Your daggers strike for %lld damage." : {
 
     },
     "Your nickname" : {
+
+    },
+    "Your picked apps are blocked while you focus" : {
 
     },
     "Your sword hits for %lld damage." : {

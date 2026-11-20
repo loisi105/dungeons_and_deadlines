@@ -57,7 +57,7 @@ struct TasksView: View {
                 .sheet(item: $editing) { mode in
                     TaskEditorView(raidID: raidID, mode: mode)
                 }
-                .sensoryFeedback(.impact(weight: .heavy), trigger: completedCount) { _, _ in hapticsOn }
+                .sensoryFeedback(.success, trigger: completedCount) { _, _ in hapticsOn }
                 .startFightPrompt(task: $needsFightStart, raid: raid) { task in complete(task) }
                 .sheet(isPresented: $showResume) { ResumeFightView(raidID: raidID) }
                 .alert("Couldn't do that", isPresented: errorBinding) {
@@ -82,6 +82,21 @@ struct TasksView: View {
         // Like Notes: each group is one rounded container, rows split by separators.
         .listStyle(.insetGrouped)
         .headerProminence(.increased)
+        .animation(.default, value: tasks.map { "\($0.id)\($0.isDone)" })
+        .overlay {
+            // The system's empty state, like Reminders and Notes.
+            if tasks.isEmpty && !isFinished {
+                ContentUnavailableView {
+                    Label("No tasks yet", systemImage: "scroll")
+                } description: {
+                    Text("Add the steps for this deadline.")
+                } actions: {
+                    if canEdit {
+                        Button("Add task") { editing = .add }
+                    }
+                }
+            }
+        }
         .dungeonScreen()
         .readableContentWidth(minMargin: 16)
     }
@@ -160,9 +175,9 @@ struct TasksView: View {
 
     @ViewBuilder
     private var openSections: some View {
-        if open.isEmpty {
+        if open.isEmpty && !tasks.isEmpty {
             Section {
-                Text(tasks.isEmpty ? "No tasks yet. Add the steps for this deadline." : "All tasks done!")
+                Text("All tasks done!")
                     .foregroundStyle(.readableSecondary)
             } header: {
                 Text("Open (\(0))")
@@ -218,13 +233,20 @@ struct TasksView: View {
                 Button { attemptComplete(task) } label: { Text("Complete") }
                     // Deeper than system green, so the white label reads (~5:1).
                     .tint(Color(hex: 0x1F7A3A))
+            } else if task.isDone && canEdit {
+                // Like Reminders: a finished item swipes back open.
+                Button { reopen(task) } label: { Text("Reopen") }
+                    .tint(Color(hex: 0x4A3F8F))
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             if !task.isDone && canEdit {
+                // First listed = outermost = the full-swipe action.
                 Button(role: .destructive) { delete(task) } label: { Text("Delete") }
                     // Without a tint the destructive button takes the app's gold accent at night.
                     .tint(Theme.dangerTop)
+                Button { editing = .edit(task) } label: { Text("Edit") }
+                    .tint(Color(hex: 0x8A5A12))
             }
         }
         .contextMenu {
@@ -284,8 +306,12 @@ struct TasksView: View {
         do {
             let attack = try GameActions.completeTask(task.id)
             completedCount += 1
-            // Jump to the boss and play the class attack there (it announces the hit).
-            environment.castTaskAttack(attack, task: task)
+            // Let the row finish its own swipe and check-off animation first, then jump to
+            // the boss and play the class attack there (it announces the hit).
+            Task {
+                try? await Task.sleep(for: .milliseconds(450))
+                environment.castTaskAttack(attack, task: task)
+            }
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -372,6 +398,8 @@ struct CompleteButton: View {
             Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")
                 .font(.title2)
                 .foregroundStyle(task.isDone ? AnyShapeStyle(Color.green) : AnyShapeStyle(Theme.inkSoft))
+                .contentTransition(.symbolEffect(.replace))
+                .symbolEffect(.bounce, value: task.isDone)
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
         }
