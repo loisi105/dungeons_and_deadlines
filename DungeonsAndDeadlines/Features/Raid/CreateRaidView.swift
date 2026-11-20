@@ -117,7 +117,6 @@ struct CreateRaidView: View {
             .dungeonScreen()
             .onAppear {
                 if initialBossName.isEmpty { initialBossName = bossName }
-                focus = .name
             }
             .sheet(item: $paywall) { PaywallView(reason: $0.block) }
             .sheet(isPresented: $choosingBoss) { BossPickerSheet(bossName: $bossName) }
