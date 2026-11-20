@@ -1,115 +1,217 @@
-# Dungeons & Deadlines — Project Notes
+# Dungeons & Deadlines
 
-Working name: **Dungeons & Deadlines** (formerly "Deadline Dojo")
-Platform: iOS (SwiftUI), student project
-Last updated: 2026-11-19
+A pixel-art RPG for iPhone and iPad where every deadline is a boss. You plan the tasks for a
+project, start the fight, and then finishing tasks and running focus sessions deal damage. Beat
+the boss before the deadline, alone or in a raid of up to 5 friends.
 
-## Status
-M0–M7 are built and committed: the solo and multiplayer game, focus timer, widgets, Live Activity, damage meter, report, pixel-art theme and Game Center. What's left is account setup (Firebase, App Store Connect, signing) and the M8 stretch goals. **Start with [docs/HANDOFF.md](docs/HANDOFF.md)**: current state, how to build and test, what's left and gotchas.
+SwiftUI · iOS 26+ · SwiftData · App Intents · WidgetKit · ActivityKit · GameKit · StoreKit 2
 
-## Decisions (2026-11-19)
-- **Backend:** Firebase (Auth + Firestore), called over **REST without the iOS SDK**. The SDK added ~1.4 s to every launch.
-- **Art style:** pixel fantasy based on the icon art in `docs/icon/` (64×64 pixel art, cream/gold/night-purple palette). The app icon uses the background and boss layers, without the sword.
-- **Game Center:** sign-in, achievements and leaderboards (see [docs/GAME_CENTER.md](docs/GAME_CENTER.md)). Raids stay on Firebase.
-- **Minimum iOS: 26.0**, the lowest version that supports every planned feature:
-  - Liquid Glass APIs (`.glassEffect`, `GlassEffectContainer`, `.buttonStyle(.glass)`, `.tabViewBottomAccessory`): iOS 26. This is what sets the minimum.
-  - Control Center / Lock Screen controls: iOS 18
-  - SwiftData, `@Observable`, interactive widgets, `.sensoryFeedback`, accessibility audits in UI tests: iOS 17
-  - iOS 26 runs on iPhone 11 and newer
-- **Focus: architecture, accessibility, native touch, widgets, Liquid Glass.** See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-- **Boss HP is locked when the fight starts.** A raid has a planning phase (create tasks, invite members), then the leader starts the fight. At that moment max HP is calculated from the planned tasks (task damage total / 0.65, so ~65% from tasks and ~35% from focus time) and stored once. It never changes after that. Current HP is still derived from the attack log.
-  - Tasks added after the start still deal damage but are marked as late additions (shown in the report, for honesty).
-- **Team size: 1-5 people.** Solo is a raid with one member. Joining is refused when a raid already has 5 members. The per-person daily cap stays in, so one person can't carry the team.
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/boss.png" width="220" alt="Boss tab: the Exam Dragon with its phase badge, HP bar, deadline and latest hits"><br><sub>Boss</sub></td>
+    <td align="center"><img src="docs/screenshots/quest-log.png" width="220" alt="Quest Log: open and done tasks with their size and damage"><br><sub>Quest Log</sub></td>
+    <td align="center"><img src="docs/screenshots/meter.png" width="220" alt="Damage meter: burst (tasks) and sustained (focus) damage per party member"><br><sub>Damage meter</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/party.png" width="220" alt="Party tab: project, boss, deadline, status and four members with their classes"><br><sub>Party</sub></td>
+    <td align="center"><img src="docs/screenshots/report.png" width="220" alt="Raid report: victory, total damage and a boss-health-over-time chart"><br><sub>Raid report</sub></td>
+    <td align="center"><img src="docs/screenshots/report-titles.png" width="220" alt="Raid report: each member's damage with titles like MVP, Sniper, Grinder and AFK Legend"><br><sub>Titles</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/victory.png" width="220" alt="Boss tab after a win: See report, Add follow-up task, Resume the fight"><br><sub>Victory</sub></td>
+    <td align="center"><img src="docs/screenshots/widget.png" width="220" alt="Medium Home Screen widget: the boss, HP, time left and three tappable tasks"><br><sub>Home Screen widget</sub></td>
+    <td></td>
+  </tr>
+</table>
 
-## Concept
-Deadlines and group projects are boss fights. Finishing tasks and spending focused time on a project deal damage to the boss. Works in single player (personal deadlines) and multiplayer raids (group projects, WoW-style).
+<p align="center"><img src="docs/screenshots/ipad.png" width="600" alt="iPad: two-column Boss tab with the boss on the left and the latest hits on the right; the tab bar adds a Bosses section"><br><sub>iPad: two-column Boss tab; the Bosses section lists every boss</sub></p>
 
-## Idea history (how we got here)
-Favorites from brainstorming: Study Buddy, Sleep Bet, Procrastination Tracker, then Deadline Dojo (chosen).
+## Features
 
-Other ideas kept as possible features or future projects:
-- **Snitch**: missed check-in sends funny "exposed" notifications to friends
-- **Stake Pot**: friends stake virtual coins on goals, flakes lose theirs
-- **Phone Jail**: leaving the app during a focus session lets a cartoon prisoner escape
-- **Group Project Judge**: peer ratings and a funny contribution report (folded into the raid end screen)
-- **Spontaneous**: "who's free in the next hour?" status pings
-- **Library Radar**, **Exam Panic Meter**, **Wake-up Proof**, **Snooze Shame Wall**, **Lecture Bingo**, **Fake Busy**, **Rate My Chaos**, **Split the Fridge**
+**The fight**
+- **Boss tab:** a pixel-art boss, its phase, an HP bar, the time to the deadline and the latest hits.
+  Completing a task jumps here and plays your class's attack (mage orb, rogue daggers, tank shield
+  slam, healer beam, or a plain sword).
+- **Quest Log (Tasks tab):** tasks sized S / M / L (50 / 150 / 400 damage). Tap the checkbox or
+  swipe to complete, swipe to delete, drag to reorder.
+- **Focus timer:** 2 damage per focused minute (up to 3 hours a day), with a mini player in the tab
+  bar, a Live Activity on the Lock Screen and in the Dynamic Island, and a Control Center / Lock
+  Screen / Action button control.
+- **Fair HP:** a raid starts with a planning phase. When the fight starts, max HP is locked from the
+  planned tasks (about 65% from tasks, 35% from focus). Tasks added later still hit but are
+  marked as late in the report. Focus streaks give ×1.1 / ×1.2.
+- **Phases:** Calm, Angry (50% of the time left), Enraged (25%), Berserk (10%). The boss's eyes
+  and the haptics follow the phase.
+- **12 bosses** (clock, dragon, slime, lich, golem, kraken, goblin, mimic, ghost, spider,
+  mushroom, cyclops). The look comes from keywords in the boss's name.
+- **After the deadline:** add follow-up tasks and resume the fight, or delete old bosses.
 
-## Damage model
-Two damage sources:
+**The party**
+- **Raids of up to 5:** share a 6-character invite code; classes (Mage, Tank, Rogue, Healer) for
+  flavor and attack animations; a per-member daily cap so nobody carries the team alone.
+- **Damage meter (Meter tab):** burst (tasks) vs. sustained (focus) damage per member, as a chart
+  or a list, plus who is attacking right now.
+- **Raid report:** victory or defeat, HP over time, per-member stats, titles (MVP, Sniper,
+  Grinder, Consistent, Last-Minute Hero, AFK Legend), late and undone tasks, and a share image.
+- **Multiplayer needs a Firebase project.** Sync runs over Firebase REST (no SDK), polling every
+  5 s while the app is open. No project is connected yet, so the build in this repo is solo-only
+  until someone adds `GoogleService-Info.plist` (see [Setup](#optional-multiplayer-firebase)).
 
-| Source | Damage | Feel |
+**Around the app**
+- **Widgets:** Home Screen (small, medium, large) with tappable tasks, and Lock Screen
+  (circular, rectangular, inline). Tinted and clear modes keep the boss readable.
+- **Siri and Shortcuts:** "Start focus in Dungeons & Deadlines", "Complete a task in …", "Stop
+  focus in …". Every action is an App Intent, so buttons, widgets, the Live Activity, the control
+  and Siri share one code path.
+- **Game Center:** 13 achievements and 3 leaderboards (total damage, bosses defeated, focus
+  minutes).
+- **iPad:** a sidebar with every boss for one-tap switching, and a two-column Boss tab.
+- **Accessibility:** VoiceOver announcements for hits, audio graphs on the charts, phases never
+  shown by color alone, Dynamic Type layouts up to AX5, and Reduce Motion support. Every UI flow
+  runs Xcode's accessibility audit.
+
+### Free and Premium
+
+A soft paywall (StoreKit 2, `SubscriptionStoreView`). It can always be dismissed, and nobody loses
+existing bosses or history. Details: [docs/MONETIZATION.md](docs/MONETIZATION.md).
+
+| | Free | Premium |
 |---|---|---|
-| Task completed | By size: S=50, M=150, L=400 (example numbers) | Big hit, animation, screen shake |
-| Focus time | ~2 damage per focused minute (example) | Continuous chip damage / DPS |
+| Solo bosses | 1 unfinished at a time | Unlimited |
+| Create a group raid | — | ✓ |
+| Join a friend's raid by code | ✓ | ✓ |
+| Focus, widgets, Live Activity, report, Game Center | ✓ | ✓ |
 
-Balancing rules:
-- Daily cap on time damage (e.g. 3 hours) to stop timer abuse
-- Target split: ~60-70% of boss HP from tasks, ~30-40% from time
-- Boss total HP derived from the plan: sum of task damage + expected time damage
-- Streak multiplier: consecutive days with >= 30 min of work give 1.1x, 1.2x, capped
-- Optional per-person daily cap in raids so one person can't carry everything
+Products: `dd.premium.monthly` and `dd.premium.yearly` (subscription group "Premium").
 
-Time tracking:
-- In-app focus timer (start/pause/stop)
-- Pause if app is backgrounded for more than ~2 minutes (`scenePhase`)
-- Compute elapsed time from start timestamps, not ticks, so it survives suspension
-- Live Activity for lock-screen timer
-- Raids: show live "X is attacking" with their DPS
+## Setup
 
-## Raid (multiplayer) design
-- One person creates a raid (boss name, deadline, HP), others join via invite code or link
-- Tasks have sizes; completing one deals damage; HP bar updates live for everyone
-- Optional roles/classes (writer = mage, researcher = tank, designer = rogue, presenter = healer) for flavor and different animations
-- Boss enrages as the deadline nears: phase changes at 50%, 25%, 10% time left; skipped tasks shown as damage to the team
-- Damage meter like WoW, split into burst (tasks) and sustained (time) columns
-- Titles: Sniper (most task damage), Grinder (most time), Consistent (longest streak), MVP, Last-Minute Hero, AFK Legend
-- AFK status/nudges for inactive teammates, taunts and cheers between players
-- End screen: victory/defeat report (doubles as Group Project Judge)
-- Task honesty: optional peer confirmation of completed tasks; show task difficulty to discourage many tiny tasks
+Requirements:
+- **Xcode 27.2** (the project builds with the iOS 27.2 SDK and simulator)
+- **iOS 26.0** deployment target (Liquid Glass APIs set the minimum; runs on iPhone 11 and newer)
+- Nothing else for solo play. Python 3 is only needed for the art tools in `tools/`.
 
-## Technical decisions and options
-Backend options for multiplayer:
+1. Clone the repo and open `DungeonsAndDeadlines.xcodeproj`. The only package is the local
+   `Packages/DDKit`, so there is nothing to resolve from the network.
+2. **Command-line builds:** if `xcode-select -p` points at the Command Line Tools, point the
+   tools at Xcode (`build.sh` already does this for its own `xcodebuild` call):
 
-| Approach | Effort | Notes |
-|---|---|---|
-| CloudKit shared records | Medium | Native, free, no server, Apple-only; sync a bit slower/fiddly |
-| Firebase Firestore | Low-medium | Live listeners suit the HP bar; **current recommendation** |
-| Supabase | Medium | SQL + realtime |
+   ```bash
+   export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+   ```
 
-Data model sketch:
-- `Raid`, `Member`, `Task`, `Attack`
-- `Attack` has `kind` (`.task` / `.focus`), `damage`, `timestamp`, `memberID`, and either `taskID` or `durationSeconds`
-- Boss HP is **derived** (locked max HP minus sum of attacks), not a stored mutable value, so it stays consistent across devices
-- Daily caps computed at attack creation time from that member's attacks that day
-- Put all damage rules in one pure `DamageCalculator` struct so it's unit-testable and easy to tune
+3. **Signing:** the targets use automatic signing with the FH OO Studienbetriebs GmbH team
+   (`UBQ8UHSHKQ`) and `at.fhooe.sail.*` bundle IDs. The simulator needs no changes. For a device
+   build with another team, change the team and the bundle IDs of the app, the widget extension
+   (`….widgets`) and the App Group (`group.at.fhooe.sail.dungeonsanddeadlines`) in
+   **Signing & Capabilities**.
+4. **StoreKit:** `Config/Products.storekit` holds both subscriptions, and the shared scheme uses it
+   for Run and Test. If plans don't load when running from Xcode, select it under
+   **Product → Scheme → Edit Scheme → Run → Options → StoreKit Configuration**. Purchases can
+   then be managed in **Debug → StoreKit → Manage Transactions**. To skip StoreKit entirely, launch
+   with `-premium`.
 
-## MVP scope
-1. Sign in (Sign in with Apple or anonymous + nickname)
-2. Create/join raid by code
-3. Task list with sizes; completing a task deals damage
-4. Focus timer that deals damage
-5. Live boss HP bar and damage meter
-6. Boss phases based on the deadline
-7. End-of-raid report
+### Optional: multiplayer (Firebase)
 
-Also in scope (moved up from stretch): solo mode, widgets, Live Activity, Control Center control, App Intents, accessibility.
+Without Firebase the app runs solo; joining or creating group raids needs a backend. To connect
+one:
 
-Stretch: push notifications for boss phases/teammate attacks, Live Activity push updates for teammates' attacks, loot/cosmetics from finished raids, streak multipliers.
+1. Create a Firebase project, add an iOS app with the bundle ID
+   `at.fhooe.sail.dungeonsanddeadlines`, and enable **Anonymous Authentication** and **Firestore**.
+2. Download `GoogleService-Info.plist` into `DungeonsAndDeadlines/Resources/` (it's git-ignored).
+3. Deploy the rules from `firebase/`: `firebase deploy --only firestore:rules`.
 
-## Build order
-See [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for the full plan: milestones M0–M8 with tasks, tests, accessibility checks, team split, risks, and the config, package and Firestore rules sketches.
+Or run against the local emulator with the `-useFirebaseEmulator` launch argument. Everything is in
+[firebase/README.md](firebase/README.md).
 
-## iOS features this covers
-SwiftUI with Liquid Glass, SwiftData (shared App Group store), App Intents (Siri, Shortcuts, Spotlight, Action button), interactive widgets (Home, Lock Screen, StandBy), Control Center controls, Live Activities + Dynamic Island, haptics, accessibility (VoiceOver, Dynamic Type, Reduce Motion, Voice Control, accessibility audits), scenePhase handling, Sign in with Apple, notifications, real-time backend sync.
+## Run
 
-## Open questions
-- Project duration? Any course requirements (SwiftUI, backend, ML)?
-- Final boss/class theming and art style
-- Exact damage numbers (tune with playtesting)
-- How to handle task honesty (peer confirmation or trust)
+Build for the simulator (uses the iPhone 18 Pro simulator; pick another with
+`SIMULATOR="iPhone 17"`; derived data goes to `build/`):
 
-## Next steps
-- Write Swift data model and `DamageCalculator`
-- Sketch main screens (boss view, task list, focus timer, raid lobby, damage meter, end report)
-- Add a debug "fake teammate" early to test multiplayer
+```bash
+./build.sh build
+```
+
+To run it, press **Run** in Xcode with the `DungeonsAndDeadlines` scheme, or install the
+`build.sh` result on a booted simulator:
+
+```bash
+xcrun simctl install booted build/DerivedData/Build/Products/Debug-iphonesimulator/DungeonsAndDeadlines.app
+```
+
+```bash
+xcrun simctl launch booted at.fhooe.sail.dungeonsanddeadlines -uiTesting -seedDemo
+```
+
+App and UI tests (the launch-time benchmark is slow, so skip it):
+
+```bash
+./build.sh test -skip-testing:DungeonsAndDeadlinesUITests/LaunchPerformanceTests
+```
+
+Package tests (game rules, persistence, intents, art, sync; run on macOS):
+
+```bash
+cd Packages/DDKit && swift test
+```
+
+### Debug launch arguments
+
+Add these in **Edit Scheme → Run → Arguments**, or after the bundle ID in `simctl launch`.
+
+| Argument | Effect |
+|---|---|
+| `-uiTesting` | In-memory store, fresh identity, no Firebase or Game Center |
+| `-seedDemo` | A solo fight "Thesis" vs. "Exam Dragon" with 4 tasks, one done |
+| `-startTab boss\|tasks\|meter\|raid` | Opens that tab |
+| `-fakeTeammates` | 3 simulated teammates join and attack once a solo fight is running |
+| `-seedFinished` | A won 4-player raid with a late task and an undone task (for the report) |
+| `-meterAsList` | Damage meter opens as a list |
+| `-premium` | Acts as a Premium subscriber |
+| `-showPaywall` | Opens the paywall on launch |
+| `-slowMotion` | Plays the task attack 5× slower |
+| `-useFirebaseEmulator` | Uses the local Firebase emulator (works without `GoogleService-Info.plist`) |
+
+Example: the screenshots above were taken with `-uiTesting -seedDemo -premium -fakeTeammates
+-startTab meter` and similar.
+
+## Project layout
+
+```
+DungeonsAndDeadlines/          the app: entry point, features (Boss, Tasks, Focus, Meter, Raid, Report), sync
+DDWidgets/                     widgets, focus Live Activity, Control Center control
+DungeonsAndDeadlinesUITests/   UI flows with accessibility audits, launch benchmark
+Packages/DDKit/                local Swift package
+  GameCore                     pure game rules: damage, HP, phases, streaks, titles, plan limits
+  DDPersistence                SwiftData models and RaidStore (shared App Group store)
+  DDIntents                    App Intents used by the app, widgets, controls and Siri
+  DDDesign                     pixel-art bosses, theme, shared components
+  DDSync                       Firebase Auth + Firestore over REST
+Config/                        Info.plists, entitlements, Products.storekit
+firebase/                      Firestore rules, rules tests, emulator config
+tools/                         icon and pixel-art generators (svg2grid.py, make_icon.py)
+docs/                          design docs, icon art, screenshots
+```
+
+## Docs
+
+- [docs/HANDOFF.md](docs/HANDOFF.md): current status, commits, what's left, gotchas. Start here.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): modules, data flow, sync, accessibility.
+- [docs/MONETIZATION.md](docs/MONETIZATION.md): free vs. Premium rules, products, App Store Connect setup.
+- [docs/GAME_CENTER.md](docs/GAME_CENTER.md): achievements, leaderboards, App Store Connect setup.
+- [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md): the original milestone plan (M0–M8).
+- [firebase/README.md](firebase/README.md): Firebase project, emulator and rules tests.
+
+## Decisions
+
+The choices the docs refer back to:
+- **Firebase over REST, without the iOS SDK.** The SDK added about 1.4 s to every launch.
+- **Boss HP is locked when the fight starts** and current HP is derived from an append-only attack
+  log, so every device shows the same number.
+- **Local-first:** every action writes to the shared SwiftData store first; widgets, the Live
+  Activity and the control read the same store.
+- **iOS 26 minimum** for Liquid Glass. System chrome (tab bar, toolbars, sheets) stays Liquid
+  Glass; in-content buttons use the pixel theme.
+- **Art:** 64×64 pixel fantasy taken from the icon layers in `docs/icon/` (cream, gold and night
+  purple).
