@@ -249,6 +249,9 @@
     "Boss name" : {
 
     },
+    "Bosses" : {
+
+    },
     "Burst and sustained damage" : {
 
     },
@@ -468,6 +471,9 @@
 
     },
     "Health" : {
+
+    },
+    "Holy light hits for %lld damage." : {
 
     },
     "HP" : {
@@ -908,10 +914,22 @@
     "You beat %@ before the deadline." : {
 
     },
+    "You cast a spell for %lld damage." : {
+
+    },
+    "You slam your shield for %lld damage." : {
+
+    },
     "You were away for more than 2 minutes, so your focus timer paused when you left. Resume it from the timer." : {
 
     },
+    "Your daggers strike for %lld damage." : {
+
+    },
     "Your nickname" : {
+
+    },
+    "Your sword hits for %lld damage." : {
 
     }
   },
