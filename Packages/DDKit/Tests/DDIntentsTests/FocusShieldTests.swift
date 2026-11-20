@@ -127,8 +127,9 @@ struct FocusShieldTests {
         defer { tearDown() }
         try GameActions.startFocus(raid.id)
         #expect(shielder.isShielding)
+        // Leaving or deleting a boss (SyncEngine.leave) refreshes surfaces, not `changed`.
         try store.deleteRaidLocally(raid.id)
-        GameActions.changed(nil)
+        GameActions.reloadSystemSurfaces()
         #expect(shielder.calls.last == .release)
     }
 

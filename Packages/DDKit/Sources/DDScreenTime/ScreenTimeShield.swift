@@ -101,6 +101,8 @@ extension ScreenTimeShield {
     /// Lifts the block and cancels the safety net.
     @MainActor
     public static func release() {
+        // Never granted (or revoked, which clears the store anyway): nothing to lift.
+        guard isAuthorized else { return }
         DeviceActivityCenter().stopMonitoring([.focusSafetyNet])
         clearShield()
     }

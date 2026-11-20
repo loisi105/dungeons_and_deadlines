@@ -124,6 +124,7 @@ final class AppEnvironment {
     let gameCenter = GameCenterService()
     let entitlements = Entitlements()
     let phaseNotifications = PhaseNotifications()
+    let focusBlocking = FocusBlocking()
     #if DEBUG
     let fakeTeammates = FakeTeammates()
     #endif
@@ -152,6 +153,14 @@ final class AppEnvironment {
                 && selectedTab == .boss && store.currentRaid()?.id == raidID
         }
         phaseNotifications.start()
+        // Screen Time blocking while focusing. Never in UI tests: no permission prompts,
+        // no shields. Re-checks the shield against the timer at launch (the app may have
+        // been killed with the shield up).
+        if !LaunchOptions.isUITesting {
+            FocusShield.shielder = AppFocusShielder()
+            FocusShield.invalidate()
+            FocusShield.reconcile()
+        }
     }
 
     /// Runs when the app returns to the foreground and refreshes everything that may
@@ -165,6 +174,8 @@ final class AppEnvironment {
         sync.appDidBecomeActive()
         gameCenter.scheduleSync()
         phaseNotifications.setNeedsReschedule()
+        // The shield itself is re-checked by `reloadSystemSurfaces()` above.
+        focusBlocking.refreshAuthorization()
     }
 
     func didEnterBackground() {

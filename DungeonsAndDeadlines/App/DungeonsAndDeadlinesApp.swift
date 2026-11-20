@@ -24,6 +24,10 @@ struct DungeonsAndDeadlinesApp: App {
                 .environment(environment.gameCenter)
                 .environment(environment.entitlements)
                 .environment(environment.phaseNotifications)
+                .environment(environment.focusBlocking)
+                // The Party tab's app picker lives here: attached to a list row, it would
+                // be dismissed whenever the list refreshes.
+                .focusBlockPicker(.root, blocking: environment.focusBlocking)
                 #if DEBUG
                 .environment(environment.fakeTeammates)
                 #endif

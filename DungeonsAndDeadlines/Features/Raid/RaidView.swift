@@ -161,6 +161,7 @@ struct RaidView: View {
             }
             Toggle("Haptics", isOn: $hapticsOn)
             PhaseAlertsSetting()
+            FocusBlockingSetting()
         } header: {
             Text("You").font(.headline)
         }

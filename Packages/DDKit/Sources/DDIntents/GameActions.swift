@@ -95,14 +95,15 @@ public enum GameActions {
     /// Refresh widgets, controls, the Screen Time shield and the Live Activity, then let the app sync.
     public static func changed(_ raidID: UUID?) {
         reloadSystemSurfaces()
-        FocusShield.reconcile()
         #if os(iOS)
         if let raidID { LiveActivityController.sync(raidID: raidID) }
         #endif
         onChange?(raidID)
     }
 
+    /// Also re-checks the Screen Time shield (a deleted or left raid can end a running timer).
     public static func reloadSystemSurfaces() {
+        FocusShield.reconcile()
         #if canImport(WidgetKit)
         WidgetCenter.shared.reloadAllTimelines()
         #if os(iOS)

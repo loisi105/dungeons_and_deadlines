@@ -12,16 +12,16 @@
 		DD0000000000000000000203 /* DDIntents in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000103 /* DDIntents */; };
 		DD0000000000000000000204 /* DDDesign in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000104 /* DDDesign */; };
 		DD0000000000000000000207 /* DDSync in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000107 /* DDSync */; };
+		DD0000000000000000000208 /* DDScreenTime in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000108 /* DDScreenTime */; };
 		DD0000000000000000000211 /* GameCore in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000111 /* GameCore */; };
 		DD0000000000000000000212 /* DDPersistence in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000112 /* DDPersistence */; };
 		DD0000000000000000000213 /* DDIntents in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000113 /* DDIntents */; };
 		DD0000000000000000000214 /* DDDesign in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000114 /* DDDesign */; };
 		DD0000000000000000000220 /* DDWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD00000000000000000000A2 /* DDWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		DD0000000000000000000208 /* DDScreenTime in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000108 /* DDScreenTime */; };
-		DD0000000000000000000231 /* DDScreenTime in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000131 /* DDScreenTime */; };
 		DD0000000000000000000221 /* DDFocusMonitor.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD00000000000000000000A5 /* DDFocusMonitor.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		DD0000000000000000000241 /* DDScreenTime in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000141 /* DDScreenTime */; };
 		DD0000000000000000000222 /* DDShieldConfig.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD00000000000000000000A6 /* DDShieldConfig.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DD0000000000000000000231 /* DDScreenTime in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000131 /* DDScreenTime */; };
+		DD0000000000000000000241 /* DDScreenTime in Frameworks */ = {isa = PBXBuildFile; productRef = DD0000000000000000000141 /* DDScreenTime */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -878,6 +878,10 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = DDSync;
 		};
+		DD0000000000000000000108 /* DDScreenTime */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DDScreenTime;
+		};
 		DD0000000000000000000111 /* GameCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = GameCore;
@@ -893,10 +897,6 @@
 		DD0000000000000000000114 /* DDDesign */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DDDesign;
-		};
-		DD0000000000000000000108 /* DDScreenTime */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = DDScreenTime;
 		};
 		DD0000000000000000000131 /* DDScreenTime */ = {
 			isa = XCSwiftPackageProductDependency;

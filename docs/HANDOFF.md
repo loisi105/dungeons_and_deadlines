@@ -42,6 +42,7 @@ Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.
 | `1905eff` | Delete old solo bosses (frees the free-plan slot) |
 | `3269e3d` | Completing a task jumps to the boss and plays a class attack |
 | `e0e6c30` | iPad: sidebar with Bosses, two-column Boss tab, readable list widths, large widget |
+| `c8800a8` + next | Screen Time: "Block apps while focusing" (shield core, DeviceActivity safety net, shield screen, settings UI). See [Screen Time blocking](#screen-time-blocking). |
 
 ## Decisions that changed since the plan docs
 
@@ -65,8 +66,10 @@ DungeonsAndDeadlines/          app (MainActor default isolation)
   Features/                    Root, Boss, Tasks, Focus, Raid, Meter, Debug, Report
   Sync/SyncEngine.swift        sign-in, debounced uploads, foreground polling (wraps DDSync.RaidSync)
 DDWidgets/                     widget extension: BossWidget, FocusLiveActivity, FocusControl
+DDFocusMonitor/                DeviceActivity monitor extension: lifts the Screen Time shield when the safety net ends
+DDShieldConfig/                shield configuration extension: the screen shown over a blocked app
 DungeonsAndDeadlinesUITests/   SmokeTests (flows + accessibility audits), LaunchPerformanceTests
-Packages/DDKit/                GameCore, DDPersistence, DDIntents, DDDesign (+ tests)
+Packages/DDKit/                GameCore, DDPersistence, DDIntents, DDDesign, DDSync, DDScreenTime (+ tests)
   Sources/DDDesign/Art/        PixelArt, PixelPainter, Bosses, IconArt.generated.swift
   Sources/DDDesign/Theme/      Theme colors, RPGButtonStyle, PixelShapes, BossAvatar, SwordSlash
 Config/                        entitlements, Info.plists (not compiled)
@@ -136,7 +139,14 @@ xcrun simctl launch booted at.fhooe.sail.dungeonsanddeadlines -uiTesting -seedDe
 2. **Rules tests and an emulator session.** These have never run, because Node and the Firebase CLI aren't installed on this Mac. Run `cd firebase/rules-tests && npm install && npm test`, then try two simulators with `-useFirebaseEmulator`. The sync logic itself is covered by the fake-Firestore tests.
 3. **Game Center.** Create the IDs in App Store Connect ([GAME_CENTER.md](GAME_CENTER.md)).
 4. **Premium.** Create the subscription group and products in App Store Connect ([MONETIZATION.md](MONETIZATION.md)). Check that the local StoreKit file loads when running from Xcode, and try a purchase.
-5. **Signing:** done. Team **FH OO Studienbetriebs GmbH** (`UBQ8UHSHKQ`), automatic signing. IDs: app `at.fhooe.sail.dungeonsanddeadlines`, widgets `…dungeonsanddeadlines.widgets`, UI tests `…dungeonsanddeadlines.uitests`, App Group `group.at.fhooe.sail.dungeonsanddeadlines`. Device builds sign and provision. If `codesign` fails with `errSecInternalComponent` when building from a terminal, allow keychain access to the signing key (or build from Xcode).
+5. **Screen Time (Family Controls) for TestFlight/App Store.** Development builds can use the
+   `com.apple.developer.family-controls` entitlement right away (paid team, automatic signing).
+   Distribution needs Apple's approval: submit the Family Controls entitlement request
+   (https://developer.apple.com/contact/request/family-controls-distribution, signed in as the
+   team's Account Holder) **once per bundle ID**: the app, `…dungeonsanddeadlines.focusmonitor` and
+   `…dungeonsanddeadlines.shieldconfig`. Reported wait: one to several weeks. Until then, archive
+   builds fail to provision (or ship without blocking, if the capability is removed for that build).
+6. **Signing:** done. Team **FH OO Studienbetriebs GmbH** (`UBQ8UHSHKQ`), automatic signing. IDs: app `at.fhooe.sail.dungeonsanddeadlines`, widgets `…dungeonsanddeadlines.widgets`, UI tests `…dungeonsanddeadlines.uitests`, App Group `group.at.fhooe.sail.dungeonsanddeadlines`. Device builds sign and provision. If `codesign` fails with `errSecInternalComponent` when building from a terminal, allow keychain access to the signing key (or build from Xcode).
 
 ### M8 stretch (pick by time left)
 
@@ -158,6 +168,49 @@ Also possible:
 - Teammates' hits reach your phone only while the app is open (polling). Closed-app updates are the M8 push item above.
 - Phase alerts are scheduled locally on each phone, so on teammates' phones they only update when the app polls or opens. If the leader changes the boss's mood, or the boss dies, while a teammate's app is in the background, an outdated alert can still fire there.
 
+## Screen Time blocking
+
+"Block apps while focusing" shields the apps, categories and websites the player picks while a
+focus timer **runs**. Pausing or stopping lifts it.
+
+- **Where the shield follows the timer:** `GameActions.changed()` calls `FocusShield.reconcile()`
+  (DDIntents) after every change, so the app buttons, the timer accessory, the Live Activity, the
+  Control Center control and Siri (all `LiveActivityIntent`s, so they run in the app process) are
+  covered in one place. The app also re-checks at launch and on becoming active.
+- **Rules** (`GameCore.FocusShieldPlan`, unit-tested): on only if the setting is on, something is
+  picked and the timer is running; ends at the daily focus cap (`DamageConfig.dailyFocusCapMinutes`,
+  180) or midnight, whichever is first.
+- **Safety net:** each time the shield goes up, a one-off DeviceActivity schedule `focusSafetyNet`
+  is started that ends at the same moment (at least 15 minutes long, Apple's minimum). Its
+  `intervalDidEnd` runs in `DDFocusMonitor` and clears the shield even if the app was killed.
+- **Real Screen Time code** lives in the `DDScreenTime` package target (named
+  `ManagedSettingsStore` "dungeonsFocus", the saved `FamilyActivitySelection` in
+  `AppGroup.defaults`, authorization). DDIntents only knows the `FocusShielding` protocol;
+  `FocusShield.shielder` is nil in package tests, widgets and `-uiTesting`, so those never ask for
+  authorization or touch shields.
+- **Settings:** Party tab → You → "Block apps while focusing" (asks for Screen Time access the first
+  time it's turned on) and "Apps to block". The focus timer sheet has a one-line shortcut.
+- **No Premium gate.** Blocking is free. Gating it would be one check in `FocusBlocking.turnOn()`
+  plus a paywall reason, if wanted.
+
+### Testing it on the iPhone 17 / iPad mini
+
+Shields don't apply in the Simulator, so this needs a device (Developer Mode on, built from Xcode
+with the FH team so the development Family Controls entitlement is in the profile):
+
+1. Party tab → turn on **Block apps while focusing** → allow Screen Time access (Face ID / passcode)
+   → pick e.g. Instagram (or the Social category) → Done.
+2. Start a focus timer, go Home, open Instagram: the pixel shield shows "<boss> is still standing"
+   and **Back to the fight** (closes Instagram).
+3. Pause from the Live Activity or the Dynamic Island → Instagram opens. Resume → blocked again.
+4. Stop from Control Center (or say "Stop focus in Dungeons and Deadlines") → unblocked.
+5. Safety net: start a timer, then swipe the app away in the app switcher. Instagram stays blocked
+   (the timer is still running). To see the safety net fire without waiting for the cap, temporarily
+   set `dailyFocusCapMinutes` low (e.g. 16) in `DamageConfig.standard`, start a timer, kill the app,
+   and check that Instagram opens again after ~16 minutes. Revert the change afterwards.
+6. Turn the setting off while a timer runs → unblocked at once. Revoke access in Settings → Screen
+   Time → Apps with Screen Time access → the Party tab shows the "access is off" note.
+
 ## Not verified yet
 
 These need a person (or the simulator tool once `xcode-select` is fixed):
@@ -166,6 +219,7 @@ These need a person (or the simulator tool once `xcode-select` is fixed):
 - The Control Center / Lock Screen control and the Action button
 - Siri / Shortcuts phrases
 - Running on a physical device. The signed device build succeeds, but the phone needs Developer Mode turned on before it can install.
+- Screen Time blocking on a device (see [Testing it on the iPhone 17 / iPad mini](#testing-it-on-the-iphone-17--ipad-mini)): the shield, the shield screen, the safety net after a kill, and whether automatic signing adds the Family Controls entitlement to the extensions' development profiles.
 
 ## Gotchas learned the hard way
 

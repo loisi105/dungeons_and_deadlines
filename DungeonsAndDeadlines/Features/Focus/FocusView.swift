@@ -11,6 +11,7 @@ struct FocusView: View {
     let raidID: UUID
 
     @Environment(Announcer.self) private var announcer
+    @Environment(FocusBlocking.self) private var blocking
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
@@ -48,6 +49,7 @@ struct FocusView: View {
                 VStack(spacing: 28) {
                     timer
                     capInfo
+                    blockAppsButton
                     controls
                 }
                 .padding(24)
@@ -57,6 +59,8 @@ struct FocusView: View {
             .dungeonScreen()
             .navigationBarTitleDisplayMode(.inline)
             .sheetCloseButton()
+            // This screen is a sheet, so it presents its own app picker.
+            .focusBlockPicker(.focusTimer, blocking: blocking)
             .sensoryFeedback(.impact(weight: .medium), trigger: feedbackTrigger) { _, _ in hapticsOn }
             .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
                 Button("OK") { errorMessage = nil }
@@ -114,6 +118,45 @@ struct FocusView: View {
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity)
             .accessibilityLabel(Text("\(A11yText.duration(remainingCapSeconds)) of focus damage left today"))
+    }
+
+    /// Shortcut to "Block apps while focusing" (also in the Party tab's settings).
+    private var blockAppsButton: some View {
+        // No count: it mixes apps, categories and websites.
+        let isBlocking = blocking.isEnabled && blocking.pickedCount > 0
+        return Button {
+            Task {
+                if isBlocking {
+                    await blocking.choose(from: .focusTimer)
+                } else {
+                    await blocking.turnOn(from: .focusTimer)
+                }
+                if blocking.isDenied {
+                    errorMessage = String(localized: "Screen Time access is off for Dungeons & Deadlines. Turn it on in Settings > Screen Time.")
+                }
+            }
+        } label: {
+            // One Text (with an inline symbol) so it wraps instead of clipping at large sizes.
+            Group {
+                if isBlocking {
+                    Text("\(Image(systemName: "lock.shield")) Your picked apps are blocked while you focus. Change")
+                } else {
+                    Text("\(Image(systemName: "lock.shield")) Block distracting apps while you focus")
+                }
+            }
+            .font(.subheadline)
+            .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(.borderless)
+        .accessibilityLabel(isBlocking
+            ? Text("Your picked apps are blocked while you focus")
+            : Text("Block distracting apps while you focus"))
+        .accessibilityHint(isBlocking
+            ? Text("Changes which apps are blocked.")
+            : Text("Blocks the apps you pick while your focus timer runs."))
+        .accessibilityIdentifier("focusBlockButton")
     }
 
     private var controls: some View {
