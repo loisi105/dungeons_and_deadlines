@@ -27,6 +27,9 @@
         }
       }
     },
+    "%@ (%lld)" : {
+
+    },
     "%@ (you)" : {
 
     },
@@ -472,6 +475,9 @@
 
     },
     "Focused: %@" : {
+
+    },
+    "Former member" : {
 
     },
     "Found more work after the deadline? Add follow-up tasks, then resume the fight. The boss comes back with health from the open tasks." : {
@@ -930,6 +936,9 @@
 
     },
     "Time" : {
+
+    },
+    "Unassigned (%lld)" : {
 
     },
     "Unlimited solo bosses" : {

@@ -76,12 +76,11 @@ struct TasksView: View {
         List {
             followUpSection
             planningSection
-            openSection
+            openSections
             doneSection
         }
+        // Like Notes: each group is one rounded container, rows split by separators.
         .listStyle(.insetGrouped)
-        // Each task is its own cell-sized card, so swipe buttons line up with it.
-        .listRowSpacing(8)
         .headerProminence(.increased)
         .dungeonScreen()
         .readableContentWidth(minMargin: 16)
@@ -116,7 +115,7 @@ struct TasksView: View {
                     }
                 }
             }
-            .questCard()
+            .dungeonRow()
         }
     }
 
@@ -132,23 +131,57 @@ struct TasksView: View {
                         .readableFootnote()
                 }
             }
-            .questCard()
+            .dungeonRow()
         }
     }
 
-    private var openSection: some View {
-        Section {
-            if open.isEmpty {
+    /// Open tasks, grouped by assignee like Notes groups by date: you first, then
+    /// teammates in join order, then unassigned. While nobody is assigned anything
+    /// (solo raids, mostly) it stays one "Open" group.
+    private var openGroups: [TaskGroup] {
+        let me = LocalIdentity.current.memberID
+        guard open.contains(where: { $0.assigneeID != nil }) else {
+            return [TaskGroup(id: "open", title: String(localized: "Open (\(open.count))"), tasks: open)]
+        }
+        let byAssignee = Dictionary(grouping: open) { $0.assigneeID }
+        var order: [String] = [me] + members.map(\.memberID).filter { $0 != me }
+        // Assignees who have since left the raid still get their own group.
+        order += byAssignee.keys.compactMap { $0 }.filter { !order.contains($0) }.sorted()
+        var groups = order.compactMap { id -> TaskGroup? in
+            guard let tasks = byAssignee[id] else { return nil }
+            let name = nickname(id) ?? String(localized: "Former member")
+            return TaskGroup(id: id, title: String(localized: "\(name) (\(tasks.count))"), tasks: tasks)
+        }
+        if let unassigned = byAssignee[nil] {
+            groups.append(TaskGroup(id: "unassigned", title: String(localized: "Unassigned (\(unassigned.count))"), tasks: unassigned))
+        }
+        return groups
+    }
+
+    @ViewBuilder
+    private var openSections: some View {
+        if open.isEmpty {
+            Section {
                 Text(tasks.isEmpty ? "No tasks yet. Add the steps for this deadline." : "All tasks done!")
                     .foregroundStyle(.readableSecondary)
-                    .questCard()
+            } header: {
+                Text("Open (\(0))")
             }
-            ForEach(open) { task in
-                row(task).moveDisabled(!canEdit)
+            .dungeonRow()
+        }
+        let groups = openGroups
+        let grouped = groups.count > 1 || groups.first?.id != "open"
+        ForEach(groups) { group in
+            Section {
+                ForEach(group.tasks) { task in
+                    // The group header already names the assignee.
+                    row(task, showsAssignee: !grouped).moveDisabled(!canEdit)
+                }
+                .onMove { move(in: group.id, from: $0, to: $1) }
+            } header: {
+                Text(group.title)
             }
-            .onMove(perform: move)
-        } header: {
-            Text("Open (\(open.count))")
+            .dungeonRow()
         }
     }
 
@@ -160,31 +193,36 @@ struct TasksView: View {
             } header: {
                 Text("Done (\(done.count))").font(.headline)
             }
+            .dungeonRow()
         }
     }
 
     @ViewBuilder
-    private func row(_ record: TaskRecord) -> some View {
+    private func row(_ record: TaskRecord, showsAssignee: Bool = true) -> some View {
         let task = record.model
         HStack(spacing: 12) {
             CompleteButton(task: task, enabled: canComplete) { attemptComplete(task) }
             NavigationLink(value: task.id) {
-                TaskRow(task: task, damage: config.baseDamage(for: task.size), assignee: nickname(task.assigneeID), isLate: task.isLate(startedAt: raid?.startedAt))
+                TaskRow(task: task, damage: config.baseDamage(for: task.size), assignee: showsAssignee ? nickname(task.assigneeID) : nil, isLate: task.isLate(startedAt: raid?.startedAt))
             }
         }
         .matchedTransitionSource(id: task.id, in: zoom)
-        .questCard(leading: 6)
-        // Mail/Reminders style: full swipe right completes (green, like the checkbox),
-        // full swipe left deletes.
+        // Fixed insets: with the system's default ones the accessibility audit
+        // intermittently reports the row's text as not scaling with Dynamic Type.
+        .listRowInsets(EdgeInsets(top: 8, leading: 6, bottom: 8, trailing: 14))
+        // Full swipe right completes (green, like the checkbox), full swipe left deletes.
+        // Title-only buttons, like Notes: iOS 26 draws the text inside the capsule
+        // (with an icon it draws an icon circle and puts the text underneath).
         .swipeActions(edge: .leading, allowsFullSwipe: true) {
             if !task.isDone && canComplete {
-                Button("Complete", systemImage: "checkmark") { attemptComplete(task) }
-                    .tint(.green)
+                Button { attemptComplete(task) } label: { Text("Complete") }
+                    // Deeper than system green, so the white label reads (~5:1).
+                    .tint(Color(hex: 0x1F7A3A))
             }
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             if !task.isDone && canEdit {
-                Button("Delete", systemImage: "trash", role: .destructive) { delete(task) }
+                Button(role: .destructive) { delete(task) } label: { Text("Delete") }
                     // Without a tint the destructive button takes the app's gold accent at night.
                     .tint(Theme.dangerTop)
             }
@@ -267,41 +305,22 @@ struct TasksView: View {
         do { try DDStore.shared.updateTask(updated); GameActions.changed(raidID) } catch { errorMessage = error.localizedDescription }
     }
 
-    private func move(from source: IndexSet, to destination: Int) {
-        var ids = open.map(\.id)
-        ids.move(fromOffsets: source, toOffset: destination)
+    /// Reorders within one group; the stored order follows the groups.
+    private func move(in groupID: String, from source: IndexSet, to destination: Int) {
+        let ids = openGroups.flatMap { group in
+            var groupIDs = group.tasks.map(\.id)
+            if group.id == groupID { groupIDs.move(fromOffsets: source, toOffset: destination) }
+            return groupIDs
+        }
         do { try DDStore.shared.moveTasks(raidID: raidID, orderedIDs: ids); GameActions.changed(raidID) } catch { errorMessage = error.localizedDescription }
     }
 }
 
-extension View {
-    /// Quest Log rows as separate cards (inset grouped cells with row spacing), the way
-    /// iOS 26 draws a swiped cell: the card slides aside and the system's rounded swipe
-    /// buttons sit beside it on the page, the same shape and height, instead of opening a
-    /// rectangular hole in a strip of rows. `leading` is the content's inset in the card;
-    /// task rows pass less, since the checkbox's 44 pt tap target already pads the circle.
-    fileprivate func questCard(leading: CGFloat = 14) -> some View {
-        modifier(QuestCard(leading: leading))
-    }
-}
-
-private struct QuestCard: ViewModifier {
-    let leading: CGFloat
-    @Environment(\.colorSchemeContrast) private var contrast
-
-    func body(content: Content) -> some View {
-        content
-            .listRowInsets(EdgeInsets(top: 8, leading: leading, bottom: 8, trailing: 14))
-            .listRowSeparator(.hidden)
-            .listRowBackground(
-                // At least the system cell's corner radius, so its clip never shaves the
-                // edge. No border by default: mid-swipe the clip stays put while the card
-                // slides, and a border would show the cut.
-                RoundedRectangle(cornerRadius: 26, style: .continuous)
-                    .fill(Theme.card)
-                    .strokeBorder(contrast == .increased ? Theme.cardBorder : .clear, lineWidth: 2)
-            )
-    }
+/// A section of the Quest Log: open tasks for one assignee.
+private struct TaskGroup: Identifiable {
+    let id: String
+    let title: String
+    let tasks: [TaskRecord]
 }
 
 struct TaskRow: View {
