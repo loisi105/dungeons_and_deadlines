@@ -24,16 +24,19 @@ public struct BossSnapshot: Sendable {
     public let bossName: String
     public let startedAt: Date?
     public let deadline: Date
+    /// The leader's phase shift (`Raid.phaseShift`), so refreshes land on the shifted changes.
+    public let phaseShift: Int
     public let state: BossState
     public let openTasks: [TaskInfo]
     public let canComplete: Bool
 
-    public init(raidID: UUID, raidName: String, bossName: String, startedAt: Date? = nil, deadline: Date, state: BossState, openTasks: [TaskInfo], canComplete: Bool) {
+    public init(raidID: UUID, raidName: String, bossName: String, startedAt: Date? = nil, deadline: Date, phaseShift: Int = 0, state: BossState, openTasks: [TaskInfo], canComplete: Bool) {
         self.raidID = raidID
         self.raidName = raidName
         self.bossName = bossName
         self.startedAt = startedAt
         self.deadline = deadline
+        self.phaseShift = Phase.clampShift(phaseShift)
         self.state = state
         self.openTasks = openTasks
         self.canComplete = canComplete
@@ -52,17 +55,17 @@ public struct BossSnapshot: Sendable {
         }
         return BossSnapshot(
             raidID: raid.id, raidName: raid.name, bossName: raid.bossName, startedAt: raid.startedAt,
-            deadline: raid.deadline, state: state, openTasks: Array(open), canComplete: state.outcome == .ongoing
+            deadline: raid.deadline, phaseShift: raid.phaseShift, state: state, openTasks: Array(open), canComplete: state.outcome == .ongoing
         )
     }
 
-    /// When a widget should redraw on its own: each upcoming phase change and the deadline.
+    /// When a widget should redraw on its own: each upcoming (shifted) phase change and the deadline.
     public func refreshDates(after now: Date) -> [Date] {
         guard state.outcome == .ongoing else { return [] }
         var dates: [Date] = []
         var cursor = now
         let start = startedAt ?? now
-        while let next = Phase.nextChange(start: start, deadline: deadline, after: cursor), dates.count < 4 {
+        while let next = Phase.nextChange(start: start, deadline: deadline, after: cursor, shift: phaseShift), dates.count < 4 {
             dates.append(next)
             cursor = next
         }

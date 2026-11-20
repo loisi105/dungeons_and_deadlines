@@ -147,6 +147,19 @@ public final class RaidStore {
         try context.save()
     }
 
+    /// Sets the leader's phase shift (clamped to `Phase.shiftRange`): whole steps added to the
+    /// time-based phase. Only the leader, only while the fight is on. Marked pending so a
+    /// multiplayer raid uploads it on the next flush.
+    public func setPhaseShift(_ shift: Int, raidID: UUID, by memberID: String) throws {
+        guard let record = raidRecord(raidID) else { throw StoreError.raidNotFound }
+        var raid = record.model
+        guard raid.ownerID == memberID else { throw StoreError.notOwner }
+        guard raid.status == .active, bossState(raidID)?.outcome == .ongoing else { throw StoreError.notActive }
+        raid.phaseShift = Phase.clampShift(shift)
+        record.update(from: raid, syncState: .pending)
+        try context.save()
+    }
+
     /// Locks max HP from the planned tasks and starts the fight.
     @discardableResult
     public func startFight(_ raidID: UUID, by memberID: String) throws -> Raid {
@@ -184,6 +197,8 @@ public final class RaidStore {
         raid.status = .active
         raid.startedAt = now
         raid.deadline = deadline
+        // Phases restart from now, following the new deadline.
+        raid.phaseShift = 0
         record.update(from: raid, syncState: .pending)
         try context.save()
         return raid

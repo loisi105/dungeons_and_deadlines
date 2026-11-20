@@ -36,11 +36,17 @@ public struct Raid: Identifiable, Codable, Sendable, Hashable {
     public var status: RaidStatus
     public var inviteCode: String?
     public var isMultiplayer: Bool
+    /// The leader's mood override: whole steps added to the time-based phase
+    /// (see `Phase.at(start:deadline:now:shift:)`). Always within `Phase.shiftRange`.
+    public var phaseShift: Int {
+        didSet { phaseShift = Phase.clampShift(phaseShift) }
+    }
 
     public init(
         id: UUID = UUID(), name: String, bossName: String, ownerID: String,
         createdAt: Date, deadline: Date, startedAt: Date? = nil, lockedMaxHP: Int? = nil,
-        status: RaidStatus = .planning, inviteCode: String? = nil, isMultiplayer: Bool = false
+        status: RaidStatus = .planning, inviteCode: String? = nil, isMultiplayer: Bool = false,
+        phaseShift: Int = 0
     ) {
         self.id = id
         self.name = name
@@ -53,6 +59,30 @@ public struct Raid: Identifiable, Codable, Sendable, Hashable {
         self.status = status
         self.inviteCode = inviteCode
         self.isMultiplayer = isMultiplayer
+        self.phaseShift = Phase.clampShift(phaseShift)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, bossName, ownerID, createdAt, deadline, startedAt, lockedMaxHP
+        case status, inviteCode, isMultiplayer, phaseShift
+    }
+
+    /// Data written before the phase shift existed has no `phaseShift`: it reads as 0.
+    /// Out-of-range values are clamped (`didSet` doesn't run during init).
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        bossName = try c.decode(String.self, forKey: .bossName)
+        ownerID = try c.decode(String.self, forKey: .ownerID)
+        createdAt = try c.decode(Date.self, forKey: .createdAt)
+        deadline = try c.decode(Date.self, forKey: .deadline)
+        startedAt = try c.decodeIfPresent(Date.self, forKey: .startedAt)
+        lockedMaxHP = try c.decodeIfPresent(Int.self, forKey: .lockedMaxHP)
+        status = try c.decode(RaidStatus.self, forKey: .status)
+        inviteCode = try c.decodeIfPresent(String.self, forKey: .inviteCode)
+        isMultiplayer = try c.decode(Bool.self, forKey: .isMultiplayer)
+        phaseShift = Phase.clampShift(try c.decodeIfPresent(Int.self, forKey: .phaseShift) ?? 0)
     }
 }
 

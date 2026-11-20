@@ -123,6 +123,7 @@ final class AppEnvironment {
     let sync = SyncEngine()
     let gameCenter = GameCenterService()
     let entitlements = Entitlements()
+    let phaseNotifications = PhaseNotifications()
     #if DEBUG
     let fakeTeammates = FakeTeammates()
     #endif
@@ -139,6 +140,18 @@ final class AppEnvironment {
         #if DEBUG
         fakeTeammates.autoStart = LaunchOptions.fakeTeammates
         #endif
+        // Before launch finishes, so tapping an alert that launched the app opens its boss.
+        phaseNotifications.openRaid = { [weak self] raidID in
+            guard let self, store.raid(raidID) != nil else { return }
+            LocalIdentity.currentRaidID = raidID
+            selectedTab = .boss
+        }
+        phaseNotifications.isShowingBoss = { [weak self] raidID in
+            guard let self else { return false }
+            return UIApplication.shared.applicationState == .active
+                && selectedTab == .boss && store.currentRaid()?.id == raidID
+        }
+        phaseNotifications.start()
     }
 
     /// Runs when the app returns to the foreground: applies the focus background rule
@@ -156,6 +169,7 @@ final class AppEnvironment {
         GameActions.reloadSystemSurfaces()
         sync.appDidBecomeActive()
         gameCenter.scheduleSync()
+        phaseNotifications.setNeedsReschedule()
     }
 
     func didEnterBackground() {

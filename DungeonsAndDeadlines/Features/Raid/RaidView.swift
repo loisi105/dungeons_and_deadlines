@@ -160,6 +160,7 @@ struct RaidView: View {
                 ))
             }
             Toggle("Haptics", isOn: $hapticsOn)
+            PhaseAlertsSetting()
         } header: {
             Text("You").font(.headline)
         }
@@ -241,12 +242,23 @@ struct RaidView: View {
     private var dangerSection: some View {
         Section {
             if let raid = raids.first?.model {
-                Button(raid.isMultiplayer ? "Leave raid" : "Delete boss",
-                       systemImage: raid.isMultiplayer ? "rectangle.portrait.and.arrow.right" : "trash",
-                       role: .destructive) {
-                    removing = raid
+                VStack(alignment: .leading, spacing: 10) {
+                    // Solid red pixel button, so it never reads like an ordinary row.
+                    Button(role: .destructive) {
+                        removing = raid
+                    } label: {
+                        Label(raid.isMultiplayer ? "Leave raid" : "Delete boss",
+                              systemImage: raid.isMultiplayer ? "rectangle.portrait.and.arrow.right" : "trash")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .dangerActionStyle()
+                    .accessibilityIdentifier("deleteCurrentBoss")
+                    Text(raid.isMultiplayer
+                         ? "Removes this raid from your phone. Your teammates keep fighting."
+                         : "Deletes this boss with all its tasks and hits. This can't be undone.")
+                        .readableFootnote()
                 }
-                .accessibilityIdentifier("deleteCurrentBoss")
+                .padding(.vertical, 4)
             }
         }
         .dungeonRow()

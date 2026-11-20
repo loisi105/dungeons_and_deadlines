@@ -31,6 +31,7 @@ struct BossView: View {
     @State private var showReport = false
     @State private var showResume = false
     @State private var addFollowUp = false
+    @State private var showPhaseDetails = false
 
     init(raidID: UUID, showTasks: @escaping () -> Void = {}) {
         self.raidID = raidID
@@ -49,11 +50,20 @@ struct BossView: View {
                 TimelineView(.everyMinute) { context in
                     let state = BossEngine.state(raid: raid, tasks: tasks.map(\.model), attacks: attacks.map(\.model), now: context.date)
                     content(raid: raid, state: state)
-                        .sensoryFeedback(.warning, trigger: state.phase) { _, _ in hapticsOn && state.outcome == .ongoing }
+                        // Only when the boss gets angrier, like the announcement; calming down is quiet.
+                        .sensoryFeedback(.warning, trigger: state.phase) { old, new in hapticsOn && state.outcome == .ongoing && new > old }
                         .sensoryFeedback(.success, trigger: state.outcome) { _, new in hapticsOn && new == .won }
                         .onChange(of: state.phase) { old, new in
                             guard state.outcome == .ongoing, new > old else { return }
-                            announcer.announce(String(localized: "The boss is now \(String(localized: new.title)). \(String(localized: new.hint))"), important: true)
+                            // The hint describes the time rule, which doesn't hold once the leader shifted it.
+                            let why = raid.phaseShift == 0
+                                ? String(localized: new.hint)
+                                : String(localized: "The raid leader set the boss's mood.")
+                            announcer.announce(String(localized: "The boss is now \(String(localized: new.title)). \(why)"), important: true)
+                        }
+                        // Mood changes are for a running fight only.
+                        .onChange(of: state.outcome) { _, new in
+                            if new != .ongoing { showPhaseDetails = false }
                         }
                 }
                 .navigationTitle(raid.name)
@@ -63,6 +73,14 @@ struct BossView: View {
                 .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
                 .sheet(isPresented: $showResume) { ResumeFightView(raidID: raidID) }
                 .sheet(isPresented: $addFollowUp) { TaskEditorView(raidID: raidID, mode: .add) }
+                // At accessibility text sizes the phase details are a sheet; a popover would clip.
+                .sheet(isPresented: phaseDetailsBinding(asSheet: true)) {
+                    if let raid = raids.first?.model {
+                        // Re-evaluated when the raid, its tasks or hits change; the details also
+                        // check the deadline themselves. A finished fight shows no mood buttons.
+                        PhaseDetailsSheet(raid: raid, isOngoing: isOngoing(raid))
+                    }
+                }
             } else {
                 ContentUnavailableView("Raid not found", systemImage: "questionmark.circle")
             }
@@ -153,7 +171,7 @@ struct BossView: View {
                     .minimumScaleFactor(0.5)
                     .frame(maxWidth: .infinity)
                     .accessibilityAddTraits(.isHeader)
-                if state.outcome == .ongoing { PhaseBadge(state.phase) }
+                if state.outcome == .ongoing { phaseBadgeButton(raid: raid, state: state) }
             }
 
             VStack(spacing: 6) {
@@ -174,6 +192,43 @@ struct BossView: View {
             }
         }
         .sensoryFeedback(.impact(weight: .heavy), trigger: hitCount) { _, _ in hapticsOn }
+    }
+
+    /// The phase badge opens how long the phase lasts, what's next, and (for the leader)
+    /// buttons to make the boss angrier or calmer than the deadline says.
+    private func phaseBadgeButton(raid: Raid, state: BossState) -> some View {
+        Button {
+            showPhaseDetails = true
+        } label: {
+            PhaseBadge(state.phase, isShifted: raid.phaseShift != 0)
+        }
+        .buttonStyle(.plain)
+        // The badge's hint describes the time rule, which doesn't hold once the leader shifted it.
+        .accessibilityLabel(raid.phaseShift == 0
+            ? Text("Phase \(state.phase.rawValue): \(Text(state.phase.title)). \(Text(state.phase.hint))")
+            : Text("Phase \(state.phase.rawValue): \(Text(state.phase.title)). Set by the raid leader."))
+        .accessibilityHint(Text("Shows when the boss gets angrier"))
+        .accessibilityIdentifier("phaseBadgeButton")
+        .popover(isPresented: phaseDetailsBinding(asSheet: false), arrowEdge: .top) {
+            PhaseDetailsView(raid: raid, isOngoing: state.outcome == .ongoing)
+                .padding(20)
+                .frame(width: 320)
+                .presentationCompactAdaptation(.popover)
+                .presentationBackground(Theme.card)
+        }
+    }
+
+    /// Whether the fight is running right now (not planning, won or lost).
+    private func isOngoing(_ raid: Raid) -> Bool {
+        BossEngine.state(raid: raid, tasks: tasks.map(\.model), attacks: attacks.map(\.model), now: .now).outcome == .ongoing
+    }
+
+    /// One flag drives both presentations; the text size picks popover or sheet.
+    private func phaseDetailsBinding(asSheet: Bool) -> Binding<Bool> {
+        Binding(
+            get: { showPhaseDetails && dynamicTypeSize.isAccessibilitySize == asSheet },
+            set: { showPhaseDetails = $0 }
+        )
     }
 
     @ViewBuilder

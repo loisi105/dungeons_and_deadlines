@@ -68,6 +68,13 @@ struct BossSnapshotTests {
         let fighting = try #require(BossSnapshot.make(raidID: raid.id, at: start, store: store))
         #expect(fighting.canComplete)
         #expect(fighting.refreshDates(after: start) == [500, 750, 900, 1001].map { start.addingTimeInterval($0) })
+
+        // One step angrier: Enraged at 500, Berserk at 750; the 900 change is a no-op.
+        try store.setPhaseShift(1, raidID: raid.id, by: "a")
+        let shifted = try #require(BossSnapshot.make(raidID: raid.id, at: start, store: store))
+        #expect(shifted.phaseShift == 1)
+        #expect(shifted.state.phase == .angry)
+        #expect(shifted.refreshDates(after: start) == [500, 750, 1001].map { start.addingTimeInterval($0) })
     }
 
     @Test("No raid, no snapshot")

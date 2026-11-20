@@ -45,6 +45,16 @@ public enum GameActions {
         changed(raidID)
     }
 
+    /// The raid leader makes the boss angrier (+) or calmer (−) than the deadline says.
+    /// `shift` is clamped to `Phase.shiftRange`; 0 follows the deadline again.
+    /// Only while the fight is on (the store also checks the leader and the outcome).
+    public static func setPhaseShift(_ shift: Int, raidID: UUID) throws {
+        guard let raid = store.raid(raidID) else { throw StoreError.raidNotFound }
+        guard raid.status == .active else { throw StoreError.notActive }
+        try store.setPhaseShift(shift, raidID: raidID, by: me.memberID)
+        changed(raidID)
+    }
+
     @discardableResult
     public static func startFocus(_ raidID: UUID?) throws -> FocusSession {
         let id = try self.raidID(raidID)

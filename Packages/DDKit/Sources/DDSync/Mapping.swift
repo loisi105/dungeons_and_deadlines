@@ -17,6 +17,7 @@ enum Mapping {
             "status": .string(raid.status.rawValue),
             "startedAt": raid.startedAt.map(FirestoreValue.date) ?? .null,
             "lockedMaxHP": raid.lockedMaxHP.map(FirestoreValue.int) ?? .null,
+            "phaseShift": .int(raid.phaseShift),
         ]
         if let code = raid.inviteCode { f["inviteCode"] = .string(code) }
         return f
@@ -29,7 +30,8 @@ enum Mapping {
             ownerID: d["ownerId"]?.string ?? "", createdAt: d["createdAt"]?.date ?? deadline,
             deadline: deadline, startedAt: d["startedAt"]?.date, lockedMaxHP: d["lockedMaxHP"]?.int,
             status: RaidStatus(rawValue: d["status"]?.string ?? "") ?? .planning,
-            inviteCode: d["inviteCode"]?.string, isMultiplayer: true
+            inviteCode: d["inviteCode"]?.string, isMultiplayer: true,
+            phaseShift: d["phaseShift"]?.int ?? 0 // missing on raids from older app versions
         )
     }
 

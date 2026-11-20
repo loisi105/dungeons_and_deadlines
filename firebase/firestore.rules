@@ -11,6 +11,13 @@ service cloud.firestore {
     function raidData(raidId) { return get(/databases/$(db)/documents/raids/$(raidId)).data; }
     function isMember(raidId) { return signedIn() && request.auth.uid in raidData(raidId).memberIDs; }
     function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    // The leader's mood override for the boss (Raid.phaseShift). Missing on older raids.
+    function validPhaseShift() {
+      return !('phaseShift' in request.resource.data)
+        || (request.resource.data.phaseShift is int
+          && request.resource.data.phaseShift >= -3
+          && request.resource.data.phaseShift <= 3);
+    }
 
     match /raids/{raidId} {
       allow read: if signedIn() && request.auth.uid in resource.data.memberIDs;
@@ -18,7 +25,8 @@ service cloud.firestore {
       allow create: if signedIn()
         && request.resource.data.ownerId == request.auth.uid
         && request.resource.data.memberIDs == [request.auth.uid]
-        && request.resource.data.status == 'planning';
+        && request.resource.data.status == 'planning'
+        && validPhaseShift();
 
       allow update: if signedIn() && (
         // Join: add only yourself while the raid is open and not full.
@@ -27,9 +35,11 @@ service cloud.firestore {
           && request.resource.data.memberIDs.size() <= maxMembers()
           && request.resource.data.memberIDs.removeAll(resource.data.memberIDs) == [request.auth.uid]
           && resource.data.memberIDs.removeAll(request.resource.data.memberIDs).size() == 0)
-        // Leader: rename, start the fight (locks HP), change the deadline. Can't change owner or members.
+        // Leader: rename, start the fight (locks HP), change the deadline, shift the boss's
+        // phase (phaseShift, -3...3). Can't change owner or members.
         || (resource.data.ownerId == request.auth.uid
-          && !changed().hasAny(['ownerId', 'memberIDs']))
+          && !changed().hasAny(['ownerId', 'memberIDs'])
+          && validPhaseShift())
         // Any member: settle the outcome once the boss is dead or the deadline passed.
         || (request.auth.uid in resource.data.memberIDs
           && resource.data.status == 'active'

@@ -158,6 +158,10 @@ struct ResumeFightTests {
         try store.completeTask(t.id, by: "a")
         try store.insertAttack(Attack(raidID: raid.id, memberID: "a", kind: .focus(seconds: 1800), damage: 60, createdAt: clock.now, localDay: "x"))
         #expect(store.raid(raid.id)?.status == .won)
+        // A shift set during the fight (written directly: the store refuses it once won).
+        var shifted = try #require(store.raid(raid.id))
+        shifted.phaseShift = 2
+        try store.updateRaid(shifted)
 
         // Follow-up work found after the win.
         let followUp = try store.addTask(raidID: raid.id, title: "Fix review comments", size: .m)
@@ -165,6 +169,8 @@ struct ResumeFightTests {
         #expect(throws: StoreError.deadlineInPast) { try store.resumeFight(raid.id, by: "a", deadline: clock.now.addingTimeInterval(-1)) }
         let resumed = try store.resumeFight(raid.id, by: "a", deadline: clock.now.addingTimeInterval(86_400 * 3))
         #expect(resumed.status == .active)
+        #expect(resumed.phaseShift == 0) // phases restart from now
+        #expect(store.raid(raid.id)?.phaseShift == 0)
         let state = try #require(store.bossState(raid.id))
         #expect(state.outcome == .ongoing)
         #expect(state.currentHP == 231) // 150 / 0.65, only the follow-up
@@ -243,6 +249,45 @@ struct SyncStoreTests {
         store.markRaidSynced(raid.id)
         store.mergeRemote(raid: renamed)
         #expect(store.raid(raid.id)?.name == "Server name")
+    }
+
+    @Test("Phase shift is clamped, saved and marked pending")
+    func phaseShift() throws {
+        let clock = TestClock()
+        let store = try makeStore(clock)
+        let raid = try store.createRaid(name: "R", bossName: "B", deadline: clock.now.addingTimeInterval(86_400), multiplayer: true, owner: owner)
+        try store.addTask(raidID: raid.id, title: "T", size: .s)
+        try store.startFight(raid.id, by: "a")
+        store.markRaidSynced(raid.id)
+        #expect(store.bossState(raid.id)?.phase == .calm)
+
+        try store.setPhaseShift(1, raidID: raid.id, by: "a")
+        #expect(store.raid(raid.id)?.phaseShift == 1)
+        #expect(store.bossState(raid.id)?.phase == .angry)
+        #expect(store.pendingRaids().map(\.id) == [raid.id])
+
+        try store.setPhaseShift(10, raidID: raid.id, by: "a")
+        #expect(store.raid(raid.id)?.phaseShift == 3)
+        try store.setPhaseShift(-10, raidID: raid.id, by: "a")
+        #expect(store.raid(raid.id)?.phaseShift == -3)
+        #expect(throws: StoreError.raidNotFound) { try store.setPhaseShift(1, raidID: UUID(), by: "a") }
+        #expect(throws: StoreError.notOwner) { try store.setPhaseShift(1, raidID: raid.id, by: "b") }
+    }
+
+    @Test("Phase shift only while the fight is on")
+    func phaseShiftNeedsOngoingFight() throws {
+        let clock = TestClock()
+        let store = try makeStore(clock)
+        let raid = try store.createRaid(name: "R", bossName: "B", deadline: clock.now.addingTimeInterval(100), multiplayer: false, owner: owner)
+        try store.addTask(raidID: raid.id, title: "T", size: .s)
+        #expect(throws: StoreError.notActive) { try store.setPhaseShift(1, raidID: raid.id, by: "a") } // planning
+        try store.startFight(raid.id, by: "a")
+        clock.advance(200)
+        // Deadline passed but not settled yet: the outcome already says lost.
+        #expect(throws: StoreError.notActive) { try store.setPhaseShift(1, raidID: raid.id, by: "a") }
+        try store.settleOutcome(raid.id)
+        #expect(throws: StoreError.notActive) { try store.setPhaseShift(-1, raidID: raid.id, by: "a") }
+        #expect(store.raid(raid.id)?.phaseShift == 0)
     }
 
     @Test("Migrating the member ID re-keys local data")

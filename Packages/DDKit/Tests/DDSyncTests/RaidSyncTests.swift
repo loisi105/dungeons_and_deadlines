@@ -88,6 +88,40 @@ struct RaidSyncTests {
         #expect(published.inviteCode == "BBBBBB")
     }
 
+    @Test("The leader's phase shift reaches other players; raids without it read as 0")
+    func phaseShift() async throws {
+        let cloud = FakeFirestore()
+        let alice = try makePlayer("alice", cloud)
+        let bob = try makePlayer("bob", cloud)
+        let raid = try alice.store.createRaid(
+            name: "R", bossName: "B", deadline: .now.addingTimeInterval(86_400),
+            multiplayer: true, owner: LocalIdentity(memberID: "alice", nickname: "Alice")
+        )
+        try alice.store.addTask(raidID: raid.id, title: "T", size: .s)
+        try await alice.publish(raid, code: { "DDDDDD" })
+        #expect(await cloud.docs["raids/\(raid.id.uuidString)"]?["phaseShift"] == .int(0))
+        try await bob.join(code: "DDDDDD", nickname: "Bob", role: nil)
+        #expect(bob.store.raid(raid.id)?.phaseShift == 0)
+
+        try alice.store.startFight(raid.id, by: "alice")
+        try alice.store.setPhaseShift(2, raidID: raid.id, by: "alice")
+        #expect(alice.store.pendingRaids().map(\.id) == [raid.id])
+        await alice.flush()
+        #expect(alice.store.pendingRaids().isEmpty)
+        #expect(await cloud.docs["raids/\(raid.id.uuidString)"]?["phaseShift"] == .int(2))
+        try await bob.poll(raid.id)
+        #expect(bob.store.raid(raid.id)?.phaseShift == 2)
+        #expect(bob.store.bossState(raid.id)?.phase == .enraged)
+
+        // A raid document written by an older app has no phaseShift field.
+        var fields = Mapping.fields(raid)
+        fields["phaseShift"] = nil
+        let old = try #require(Mapping.raid(FirestoreDocument(path: Mapping.raidPath(raid.id), fields: fields)))
+        #expect(old.phaseShift == 0)
+        fields["phaseShift"] = .int(-1)
+        #expect(Mapping.raid(FirestoreDocument(path: Mapping.raidPath(raid.id), fields: fields))?.phaseShift == -1)
+    }
+
     @Test("Network errors keep items pending; a re-sent attack counts as done; rule rejections are dropped")
     func retries() async throws {
         let cloud = FakeFirestore()

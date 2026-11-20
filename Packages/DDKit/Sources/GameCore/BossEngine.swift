@@ -79,7 +79,7 @@ public enum BossEngine {
         } else {
             outcome = .ongoing
         }
-        let phase = Phase.at(start: raid.startedAt ?? raid.createdAt, deadline: raid.deadline, now: now)
+        let phase = raid.phase(at: now)
         return BossState(
             maxHP: maxHP, currentHP: current, phase: phase, outcome: outcome,
             totalDamage: total, memberStats: stats

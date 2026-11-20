@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import GameCore
 import DDPersistence
 import DDDesign
 
@@ -35,6 +36,28 @@ struct RootView: View {
             if !nickname.isEmpty { environment.gameCenter.authenticate() }
         }
         .onAppear { KeyboardDismissal.shared.install() }
+        // The one hook for phase alerts: any change to a raid's fight (start, end, deadline,
+        // phase shift, delete), whether made here, by an intent or merged from sync.
+        .onChange(of: phaseAlertKeys, initial: true) {
+            environment.phaseNotifications.setNeedsReschedule()
+        }
+        // Ask for notification permission when a fight starts (or resumes) while the app is on
+        // screen: from the Boss tab, the start-fight prompt in Tasks, or the leader's start
+        // merged from sync. Scheduling itself never prompts.
+        .onChange(of: raidStatuses) { old, new in
+            guard scenePhase == .active else { return }
+            // A raid that was already known and not running, now active. A raid that just
+            // appeared (joined mid-fight, first sync) doesn't count.
+            let started = new.contains { entry in
+                guard entry.value == .active, let before = old[entry.key] else { return false }
+                return before != .active
+            }
+            guard started else { return }
+            Task {
+                await environment.phaseNotifications.requestAuthorizationIfNeeded()
+                environment.phaseNotifications.setNeedsReschedule()
+            }
+        }
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
@@ -49,6 +72,14 @@ struct RootView: View {
         } message: {
             Text("You were away for more than 2 minutes, so your focus timer paused when you left. Resume it from the timer.")
         }
+    }
+
+    /// What phase alerts depend on, per raid.
+    private var phaseAlertKeys: [PhaseNotifications.Key] { raids.map { PhaseNotifications.Key($0.model) } }
+
+    /// Each raid's status, to notice a fight starting.
+    private var raidStatuses: [UUID: RaidStatus] {
+        Dictionary(raids.map { ($0.id, $0.status) }, uniquingKeysWith: { a, _ in a })
     }
 
     /// The raid stored as current, or the newest unfinished one.

@@ -56,8 +56,14 @@ public struct HPBar: View {
 /// Phase as symbol + text. Never color only.
 public struct PhaseBadge: View {
     let phase: Phase
+    /// The raid leader shifted the phase (`Raid.phaseShift != 0`), so the time rule in
+    /// `phase.hint` doesn't hold; VoiceOver says who set it instead.
+    let isShifted: Bool
 
-    public init(_ phase: Phase) { self.phase = phase }
+    public init(_ phase: Phase, isShifted: Bool = false) {
+        self.phase = phase
+        self.isShifted = isShifted
+    }
 
     public var body: some View {
         Label {
@@ -74,7 +80,9 @@ public struct PhaseBadge: View {
         .background(PixelCornerShape(step: 3).fill(phase.tint.opacity(0.18)))
         .overlay(PixelCornerShape(step: 3).stroke(phase.tint, lineWidth: 2))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Phase \(phase.rawValue): \(Text(phase.title)). \(Text(phase.hint))"))
+        .accessibilityLabel(isShifted
+            ? Text("Phase \(phase.rawValue): \(Text(phase.title)). Set by the raid leader.")
+            : Text("Phase \(phase.rawValue): \(Text(phase.title)). \(Text(phase.hint))"))
     }
 }
 

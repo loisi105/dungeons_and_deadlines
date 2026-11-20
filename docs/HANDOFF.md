@@ -156,6 +156,7 @@ Also possible:
 
 - Leaving a raid deletes your member document, but you stay in `memberIDs`, because the rules don't allow removing yourself there.
 - Teammates' hits reach your phone only while the app is open (polling). Closed-app updates are the M8 push item above.
+- Phase alerts are scheduled locally on each phone, so on teammates' phones they only update when the app polls or opens. If the leader changes the boss's mood, or the boss dies, while a teammate's app is in the background, an outdated alert can still fire there.
 
 ## Not verified yet
 

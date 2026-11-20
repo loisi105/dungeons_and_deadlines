@@ -67,6 +67,15 @@ test('only the leader edits the raid; members may only settle the outcome', asyn
   await assertSucceeds(updateDoc(doc(db('bob'), `raids/${RAID}`), { status: 'won' }));
 });
 
+test('only the leader shifts the boss phase, within -3...3', async () => {
+  await assertSucceeds(updateDoc(doc(db('alice'), `raids/${RAID}`), { phaseShift: 1 }));
+  await assertSucceeds(updateDoc(doc(db('alice'), `raids/${RAID}`), { phaseShift: -3 }));
+  await assertFails(updateDoc(doc(db('alice'), `raids/${RAID}`), { phaseShift: 4 }));
+  await assertFails(updateDoc(doc(db('alice'), `raids/${RAID}`), { phaseShift: 1.5 }));
+  await assertFails(updateDoc(doc(db('alice'), `raids/${RAID}`), { phaseShift: 'angry' }));
+  await assertFails(updateDoc(doc(db('bob'), `raids/${RAID}`), { phaseShift: 2 }));
+});
+
 test('no attacks after the fight ended', async () => {
   await env.withSecurityRulesDisabled(async (ctx) => {
     await updateDoc(doc(ctx.firestore(), `raids/${RAID}`), { status: 'won' });

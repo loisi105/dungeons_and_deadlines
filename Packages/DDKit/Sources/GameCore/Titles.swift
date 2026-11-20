@@ -91,7 +91,8 @@ public enum Titles {
 
         let raidTasks = tasks.filter { $0.raidID == raid.id }
         let end = min(now, raid.deadline)
-        let highest = raid.startedAt.map { Phase.at(start: $0, deadline: raid.deadline, now: end) } ?? .calm
+        // Uses the leader's current phase shift; the shift's history isn't kept.
+        let highest = raid.startedAt.map { Phase.at(start: $0, deadline: raid.deadline, now: end, shift: raid.phaseShift) } ?? .calm
         return RaidReport(
             raid: raid, state: state, rows: rows,
             lateTasks: raidTasks.filter { $0.isLate(startedAt: raid.startedAt) },

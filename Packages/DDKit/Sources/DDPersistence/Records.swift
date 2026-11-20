@@ -20,6 +20,8 @@ public final class RaidRecord {
     public var statusRaw: String
     public var inviteCode: String?
     public var isMultiplayer: Bool
+    /// `Raid.phaseShift`. The default value lets SwiftData migrate older stores lightly.
+    public var phaseShift: Int = 0
     public var syncStateRaw: String
     public var updatedAt: Date
 
@@ -35,6 +37,7 @@ public final class RaidRecord {
         statusRaw = raid.status.rawValue
         inviteCode = raid.inviteCode
         isMultiplayer = raid.isMultiplayer
+        phaseShift = raid.phaseShift
         syncStateRaw = syncState.rawValue
         updatedAt = .now
     }
@@ -46,7 +49,7 @@ public final class RaidRecord {
         Raid(
             id: id, name: name, bossName: bossName, ownerID: ownerID, createdAt: createdAt,
             deadline: deadline, startedAt: startedAt, lockedMaxHP: lockedMaxHP, status: status,
-            inviteCode: inviteCode, isMultiplayer: isMultiplayer
+            inviteCode: inviteCode, isMultiplayer: isMultiplayer, phaseShift: phaseShift
         )
     }
 
@@ -60,6 +63,7 @@ public final class RaidRecord {
         statusRaw = raid.status.rawValue
         inviteCode = raid.inviteCode
         isMultiplayer = raid.isMultiplayer
+        phaseShift = raid.phaseShift
         syncStateRaw = syncState.rawValue
         updatedAt = .now
     }

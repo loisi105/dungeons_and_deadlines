@@ -399,14 +399,15 @@ let package = Package(
 | Streak | ≥30 focus minutes per day; ×1.1 after 2 days, ×1.2 after 4 days, capped at ×1.2 |
 | Per-member daily damage cap (raids ≥2 members) | 25% of locked max HP |
 | Background grace period | 120 seconds |
-| Phases (share of time left) | > 50% Calm · ≤ 50% Angry · ≤ 25% Enraged · ≤ 10% Berserk |
+| Phases (share of time left) | > 50% Calm · ≤ 50% Angry · ≤ 25% Enraged · ≤ 10% Berserk; the leader can shift the whole timeline ±1–3 steps (`Raid.phaseShift`), clamped to Calm…Berserk |
 | Max members | 5 |
 
 ## Appendix C: Firestore schema and rules (sketch)
 
 ```
 raids/{raidId}                     name, bossName, ownerId, inviteCode, deadline, createdAt,
-                                   startedAt?, lockedMaxHP?, status, memberIDs[]
+                                   startedAt?, lockedMaxHP?, status, memberIDs[],
+                                   phaseShift? (int -3...3, leader only; missing = 0)
 raids/{raidId}/members/{uid}       nickname, role?, joinedAt, activeFocusSince?
 raids/{raidId}/tasks/{taskId}      title, size, assigneeId?, createdAt, completedAt?, completedBy?
 raids/{raidId}/attacks/{attackId}  memberId, kind, taskId?, durationSeconds?, damage, createdAt, localDay
