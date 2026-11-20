@@ -58,24 +58,22 @@ struct SmallBossView: View {
 
     var body: some View {
         VStack(spacing: 4) {
-            PixelArtView(
-                BossKind.forName(snapshot.bossName).art,
-                eyeColor: snapshot.state.outcome == .won ? nil : snapshot.state.phase.eyeColor
-            )
-            .grayscale(snapshot.state.outcome == .won ? 1 : 0)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .widgetAccentable(false)
-            Text(snapshot.bossName)
-                .font(.caption.weight(.bold))
-                .fontDesign(.serif)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-                .foregroundStyle(renderingMode == .fullColor ? Color(hex: 0xFFF6D6) : .primary)
-                .widgetAccentable()
-            MiniHPBar(state: snapshot.state)
-            StatusLine(snapshot: snapshot, date: date)
-                .font(.caption2)
-                .foregroundStyle(renderingMode == .fullColor ? Color(hex: 0xD6CBEE) : .secondary)
+            BossArt(snapshot: snapshot)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            VStack(spacing: 4) {
+                Text(snapshot.bossName)
+                    .font(.caption.weight(.bold))
+                    .fontDesign(.serif)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .foregroundStyle(renderingMode == .fullColor ? Color(hex: 0xFFF6D6) : .primary)
+                    .widgetAccentable()
+                MiniHPBar(state: snapshot.state)
+                StatusLine(snapshot: snapshot, date: date)
+                    .font(.caption2)
+                    .foregroundStyle(renderingMode == .fullColor ? Color(hex: 0xD6CBEE) : .secondary)
+            }
+            .nameplate()
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(A11yText.boss(name: snapshot.bossName, state: snapshot.state))
@@ -92,7 +90,7 @@ struct MiniHPBar: View {
         HStack(spacing: 1.5) {
             ForEach(0..<10, id: \.self) { i in
                 Rectangle()
-                    .fill(i < filled ? AnyShapeStyle(renderingMode == .fullColor ? state.phase.tint : Color.primary) : AnyShapeStyle(Color.primary.opacity(0.2)))
+                    .fill(i < filled ? AnyShapeStyle(renderingMode == .fullColor ? state.phase.tint : Color.primary) : AnyShapeStyle(renderingMode == .fullColor ? Color(hex: 0x47236A) : Color.primary.opacity(0.2)))
                     .widgetAccentable(i < filled)
             }
         }
@@ -100,6 +98,65 @@ struct MiniHPBar: View {
         .padding(2)
         .background(Rectangle().stroke(Color(hex: 0x1A0D1F), lineWidth: renderingMode == .fullColor ? 1.5 : 0))
     }
+}
+
+/// The boss as an image rather than a `Canvas`: in tinted and clear Home Screens a
+/// desaturated image keeps its detail, where a drawing turns into a flat silhouette.
+struct BossArt: View {
+    let snapshot: BossSnapshot
+
+    var body: some View {
+        let won = snapshot.state.outcome == .won
+        if let image = BossKind.forName(snapshot.bossName).art.cgImage(eyeColor: won ? nil : snapshot.state.phase.eyeColor) {
+            Image(decorative: image, scale: 1)
+                .resizable()
+                .interpolation(.none)
+                .widgetAccentedRenderingMode(.desaturated)
+                .aspectRatio(contentMode: .fit)
+                .grayscale(won ? 1 : 0)
+                .widgetAccentable(false)
+        }
+    }
+}
+
+/// A solid night plate behind widget text. Text never sits on the starry
+/// background, where stars, windows and the moon would cut through it.
+struct Nameplate: ViewModifier {
+    @Environment(\.widgetRenderingMode) private var renderingMode
+
+    func body(content: Content) -> some View {
+        if renderingMode == .fullColor {
+            content
+                .padding(.horizontal, 6)
+                .padding(.vertical, 4)
+                .background(PixelCornerShape(step: 2).fill(Color(hex: 0x150C2B)))
+        } else {
+            content
+        }
+    }
+}
+
+/// The cream task card. In tinted and clear Home Screens a solid card turns white
+/// under white text, so there it's a faint plate and the text keeps the system color.
+struct TaskCard: ViewModifier {
+    @Environment(\.widgetRenderingMode) private var renderingMode
+
+    func body(content: Content) -> some View {
+        if renderingMode == .fullColor {
+            content
+                .background(PixelCornerShape(step: 2).fill(Theme.card))
+                .foregroundStyle(Theme.ink)
+        } else {
+            content
+                .background(PixelCornerShape(step: 2).fill(Color.primary.opacity(0.12)))
+                .foregroundStyle(.primary)
+        }
+    }
+}
+
+extension View {
+    func nameplate() -> some View { modifier(Nameplate()) }
+    func taskCard() -> some View { modifier(TaskCard()) }
 }
 
 struct MediumBossView: View {
@@ -124,8 +181,7 @@ struct MediumBossView: View {
                 Spacer(minLength: 0)
             }
             .padding(8)
-            .background(PixelCornerShape(step: 2).fill(Theme.card))
-            .foregroundStyle(Theme.ink)
+            .taskCard()
         }
     }
 }
@@ -139,13 +195,8 @@ struct LargeBossView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .center, spacing: 12) {
-                PixelArtView(
-                    BossKind.forName(snapshot.bossName).art,
-                    eyeColor: snapshot.state.outcome == .won ? nil : snapshot.state.phase.eyeColor
-                )
-                .grayscale(snapshot.state.outcome == .won ? 1 : 0)
-                .frame(width: 96, height: 96)
-                .widgetAccentable(false)
+                BossArt(snapshot: snapshot)
+                    .frame(width: 96, height: 96)
                 VStack(alignment: .leading, spacing: 4) {
                     Text(snapshot.bossName)
                         .font(.title3.weight(.black))
@@ -160,6 +211,8 @@ struct LargeBossView: View {
                         .font(.caption)
                         .foregroundStyle(renderingMode == .fullColor ? Color(hex: 0xD6CBEE) : .secondary)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .nameplate()
             }
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(A11yText.boss(name: snapshot.bossName, state: snapshot.state))
@@ -179,8 +232,7 @@ struct LargeBossView: View {
             }
             .padding(10)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(PixelCornerShape(step: 2).fill(Theme.card))
-            .foregroundStyle(Theme.ink)
+            .taskCard()
         }
     }
 }

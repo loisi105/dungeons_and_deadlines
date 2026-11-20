@@ -103,3 +103,32 @@ public struct PixelArtView: View {
         .accessibilityHidden(true)
     }
 }
+
+extension PixelArt {
+    /// The art as a bitmap, one image pixel per art pixel (show it with `.interpolation(.none)`).
+    /// Widgets need a real image: in tinted and clear Home Screens, WidgetKit turns
+    /// `Canvas` drawings into a flat silhouette, but can keep an image's detail.
+    public func cgImage(eyeColor: Color? = nil) -> CGImage? {
+        var eye: UInt32?
+        if let eyeColor {
+            let c = eyeColor.resolve(in: EnvironmentValues())
+            let byte = { (v: Float) in UInt32((min(max(v, 0), 1) * 255).rounded()) }
+            eye = byte(c.red) << 16 | byte(c.green) << 8 | byte(c.blue)
+        }
+        var bytes = [UInt8](repeating: 0, count: width * height * 4)
+        for (i, index) in pixels.enumerated() where index != 0 {
+            let rgb = eyeIndices.contains(index) ? (eye ?? colors[Int(index) - 1]) : colors[Int(index) - 1]
+            bytes[i * 4] = UInt8((rgb >> 16) & 0xFF)
+            bytes[i * 4 + 1] = UInt8((rgb >> 8) & 0xFF)
+            bytes[i * 4 + 2] = UInt8(rgb & 0xFF)
+            bytes[i * 4 + 3] = 255
+        }
+        guard let provider = CGDataProvider(data: Data(bytes) as CFData),
+              let space = CGColorSpace(name: CGColorSpace.sRGB) else { return nil }
+        return CGImage(
+            width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: width * 4,
+            space: space, bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
+            provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent
+        )
+    }
+}
