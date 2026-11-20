@@ -220,7 +220,6 @@ public final class FocusSessionRecord {
     public var stateRaw: String
     public var startedAt: Date?
     public var accumulatedSeconds: Double
-    public var backgroundedAt: Date?
 
     public init(_ session: FocusSession) {
         key = MemberRecord.key(raidID: session.raidID, memberID: session.memberID)
@@ -230,13 +229,12 @@ public final class FocusSessionRecord {
         stateRaw = session.state.rawValue
         startedAt = session.startedAt
         accumulatedSeconds = session.accumulatedSeconds
-        backgroundedAt = session.backgroundedAt
     }
 
     public var model: FocusSession {
         FocusSession(
             id: id, raidID: raidID, memberID: memberID, state: FocusTimerState(rawValue: stateRaw) ?? .idle,
-            startedAt: startedAt, accumulatedSeconds: accumulatedSeconds, backgroundedAt: backgroundedAt
+            startedAt: startedAt, accumulatedSeconds: accumulatedSeconds
         )
     }
 
@@ -244,6 +242,5 @@ public final class FocusSessionRecord {
         stateRaw = session.state.rawValue
         startedAt = session.startedAt
         accumulatedSeconds = session.accumulatedSeconds
-        backgroundedAt = session.backgroundedAt
     }
 }

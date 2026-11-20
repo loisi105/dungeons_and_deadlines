@@ -175,7 +175,7 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["pauseFocusButton"].waitForExistence(timeout: 5))
         try audit(app, "Focus (running)")
 
-        // A short trip to the Home Screen (under the 2-minute grace period) keeps it running.
+        // A trip to the Home Screen (or locking the phone) keeps it running.
         XCUIDevice.shared.press(.home)
         sleep(3)
         app.activate()

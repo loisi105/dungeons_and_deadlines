@@ -5,6 +5,8 @@ public enum FocusTimerState: String, Codable, Sendable {
 }
 
 /// A focus timer that only stores timestamps, so it survives suspension and app kills.
+/// Time away from the app counts as focus: iOS can't tell a locked phone from another
+/// app, so the timer runs until the user pauses or stops it (the daily cap still applies).
 public struct FocusSession: Identifiable, Codable, Sendable, Hashable {
     public var id: UUID
     public var raidID: UUID
@@ -14,12 +16,10 @@ public struct FocusSession: Identifiable, Codable, Sendable, Hashable {
     public var startedAt: Date?
     /// Seconds from earlier stretches (before pauses).
     public var accumulatedSeconds: TimeInterval
-    /// When the app went to the background while running.
-    public var backgroundedAt: Date?
 
     public init(
         id: UUID = UUID(), raidID: UUID, memberID: String, state: FocusTimerState = .idle,
-        startedAt: Date? = nil, accumulatedSeconds: TimeInterval = 0, backgroundedAt: Date? = nil
+        startedAt: Date? = nil, accumulatedSeconds: TimeInterval = 0
     ) {
         self.id = id
         self.raidID = raidID
@@ -27,7 +27,6 @@ public struct FocusSession: Identifiable, Codable, Sendable, Hashable {
         self.state = state
         self.startedAt = startedAt
         self.accumulatedSeconds = accumulatedSeconds
-        self.backgroundedAt = backgroundedAt
     }
 
     public func elapsed(at now: Date) -> TimeInterval {
@@ -44,7 +43,6 @@ public struct FocusSession: Identifiable, Codable, Sendable, Hashable {
         guard state != .running else { return }
         state = .running
         startedAt = now
-        backgroundedAt = nil
     }
 
     public mutating func pause(at now: Date) {
@@ -52,7 +50,6 @@ public struct FocusSession: Identifiable, Codable, Sendable, Hashable {
         accumulatedSeconds = elapsed(at: now)
         startedAt = nil
         state = .paused
-        backgroundedAt = nil
     }
 
     /// Ends the session and returns the total focused seconds.
@@ -62,28 +59,6 @@ public struct FocusSession: Identifiable, Codable, Sendable, Hashable {
         state = .idle
         startedAt = nil
         accumulatedSeconds = 0
-        backgroundedAt = nil
         return total
-    }
-
-    public mutating func markBackgrounded(at now: Date) {
-        guard state == .running else { return }
-        backgroundedAt = now
-    }
-
-    /// Applies the background rule. If the app was away longer than `grace`,
-    /// the session is paused as of the moment it left. Returns true if it paused.
-    @discardableResult
-    public mutating func resumeFromBackground(at now: Date, grace: TimeInterval) -> Bool {
-        guard state == .running, let left = backgroundedAt else {
-            backgroundedAt = nil
-            return false
-        }
-        backgroundedAt = nil
-        if now.timeIntervalSince(left) > grace {
-            pause(at: left)
-            return true
-        }
-        return false
     }
 }

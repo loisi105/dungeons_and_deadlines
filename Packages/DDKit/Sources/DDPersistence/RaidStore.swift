@@ -419,24 +419,6 @@ public final class RaidStore {
         return attack
     }
 
-    public func markFocusBackgrounded(memberID: String) throws {
-        guard var session = activeFocusSession(memberID: memberID), session.state == .running else { return }
-        session.markBackgrounded(at: clock())
-        try save(session)
-    }
-
-    /// Applies the background rule. Returns true if the session was paused.
-    @discardableResult
-    public func resumeFocusFromBackground(memberID: String) throws -> Bool {
-        guard var session = activeFocusSession(memberID: memberID) else { return false }
-        let paused = session.resumeFromBackground(at: clock(), grace: config.backgroundGraceSeconds)
-        try save(session)
-        if paused {
-            try updateMember(raidID: session.raidID, memberID: memberID) { $0.activeFocusSince = nil }
-        }
-        return paused
-    }
-
     // MARK: - Recording attacks directly (debug teammates)
 
     public func insertAttack(_ attack: Attack, syncState: SyncState = .pending) throws {

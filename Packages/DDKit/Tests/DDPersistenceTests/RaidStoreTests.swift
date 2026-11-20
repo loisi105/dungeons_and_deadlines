@@ -93,7 +93,7 @@ struct RaidStoreTests {
         #expect(throws: StoreError.notActive) { try store.startFocus(raidID: raid.id, memberID: "a") }
     }
 
-    @Test("Focus timer pauses after a long background and survives a new store instance")
+    @Test("Focus timer keeps running through time away")
     func focusBackground() throws {
         let clock = TestClock()
         let store = try makeStore(clock)
@@ -102,14 +102,11 @@ struct RaidStoreTests {
         try store.startFight(raid.id, by: "a")
         try store.startFocus(raidID: raid.id, memberID: "a")
         #expect(store.members(raid.id).first?.activeFocusSince != nil)
-        clock.advance(600)
-        try store.markFocusBackgrounded(memberID: "a")
-        clock.advance(300)
-        #expect(try store.resumeFocusFromBackground(memberID: "a"))
+        clock.advance(900) // e.g. the phone was locked
         let session = store.focusSession(raidID: raid.id, memberID: "a")
-        #expect(session.state == .paused)
-        #expect(session.elapsed(at: clock.now) == 600)
-        #expect(store.members(raid.id).first?.activeFocusSince == nil)
+        #expect(session.state == .running)
+        #expect(session.elapsed(at: clock.now) == 900)
+        #expect(store.members(raid.id).first?.activeFocusSince != nil)
     }
 
     @Test("Deleting a task leaves a tombstone; done tasks can't be deleted")

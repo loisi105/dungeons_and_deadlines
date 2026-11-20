@@ -15,7 +15,6 @@ public struct DamageConfig: Sendable, Hashable, Codable {
     public var streakSteps: [StreakStep]
     /// Per-member daily damage cap as a fraction of locked max HP (raids with >= 2 members only).
     public var perMemberDailyCapFraction: Double?
-    public var backgroundGraceSeconds: TimeInterval
     public var maxMembers: Int
 
     public struct StreakStep: Sendable, Hashable, Codable {
@@ -37,7 +36,6 @@ public struct DamageConfig: Sendable, Hashable, Codable {
         streakMinimumMinutes: Int = 30,
         streakSteps: [StreakStep] = [.init(days: 4, multiplier: 1.2), .init(days: 2, multiplier: 1.1)],
         perMemberDailyCapFraction: Double? = 0.25,
-        backgroundGraceSeconds: TimeInterval = 120,
         maxMembers: Int = 5
     ) {
         self.smallTaskDamage = smallTaskDamage
@@ -49,7 +47,6 @@ public struct DamageConfig: Sendable, Hashable, Codable {
         self.streakMinimumMinutes = streakMinimumMinutes
         self.streakSteps = streakSteps.sorted { $0.days > $1.days }
         self.perMemberDailyCapFraction = perMemberDailyCapFraction
-        self.backgroundGraceSeconds = backgroundGraceSeconds
         self.maxMembers = maxMembers
     }
 

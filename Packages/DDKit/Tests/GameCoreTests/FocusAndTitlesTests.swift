@@ -20,26 +20,13 @@ struct FocusSessionTests {
         #expect(s.elapsed(at: t0.addingTimeInterval(700)) == 0)
     }
 
-    @Test("Backgrounded under the grace period keeps running")
-    func shortBackground() {
+    @Test("Time away from the app counts, however long")
+    func timeAwayCounts() {
         var s = FocusSession(raidID: UUID(), memberID: "a")
         s.start(at: t0)
-        s.markBackgrounded(at: t0.addingTimeInterval(100))
-        let paused = s.resumeFromBackground(at: t0.addingTimeInterval(190), grace: 120)
-        #expect(!paused)
+        // Phone locked or another app for two hours: still focus time.
         #expect(s.state == .running)
-        #expect(s.elapsed(at: t0.addingTimeInterval(200)) == 200)
-    }
-
-    @Test("Backgrounded over the grace period pauses at the moment it left")
-    func longBackground() {
-        var s = FocusSession(raidID: UUID(), memberID: "a")
-        s.start(at: t0)
-        s.markBackgrounded(at: t0.addingTimeInterval(100))
-        let paused = s.resumeFromBackground(at: t0.addingTimeInterval(400), grace: 120)
-        #expect(paused)
-        #expect(s.state == .paused)
-        #expect(s.elapsed(at: t0.addingTimeInterval(1000)) == 100)
+        #expect(s.elapsed(at: t0.addingTimeInterval(7_200)) == 7_200)
     }
 
     @Test("Timer reference date reproduces elapsed time")

@@ -120,7 +120,7 @@ Every sheet and full-screen cover dismisses the same way, through the helpers in
 ## 6. Feature to file mapping (examples)
 
 - `Features/Boss/BossView.swift`: boss art, `HPBar`, phase banner, hit animation
-- `Features/Focus/FocusTimerModel.swift`: `startedAt` and `accumulated`, plus the `scenePhase` rule that pauses the timer after 2 minutes in the background
+- `Features/Focus/FocusTimerModel.swift`: `startedAt` and `accumulated`, and the timer keeps running while the app is in the background (iOS can't tell a locked phone from another app, so time away counts; the daily focus cap still applies)
 - `DDKit/GameCore/BossEngine.swift`: `lockHP(tasks:)` and `state(raid:attacks:now:)`
 - `DDKit/DDDesign/HPBar.swift`: the custom view, with its accessibility representation (section 7)
 

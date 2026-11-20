@@ -154,14 +154,9 @@ final class AppEnvironment {
         phaseNotifications.start()
     }
 
-    /// Runs when the app returns to the foreground: applies the focus background rule
-    /// and refreshes everything that may have changed while away.
+    /// Runs when the app returns to the foreground and refreshes everything that may
+    /// have changed while away. A running focus timer just keeps counting.
     func didBecomeActive() {
-        let me = LocalIdentity.current
-        if (try? store.resumeFocusFromBackground(memberID: me.memberID)) == true {
-            announcer.announce(String(localized: "Focus paused because you left the app for more than 2 minutes."), important: true)
-            pausedByBackground = true
-        }
         if let raid = store.currentRaid() { try? store.settleOutcome(raid.id) }
         #if os(iOS)
         LiveActivityController.reconcile()
@@ -173,7 +168,6 @@ final class AppEnvironment {
     }
 
     func didEnterBackground() {
-        try? store.markFocusBackgrounded(memberID: LocalIdentity.current.memberID)
         sync.appDidEnterBackground()
     }
 
@@ -195,6 +189,4 @@ final class AppEnvironment {
     /// is deleted from inside it (to free the free-plan slot).
     var showCreateRaid = false
 
-    /// Shown once as an alert after the background rule paused a session.
-    var pausedByBackground = false
 }

@@ -398,7 +398,7 @@ let package = Package(
 | Task share of max HP | 0.65 (max HP = task total / 0.65) |
 | Streak | ≥30 focus minutes per day; ×1.1 after 2 days, ×1.2 after 4 days, capped at ×1.2 |
 | Per-member daily damage cap (raids ≥2 members) | 25% of locked max HP |
-| Background grace period | 120 seconds |
+| Background grace period | none (removed: time away counts as focus) |
 | Phases (share of time left) | > 50% Calm · ≤ 50% Angry · ≤ 25% Enraged · ≤ 10% Berserk; the leader can shift the whole timeline ±1–3 steps (`Raid.phaseShift`), clamped to Calm…Berserk |
 | Max members | 5 |
 

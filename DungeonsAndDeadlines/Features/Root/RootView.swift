@@ -67,11 +67,6 @@ struct RootView: View {
             default: break
             }
         }
-        .alert("Focus paused", isPresented: $environment.pausedByBackground) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("You were away for more than 2 minutes, so your focus timer paused when you left. Resume it from the timer.")
-        }
     }
 
     /// What phase alerts depend on, per raid.
