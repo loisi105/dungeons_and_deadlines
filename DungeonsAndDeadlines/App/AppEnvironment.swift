@@ -6,8 +6,6 @@ import GameCore
 /// The game's tabs.
 enum AppTab: Hashable {
     case boss, tasks, meter, raid
-    /// A boss in the iPad sidebar's Bosses section; selecting it switches to that boss.
-    case bossItem(UUID)
 }
 
 /// Launch arguments used by UI tests and debugging.
@@ -185,19 +183,26 @@ final class AppEnvironment {
     /// The selected tab, here so any screen can switch tabs (a task attack jumps to the boss).
     var selectedTab: AppTab = LaunchOptions.initialTab
 
-    /// A task attack the Boss tab should play next.
-    var pendingAttack: AttackCast?
+    /// Task attacks the Boss tab should play next, in order.
+    var pendingAttacks: [AttackCast] = []
 
     /// Completing a task in the app: jump to the boss and play the class attack there.
-    func castTaskAttack(_ attack: Attack?, task: RaidTask) {
+    /// `quick` plays a faster version, for several attacks in a row.
+    func castTaskAttack(_ attack: Attack?, task: RaidTask, quick: Bool = false) {
         guard let attack else { return }
         let role = store.members(attack.raidID).first { $0.id == attack.memberID }?.role
-        pendingAttack = AttackCast(id: attack.id, raidID: attack.raidID, damage: attack.damage, role: role, taskTitle: task.title)
+        pendingAttacks.append(AttackCast(
+            id: attack.id, raidID: attack.raidID, damage: attack.damage, role: role,
+            taskTitle: task.title, announces: true, quick: quick
+        ))
         selectedTab = .boss
     }
 
     /// The "new boss" sheet lives at the root, so it stays open even if the current boss
     /// is deleted from inside it (to free the free-plan slot).
     var showCreateRaid = false
+
+    /// True while the Quest Log is selecting tasks: its bottom bar takes the place of the focus mini-player.
+    var isSelectingTasks = false
 
 }

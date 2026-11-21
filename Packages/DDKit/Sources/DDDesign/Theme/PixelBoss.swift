@@ -48,28 +48,6 @@ public struct BossAvatar: View {
     }
 }
 
-/// The sword from the icon art, slashing across the boss on each hit.
-/// With Reduce Motion it fades in and out in place instead of swinging.
-public struct SwordSlash: View {
-    let trigger: Int
-    @State private var progress: Double = 1
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    public init(trigger: Int) { self.trigger = trigger }
-
-    public var body: some View {
-        PixelArtView(.sword)
-            .rotationEffect(.degrees(reduceMotion ? 0 : -50 + 80 * progress), anchor: .bottomTrailing)
-            .opacity(progress < 1 ? 1 - progress * 0.6 : 0)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-            .onChange(of: trigger) {
-                progress = 0
-                withAnimation(.easeOut(duration: reduceMotion ? 0.5 : 0.35)) { progress = 1 }
-            }
-    }
-}
-
 #Preview("Bosses") {
     ScrollView {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 170))]) {

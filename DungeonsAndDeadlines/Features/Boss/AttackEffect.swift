@@ -9,6 +9,11 @@ struct AttackCast: Equatable, Identifiable {
     let damage: Int
     let role: Role?
     let taskTitle: String
+    /// Spoken aloud when it lands: only for tasks you completed yourself (teammates' hits are
+    /// announced by the `Announcer`).
+    var announces = false
+    /// Several attacks in a row play a faster version.
+    var quick = false
 
     /// Spoken after the hit lands.
     var announcement: String {
@@ -33,8 +38,8 @@ struct AttackCast: Equatable, Identifiable {
 }
 
 /// Plays one class attack over the boss, then calls `onImpact`.
-/// - Mage: an arcane orb flies in on an arc. Rogue: three daggers. Tank: a shield slams up.
-///   Healer: a beam of holy light with a cross. No class: the sword.
+/// One distinct attack per class. Mage: an arcane orb flies in on an arc. Rogue: three daggers.
+/// Tank: a shield slams up. Healer: a beam of holy light with a cross. No class: the sword slashes.
 /// - Reduce Motion: the sprite appears at the boss and fades with a soft flash (no travel).
 struct AttackEffect: View {
     let cast: AttackCast
@@ -95,13 +100,26 @@ struct AttackEffect: View {
                         .position(x: target.x, y: target.y * progress / 2)
                     sprite.position(target).opacity(Double(progress))
                 }
-            case .mage, nil:
-                // An arc from the lower left onto the boss.
+            case .mage:
+                // An arcane orb on an arc from the lower left onto the boss.
                 let x = lerp(size.width * 0.1, target.x, progress)
                 let y = lerp(size.height * 0.95, target.y, progress) - sin(progress * .pi) * size.height * 0.35
-                sprite
-                    .rotationEffect(cast.role == nil ? .degrees(-45 + 90 * Double(progress)) : .zero)
-                    .position(x: x, y: y)
+                sprite.position(x: x, y: y)
+            case nil:
+                // No class: the sword swings down across the boss and leaves a slash.
+                ZStack {
+                    Capsule()
+                        .fill(.white.opacity(0.85))
+                        .frame(width: 170 * progress, height: 7)
+                        .rotationEffect(.degrees(-38))
+                        .position(target)
+                        .opacity(Double(progress) < 0.9 ? 1 : Double(1 - progress) * 10)
+                    PixelArtView(art)
+                        .frame(width: 84, height: 84)
+                        .rotationEffect(.degrees(-80 + 150 * Double(progress)), anchor: .bottomTrailing)
+                        .position(x: target.x + 26, y: target.y - 10)
+                        .opacity(0.4 + Double(progress) * 0.6)
+                }
             }
         }
     }
@@ -116,12 +134,12 @@ struct AttackEffect: View {
     }
 
     private func play() {
-        let travel = (reduceMotion ? 0.35 : (cast.role == .rogue ? 0.9 : 0.8)) * Self.timeScale
+        let travel = (reduceMotion ? 0.35 : (cast.role == .rogue ? 0.9 : 0.8)) * (cast.quick ? 0.55 : 1) * Self.timeScale
         withAnimation(.easeIn(duration: travel)) {
             progress = 1
         } completion: {
             onImpact()
-            withAnimation(.easeOut(duration: 0.5 * Self.timeScale)) {
+            withAnimation(.easeOut(duration: (cast.quick ? 0.3 : 0.5) * Self.timeScale)) {
                 flash = 1
             } completion: {
                 finished = true

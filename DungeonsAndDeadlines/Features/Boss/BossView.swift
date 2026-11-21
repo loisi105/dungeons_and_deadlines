@@ -25,6 +25,11 @@ struct BossView: View {
     @State private var lastHit: Attack?
     /// The class attack currently playing over the boss.
     @State private var activeCast: AttackCast?
+    /// Attacks waiting for the one playing, and the IDs already queued (a hit is never played twice).
+    @State private var castQueue: [AttackCast] = []
+    @State private var queuedIDs: Set<UUID> = []
+    /// An attack is waiting out its short pause before it starts.
+    @State private var starting = false
     @State private var hitCount = 0
     @State private var shake: CGFloat = 0
     @State private var errorMessage: String?
@@ -91,13 +96,15 @@ struct BossView: View {
             for attack in fresh where attack.memberID != me {
                 announcer.queueTeammateHit(attack)
             }
-            // A task attack from this phone gets its class animation instead (see below).
-            if let latest = fresh.last, latest.id != environment.pendingAttack?.id, latest.id != activeCast?.id {
-                playHit(latest)
+            // Every hit plays its class attack: teammates', focus sessions', and tasks completed
+            // elsewhere. Tasks completed in the Quest Log arrive through `pendingAttacks` instead.
+            for attack in fresh where !environment.pendingAttacks.contains(where: { $0.id == attack.id }) {
+                enqueue(cast(for: attack))
             }
         }
-        .onChange(of: environment.pendingAttack?.id) { startPendingCast() }
-        .onAppear { startPendingCast() }
+        .onChange(of: environment.pendingAttacks.count) { startPendingCasts() }
+        .onChange(of: activeCast?.id) { if activeCast == nil { playNext() } }
+        .onAppear { startPendingCasts() }
         .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
             Button("OK") { errorMessage = nil }
         } message: {
@@ -143,9 +150,6 @@ struct BossView: View {
                 BossAvatar(bossName: raid.bossName, phase: state.phase, defeated: state.outcome == .won)
                     .modifier(ShakeEffect(amount: reduceMotion ? 0 : 10, shakes: shake))
                     .opacity(reduceMotion && shake.truncatingRemainder(dividingBy: 2) == 1 ? 0.6 : 1)
-                SwordSlash(trigger: hitCount)
-                    .frame(width: 150, height: 150)
-                    .offset(x: 30, y: 10)
                 if let activeCast {
                     AttackEffect(cast: activeCast) { land(activeCast) }
                         .id(activeCast.id)
@@ -358,15 +362,39 @@ struct BossView: View {
         }
     }
 
-    /// Picks up a task attack waiting for this boss (after the tab switch has happened).
-    private func startPendingCast() {
+    /// Picks up task attacks waiting for this boss (after the tab switch has happened).
+    private func startPendingCasts() {
         // Match by boss, not by this view's attack list: that list updates a moment later.
-        guard let cast = environment.pendingAttack, cast.raidID == raidID else { return }
-        environment.pendingAttack = nil
+        let mine = environment.pendingAttacks.filter { $0.raidID == raidID }
+        guard !mine.isEmpty else { return }
+        environment.pendingAttacks.removeAll { $0.raidID == raidID }
+        for cast in mine { enqueue(cast) }
+    }
+
+    /// A class attack for any hit, from the attacker's class.
+    private func cast(for attack: Attack) -> AttackCast {
+        let role = DDStore.shared.members(raidID).first { $0.id == attack.memberID }?.role
+        return AttackCast(id: attack.id, raidID: raidID, damage: attack.damage, role: role, taskTitle: "")
+    }
+
+    private func enqueue(_ cast: AttackCast) {
+        guard queuedIDs.insert(cast.id).inserted else { return }
+        // A burst plays faster, so a long queue doesn't keep the boss busy for ages.
+        var cast = cast
+        if !castQueue.isEmpty || activeCast != nil || starting { cast.quick = true }
+        castQueue.append(cast)
+        if activeCast == nil { playNext() }
+    }
+
+    private func playNext() {
+        guard activeCast == nil, !starting, !castQueue.isEmpty else { return }
+        let next = castQueue.removeFirst()
+        starting = true
         Task {
             // A short beat after the tab switch so the attack is seen from the start.
-            try? await Task.sleep(for: .milliseconds(Int(250 * AttackEffect.timeScale)))
-            activeCast = cast
+            try? await Task.sleep(for: .milliseconds(Int((next.quick ? 80 : 250) * AttackEffect.timeScale)))
+            activeCast = next
+            starting = false
         }
     }
 
@@ -375,9 +403,9 @@ struct BossView: View {
         if let attack = attacks.first(where: { $0.id == cast.id })?.model ?? DDStore.shared.attacks(raidID).first(where: { $0.id == cast.id }) {
             playHit(attack)
         }
-        announcer.announce(cast.announcement)
+        if cast.announces { announcer.announce(cast.announcement) }
         Task {
-            try? await Task.sleep(for: .seconds(1 * AttackEffect.timeScale))
+            try? await Task.sleep(for: .seconds((cast.quick ? 0.5 : 1) * AttackEffect.timeScale))
             if activeCast?.id == cast.id { activeCast = nil }
         }
     }

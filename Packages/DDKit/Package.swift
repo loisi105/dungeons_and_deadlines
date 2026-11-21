@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "DDKit",
     defaultLocalization: "en",
-    platforms: [.iOS(.v26), .macOS(.v26)],
+    platforms: [.iOS("26.1"), .macOS(.v26)],
     products: [
         .library(name: "GameCore", targets: ["GameCore"]),
         .library(name: "DDPersistence", targets: ["DDPersistence"]),

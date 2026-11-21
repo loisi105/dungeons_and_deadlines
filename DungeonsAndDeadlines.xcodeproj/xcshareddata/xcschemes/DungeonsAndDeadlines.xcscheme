@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "2700"
-   version = "1.7">
+   LastUpgradeVersion = "2720"
+   version = "1.8">
    <BuildAction
       parallelizeBuildables = "YES"
       buildImplicitDependencies = "YES">
@@ -36,6 +36,51 @@
                BuildableName = "DungeonsAndDeadlinesUITests.xctest"
                BlueprintName = "DungeonsAndDeadlinesUITests"
                ReferencedContainer = "container:DungeonsAndDeadlines.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DDPersistenceTests"
+               BuildableName = "DDPersistenceTests"
+               ReferencedContainer = "container:Packages/DDKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DDIntentsTests"
+               BuildableName = "DDIntentsTests"
+               ReferencedContainer = "container:Packages/DDKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DDDesignTests"
+               BuildableName = "DDDesignTests"
+               ReferencedContainer = "container:Packages/DDKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "DDSyncTests"
+               BuildableName = "DDSyncTests"
+               ReferencedContainer = "container:Packages/DDKit">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "GameCoreTests"
+               BuildableName = "GameCoreTests"
+               ReferencedContainer = "container:Packages/DDKit">
             </BuildableReference>
          </TestableReference>
       </Testables>

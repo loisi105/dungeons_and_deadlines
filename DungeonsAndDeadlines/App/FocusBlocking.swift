@@ -162,6 +162,8 @@ final class FocusBlocking {
             return String(localized: "Couldn't reach Apple to confirm Screen Time access. Check your internet connection and try again.")
         case .authenticationMethodUnavailable:
             return String(localized: "Set a device passcode (Settings > Face ID & Passcode) to allow Screen Time access.")
+        case .unauthorized:
+            return String(localized: "Screen Time access isn't allowed for this app yet. Turn the setting on and choose Continue when iOS asks, or allow it in Settings > Screen Time > Apps with Screen Time Access.")
         @unknown default:
             return String(localized: "Screen Time access failed: \(error.localizedDescription)")
         }

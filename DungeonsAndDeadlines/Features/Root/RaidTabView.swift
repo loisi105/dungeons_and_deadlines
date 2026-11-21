@@ -4,7 +4,7 @@ import GameCore
 import DDPersistence
 
 /// The game: Liquid Glass tabs (bottom bar on iPhone, top bar or sidebar on iPad)
-/// over the Boss, Tasks, Meter and Party tabs, plus a Bosses section in the iPad sidebar.
+/// over the Boss, Tasks, Meter and Party tabs. The boss switcher (top right) changes bosses on every device.
 struct RaidTabView: View {
     let raidID: UUID
 
@@ -21,7 +21,6 @@ struct RaidTabView: View {
     private var isFighting: Bool { raids.first { $0.id == raidID }?.status == .active }
 
     @Environment(AppEnvironment.self) private var environment
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
     var body: some View {
         @Bindable var environment = environment
@@ -38,28 +37,10 @@ struct RaidTabView: View {
             Tab("Raid", systemImage: "person.3.fill", value: AppTab.raid) {
                 RaidView(raidID: raidID).id(raidID)
             }
-            // iPad sidebar: every boss, one tap to switch. Only in regular width, so the
-            // iPhone tab bar keeps its four tabs (the Boss tab's switcher covers the same).
-            if horizontalSizeClass == .regular {
-                TabSection("Bosses") {
-                    ForEach(raids) { raid in
-                        Tab(raid.bossName, systemImage: raid.id == raidID ? "flame.fill" : "flame", value: AppTab.bossItem(raid.id)) {
-                            BossView(raidID: raid.id).id(raid.id)
-                        }
-                    }
-                }
-            }
         }
         .tabViewStyle(.sidebarAdaptable)
         .tabBarMinimizeBehavior(.never) // the tab bar stays put while scrolling
-        .onChange(of: environment.selectedTab) { _, tab in
-            // Picking a boss in the sidebar makes it the current boss and shows its Boss tab.
-            if case .bossItem(let id) = tab {
-                LocalIdentity.currentRaidID = id
-                environment.selectedTab = .boss
-            }
-        }
-        .modifier(FocusAccessoryModifier(enabled: isFighting) {
+        .modifier(FocusAccessoryModifier(enabled: isFighting, suspended: environment.isSelectingTasks) {
             FocusTimerAccessory(raidID: raidID) { showFocus = true }.id(raidID)
         })
         .sheet(isPresented: $showFocus) { FocusView(raidID: raidID) }
@@ -74,13 +55,13 @@ struct RaidTabView: View {
 /// Shows the focus mini-player above the tab bar only while the fight is on.
 private struct FocusAccessoryModifier<Accessory: View>: ViewModifier {
     let enabled: Bool
+    /// Hidden for a moment (the Quest Log's selection bar takes its place) without leaving the fight.
+    let suspended: Bool
     @ViewBuilder let accessory: () -> Accessory
 
     func body(content: Content) -> some View {
-        if enabled {
-            content.tabViewBottomAccessory { accessory() }
-        } else {
-            content
-        }
+        // One view either way: switching between two different view trees would rebuild the
+        // tabs and reset their state (e.g. the Quest Log's selection).
+        content.tabViewBottomAccessory(isEnabled: enabled && !suspended) { accessory() }
     }
 }

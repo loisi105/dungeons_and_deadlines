@@ -24,6 +24,12 @@ struct TasksView: View {
     @State private var completedCount = 0
     /// A task the player tried to complete while the raid is still planning.
     @State private var needsFightStart: RaidTask?
+    /// Selection mode, like Mail: tapping an empty circle starts it; the bottom bar acts on the selection.
+    @State private var editMode: EditMode = .inactive
+    @State private var selection = Set<UUID>()
+    /// Tasks waiting for the fight to start before a batch completes.
+    @State private var pendingBatch: [UUID] = []
+    @State private var confirmBatchDelete = false
     @State private var showResume = false
     @Namespace private var zoom
 
@@ -47,18 +53,40 @@ struct TasksView: View {
     var body: some View {
         NavigationStack {
             taskList
-                .navigationTitle("Quest Log")
+                .confirmationDialog(
+                    "Delete \(selection.count) tasks?", isPresented: $confirmBatchDelete, titleVisibility: .visible
+                ) {
+                    Button("Delete \(selection.count) Tasks", role: .destructive) { deleteSelected() }
+                    Button("Cancel", role: .cancel) {}
+                }
+                .environment(\.editMode, $editMode)
+                .navigationTitle(editMode.isEditing && !selection.isEmpty ? Text("\(selection.count) Selected") : Text("Quest Log"))
                 .navigationSubtitle(raid.map { "\($0.bossName) · \($0.name)" } ?? "")
                 .navigationDestination(for: UUID.self) { id in
                     TaskDetailView(taskID: id, raidID: raidID)
                         .navigationTransition(.zoom(sourceID: id, in: zoom))
                 }
                 .toolbar { toolbar }
+                .toolbarVisibility(editMode.isEditing ? .hidden : .automatic, for: .tabBar)
+                .onChange(of: editMode.isEditing) { _, isEditing in
+                    if !isEditing { selection = [] }
+                    environment.isSelectingTasks = isEditing
+                }
+                .onDisappear { environment.isSelectingTasks = false }
                 .sheet(item: $editing) { mode in
                     TaskEditorView(raidID: raidID, mode: mode)
                 }
                 .sensoryFeedback(.success, trigger: completedCount) { _, _ in hapticsOn }
-                .startFightPrompt(task: $needsFightStart, raid: raid) { task in complete(task) }
+                .startFightPrompt(task: $needsFightStart, raid: raid) { task in
+                    if pendingBatch.isEmpty {
+                        complete(task)
+                    } else {
+                        let ids = pendingBatch
+                        pendingBatch = []
+                        completeBatch(ids)
+                    }
+                }
+                .onChange(of: needsFightStart == nil) { _, none in if none { pendingBatch = [] } }
                 .sheet(isPresented: $showResume) { ResumeFightView(raidID: raidID) }
                 .alert("Couldn't do that", isPresented: errorBinding) {
                     Button("OK") { errorMessage = nil }
@@ -73,7 +101,7 @@ struct TasksView: View {
     }
 
     private var taskList: some View {
-        List {
+        List(selection: $selection) {
             followUpSection
             planningSection
             openSections
@@ -104,8 +132,26 @@ struct TasksView: View {
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         ToolbarItem(placement: .topBarTrailing) { BossSwitcher(currentRaidID: raidID) }
+        if editMode.isEditing {
+            ToolbarItemGroup(placement: .bottomBar) {
+                Button("Complete", systemImage: "checkmark.circle") { completeSelected() }
+                    .disabled(selection.isEmpty || !canComplete)
+                    .accessibilityIdentifier("completeSelectedButton")
+                Spacer()
+                Button("Delete", systemImage: "trash", role: .destructive) { confirmBatchDelete = true }
+                    .disabled(selection.isEmpty || !canEdit)
+                    .accessibilityIdentifier("deleteSelectedButton")
+            }
+        }
         if canEdit {
-            ToolbarItem(placement: .topBarLeading) { EditButton() }
+            // Not `EditButton()`: toolbar content doesn't see the edit mode bound on the list,
+            // so that button toggled a different state and did nothing.
+            ToolbarItem(placement: .topBarLeading) {
+                Button(editMode.isEditing ? "Done" : "Edit") {
+                    withAnimation { editMode = editMode.isEditing ? .inactive : .active }
+                }
+                .accessibilityIdentifier("editTasksButton")
+            }
             ToolbarItem(placement: .primaryAction) {
                 Button("Add task", systemImage: "plus") { editing = .add }
                     .accessibilityIdentifier("addTaskButton")
@@ -217,11 +263,15 @@ struct TasksView: View {
     private func row(_ record: TaskRecord, showsAssignee: Bool = true) -> some View {
         let task = record.model
         HStack(spacing: 12) {
-            CompleteButton(task: task, enabled: canComplete) { attemptComplete(task) }
+            if !editMode.isEditing {
+                CompleteButton(task: task, enabled: canComplete) { beginSelecting(task) }
+            }
             NavigationLink(value: task.id) {
                 TaskRow(task: task, damage: config.baseDamage(for: task.size), assignee: showsAssignee ? nickname(task.assigneeID) : nil, isLate: task.isLate(startedAt: raid?.startedAt))
             }
         }
+        .tag(task.id)
+        .selectionDisabled(task.isDone)
         .matchedTransitionSource(id: task.id, in: zoom)
         // Fixed insets: with the system's default ones the accessibility audit
         // intermittently reports the row's text as not scaling with Dynamic Type.
@@ -262,7 +312,7 @@ struct TasksView: View {
                 Button("Reopen", systemImage: "arrow.uturn.backward") { reopen(task) }
             }
             if canEdit {
-                Button("Edit", systemImage: "pencil") { editing = .edit(task) }
+                Button("Details", systemImage: "info.circle") { editing = .edit(task) }
                 Menu("Assign to", systemImage: "person.crop.circle") {
                     Button("Nobody") { assign(task, to: nil) }
                     ForEach(members) { m in
@@ -279,7 +329,7 @@ struct TasksView: View {
                 Button("Complete task") { attemptComplete(task) }
             }
             if canEdit {
-                Button("Edit task") { editing = .edit(task) }
+                Button("Show details") { editing = .edit(task) }
             }
             if !task.isDone && canEdit {
                 Button("Delete task", role: .destructive) { delete(task) }
@@ -297,6 +347,61 @@ struct TasksView: View {
     }
 
     // MARK: Actions
+
+    /// Tapping an empty circle starts selecting, with that task chosen, like Mail.
+    private func beginSelecting(_ task: RaidTask) {
+        withAnimation { editMode = .active }
+        // After the list has entered edit mode: it clears the selection while it switches, so a
+        // selection set together with edit mode never stuck (Complete stayed disabled).
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(50))
+            selection = [task.id]
+        }
+    }
+
+    private func completeSelected() {
+        let ids = open.map(\.id).filter { selection.contains($0) }
+        guard let first = ids.first, let task = open.first(where: { $0.id == first })?.model else { return }
+        if raid?.status == .planning {
+            // Starting the fight first; the batch completes after the prompt is confirmed.
+            pendingBatch = ids
+            needsFightStart = task
+        } else {
+            completeBatch(ids)
+        }
+    }
+
+    /// Completes several tasks; every one of them gets its attack animation, one after another.
+    private func completeBatch(_ ids: [UUID]) {
+        var attacks: [(Attack?, RaidTask)] = []
+        for id in ids {
+            guard let task = tasks.first(where: { $0.id == id })?.model, !task.isDone else { continue }
+            do {
+                attacks.append((try GameActions.completeTask(id), task))
+            } catch {
+                errorMessage = error.localizedDescription
+                break
+            }
+        }
+        withAnimation { editMode = .inactive }
+        guard !attacks.isEmpty else { return }
+        completedCount += 1
+        Task {
+            try? await Task.sleep(for: .milliseconds(450))
+            for (attack, task) in attacks {
+                environment.castTaskAttack(attack, task: task, quick: attacks.count > 1)
+            }
+        }
+    }
+
+    private func deleteSelected() {
+        for id in selection {
+            guard let task = tasks.first(where: { $0.id == id }), !task.isDone else { continue }
+            do { try DDStore.shared.deleteTask(id) } catch { errorMessage = error.localizedDescription; break }
+        }
+        GameActions.changed(raidID)
+        withAnimation { editMode = .inactive }
+    }
 
     /// Completes now while fighting; while planning, asks to start the fight first.
     private func attemptComplete(_ task: RaidTask) {
@@ -411,7 +516,8 @@ struct CompleteButton: View {
         // Borderless, so tapping the checkbox doesn't open the task.
         .buttonStyle(.borderless)
         .disabled(task.isDone || !enabled)
-        .accessibilityLabel(task.isDone ? Text("\(task.title), done") : Text("Complete \(task.title)"))
+        .accessibilityLabel(task.isDone ? Text("\(task.title), done") : Text("Select \(task.title)"))
+        .accessibilityHint(task.isDone ? Text("") : Text("Starts selecting tasks to complete or delete"))
         .accessibilityIdentifier("complete-\(task.title)")
     }
 }
