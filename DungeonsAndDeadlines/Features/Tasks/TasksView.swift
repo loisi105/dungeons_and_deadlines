@@ -120,7 +120,10 @@ struct TasksView: View {
                     Text("Add the steps for this deadline.")
                 } actions: {
                     if canEdit {
-                        Button("Add task") { editing = .add }
+                        // A real button, like the one on the Boss tab; plain text read as a caption.
+                        Button("Add task", systemImage: "plus") { editing = .add }
+                            .primaryActionStyle()
+                            .accessibilityIdentifier("emptyAddTaskButton")
                     }
                 }
             }

@@ -41,7 +41,7 @@ struct FocusTimerAccessory: View {
                     } else if session.state == .paused {
                         Text("Paused · \(A11yText.shortDuration(Int(session.elapsed(at: .now))))")
                     } else {
-                        Text("Focus")
+                        Text("Focus timer")
                     }
                     if placement != .inline { Spacer(minLength: 0) }
                 }

@@ -498,6 +498,35 @@ final class SmokeTests: XCTestCase {
         try audit(app, "Boss (after attack)")
     }
 
+
+    /// Not a check: screenshots of a new player's first minutes, for reviewing how the app reads.
+    /// Run with `TEST_RUNNER_DD_CAPTURE_UX=1`; frames are named "UX n name".
+    func testCaptureFirstRun() throws {
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["DD_CAPTURE_UX"] != nil, "Runs only on request")
+        let app = launch()
+        var n = 0
+        func snap(_ name: String) {
+            Thread.sleep(forTimeInterval: 0.8)
+            n += 1
+            let shot = XCTAttachment(screenshot: app.screenshot())
+            shot.name = "UX \(n) \(name)"
+            shot.lifetime = .keepAlways
+            add(shot)
+        }
+        snap("onboarding")
+        onboard(app)
+        snap("welcome")
+        createRaid(app)
+        snap("boss planning")
+        tab(app, "Tasks")
+        snap("tasks empty")
+        addTask(app, "Write intro")
+        addTask(app, "Find sources")
+        snap("tasks planned")
+        tab(app, "Boss")
+        snap("boss planned")
+    }
+
     /// Not a check: captures the class attack in slow motion for review.
     /// Run with `TEST_RUNNER_DD_CAPTURE=1 ./build.sh test -only-testing:…/testCaptureAttackFrames`.
     func testCaptureAttackFrames() throws {

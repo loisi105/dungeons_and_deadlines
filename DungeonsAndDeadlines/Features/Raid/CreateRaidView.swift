@@ -66,6 +66,8 @@ struct CreateRaidView: View {
                         .submitLabel(.next)
                         .onSubmit { focus = .boss }
                         .accessibilityIdentifier("raidNameField")
+                } header: {
+                    Text("Project").font(.headline)
                 }
                 .dungeonRow()
 
@@ -76,6 +78,16 @@ struct CreateRaidView: View {
                         Text("\(Image(systemName: "lock.fill")) \(Text(locked.title)) is a Premium boss. Free raids can fight the Clock, Dragon or Goblin.")
                             .readableFootnote()
                             .accessibilityIdentifier("premiumBossNote")
+                    }
+                } header: {
+                    // The two icons next to the name aren't self-explanatory. In the header: as the last
+                    // row of the card its text sat on the card's rounded corner, which failed the contrast
+                    // audit, and a section footer keeps a system font that fails the Dynamic Type one.
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Boss").font(.headline)
+                        Text("Tap the picture or the grid to choose a look. The dice picks a random boss.")
+                            .readableFootnote()
+                            .textCase(nil)
                     }
                 }
                 .dungeonRow()
@@ -111,6 +123,8 @@ struct CreateRaidView: View {
                         }
                     }
                     .readableFootnote()
+                } header: {
+                    Text("Mode").font(.headline)
                 }
                 .dungeonRow()
 

@@ -145,9 +145,9 @@ struct FocusView: View {
             // One Text (with an inline symbol) so it wraps instead of clipping at large sizes.
             Group {
                 if isBlocking {
-                    Text("\(Image(systemName: "lock.shield")) Your picked apps are blocked while you focus. Change")
+                    Text("\(Image(systemName: "lock.shield")) Your picked apps are blocked while you focus. Change \(Image(systemName: "chevron.right"))")
                 } else {
-                    Text("\(Image(systemName: "lock.shield")) Block distracting apps while you focus")
+                    Text("\(Image(systemName: "lock.shield")) Block distracting apps while you focus \(Image(systemName: "chevron.right"))")
                 }
             }
             .font(.subheadline)

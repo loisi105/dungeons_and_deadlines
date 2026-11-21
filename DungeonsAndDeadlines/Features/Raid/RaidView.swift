@@ -43,7 +43,7 @@ struct RaidView: View {
             .scrollDismissesKeyboard(.interactively)
             .dungeonScreen()
             .readableContentWidth()
-            .navigationTitle("Party")
+            .navigationTitle("Raid")
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink { SettingsView(raidID: raidID) } label: {

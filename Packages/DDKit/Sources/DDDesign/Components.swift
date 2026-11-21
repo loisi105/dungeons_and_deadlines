@@ -59,18 +59,28 @@ public struct PhaseBadge: View {
     /// The raid leader shifted the phase (`Raid.phaseShift != 0`), so the time rule in
     /// `phase.hint` doesn't hold; VoiceOver says who set it instead.
     let isShifted: Bool
+    /// Tapping the badge opens details; a small info mark says so.
+    let showsInfoMark: Bool
 
-    public init(_ phase: Phase, isShifted: Bool = false) {
+    public init(_ phase: Phase, isShifted: Bool = false, showsInfoMark: Bool = false) {
         self.phase = phase
         self.isShifted = isShifted
+        self.showsInfoMark = showsInfoMark
     }
 
     public var body: some View {
-        Label {
-            Text(phase.title)
-        } icon: {
-            Image(systemName: phase.symbol)
-                .foregroundStyle(phase.tint)
+        HStack(spacing: 8) {
+            Label {
+                Text(phase.title)
+            } icon: {
+                Image(systemName: phase.symbol)
+                    .foregroundStyle(phase.tint)
+            }
+            if showsInfoMark {
+                Image(systemName: "info.circle")
+                    .imageScale(.small)
+                    .foregroundStyle(Theme.inkSoft)
+            }
         }
         .font(.subheadline.weight(.bold))
         .fontDesign(.serif)

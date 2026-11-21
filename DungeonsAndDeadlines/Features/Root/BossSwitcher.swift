@@ -37,7 +37,7 @@ struct BossSwitcher: View {
                 }
             }
         } label: {
-            Label("Switch boss", systemImage: "rectangle.stack.fill")
+            Label("Switch boss", systemImage: "list.bullet")
         }
         .accessibilityIdentifier("bossSwitcher")
         .sheet(isPresented: $showJoin) { JoinRaidView() }

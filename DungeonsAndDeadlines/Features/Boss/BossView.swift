@@ -207,7 +207,7 @@ struct BossView: View {
         Button {
             showPhaseDetails = true
         } label: {
-            PhaseBadge(state.phase, isShifted: raid.phaseShift != 0)
+            PhaseBadge(state.phase, isShifted: raid.phaseShift != 0, showsInfoMark: true)
         }
         .buttonStyle(.plain)
         // The badge's hint describes the time rule, which doesn't hold once the leader shifted it.
