@@ -1,0 +1,54 @@
+{
+  "fill": {
+    "solid": "extended-srgb:0.10196,0.05098,0.12157,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "boss.png",
+          "name": "Boss",
+          "glass": false
+        },
+        {
+          "image-name": "background.png",
+          "name": "Background",
+          "glass": false,
+          "hidden-specializations": [
+            {
+              "appearance": "dark",
+              "value": true
+            }
+          ]
+        },
+        {
+          "image-name": "background-dark.png",
+          "name": "Background (dark)",
+          "glass": false,
+          "hidden-specializations": [
+            {
+              "value": true
+            },
+            {
+              "appearance": "dark",
+              "value": false
+            }
+          ]
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": [
+      "iOS"
+    ]
+  }
+}
