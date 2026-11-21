@@ -90,8 +90,7 @@ struct TaskEditorView: View {
             .sheetCancelConfirm("Save", confirmIdentifier: "saveTaskButton", isEnabled: !trimmed.isEmpty, hasChanges: hasChanges, onConfirm: save)
             .onAppear { titleFocused = !isEditing }
         }
-        .presentationDetents([.medium, .large])
-        .presentationDragIndicator(.visible)
+        .modifier(TaskSheetSizing())
     }
 
     /// Anything differs from what the sheet opened with.
@@ -120,6 +119,22 @@ struct TaskEditorView: View {
             dismiss()
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+}
+
+/// iPhone: a half sheet that scrolls its content instead of resizing when you drag inside it.
+/// iPad: a fixed-size form sheet. Detents made it jump and shrink while scrolling. The device type
+/// decides, not the size class: a sheet on iPad reports a compact width.
+private struct TaskSheetSizing: ViewModifier {
+    func body(content: Content) -> some View {
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            content.presentationSizing(.form)
+        } else {
+            content
+                .presentationDetents([.medium, .large])
+                .presentationContentInteraction(.scrolls)
+                .presentationDragIndicator(.visible)
         }
     }
 }
