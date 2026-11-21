@@ -71,7 +71,7 @@ struct TaskEditorView: View {
                             .accessibilityIdentifier("taskDamageField")
                             .onChange(of: damageText) { damageText = damageText.filter(\.isNumber) }
                     }
-                    Text("Recommended for \(Text(size.title)): \(config.baseDamage(for: size)). Change it if this task is worth more or less, up to \(config.maxCustomTaskDamage).").readableFootnote()
+                    Text("Maximum damage: \(config.maxCustomTaskDamage).").readableFootnote()
                 } header: {
                     Text("Size and damage").font(.headline)
                 }
