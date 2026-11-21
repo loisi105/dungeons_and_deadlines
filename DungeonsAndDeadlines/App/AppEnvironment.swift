@@ -19,6 +19,12 @@ enum LaunchOptions {
 
     /// Seeds a solo raid mid-fight, for screenshots and manual accessibility checks.
     static var seedDemo: Bool { ProcessInfo.processInfo.arguments.contains("-seedDemo") }
+    /// `-demoRole mage|tank|rogue|healer|none` sets the seeded player's class (default mage); for checking attack animations.
+    static var demoRole: Role? {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-demoRole"), i + 1 < args.count else { return .mage }
+        return Role(rawValue: args[i + 1])
+    }
     /// `-seedFinished` seeds a won 4-player raid (report screenshots and tests).
     static var seedFinished: Bool { ProcessInfo.processInfo.arguments.contains("-seedFinished") }
     /// `-showPaywall` opens the paywall on launch (screenshots, manual checks).
@@ -67,7 +73,7 @@ extension LaunchOptions {
         let me = LocalIdentity.current
         guard let raid = try? store.createRaid(
             name: "Thesis", bossName: "Exam Dragon",
-            deadline: Date.now.addingTimeInterval(86_400 * 5), multiplayer: false, owner: me, role: .mage
+            deadline: Date.now.addingTimeInterval(86_400 * 5), multiplayer: false, owner: me, role: demoRole
         ) else { return }
         let titles: [(String, TaskSize)] = [("Outline", .s), ("Literature review", .l), ("Draft chapter 1", .m), ("Fix citations", .s)]
         let tasks = titles.compactMap { try? store.addTask(raidID: raid.id, title: $0.0, size: $0.1) }

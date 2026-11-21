@@ -17,6 +17,16 @@ final class SmokeTests: XCTestCase {
         return app
     }
 
+    /// Taps the bottom bar's Complete once the tapped task is selected: the button appears with edit
+    /// mode, a moment before the selection lands and enables it.
+    func tapCompleteSelected(_ app: XCUIApplication) {
+        let button = app.buttons["completeSelectedButton"]
+        XCTAssertTrue(button.waitForExistence(timeout: 5))
+        expectation(for: NSPredicate(format: "isEnabled == true"), evaluatedWith: button)
+        waitForExpectations(timeout: 5)
+        button.tap()
+    }
+
     func audit(_ app: XCUIApplication, _ screen: String, skipping skipped: XCUIAccessibilityAuditType = []) throws {
         try app.performAccessibilityAudit(for: XCUIAccessibilityAuditType.all.subtracting(skipped)) { issue in
             // Text clipping inside system-owned chrome (tab bar, keyboard) isn't ours to fix.
@@ -145,9 +155,7 @@ final class SmokeTests: XCTestCase {
         let checkbox = app.buttons["complete-Outline"]
         XCTAssertTrue(checkbox.waitForExistence(timeout: 5))
         checkbox.tap()
-        let completeSelected = app.buttons["completeSelectedButton"]
-        XCTAssertTrue(completeSelected.waitForExistence(timeout: 5))
-        completeSelected.tap()
+        tapCompleteSelected(app)
         let startAndComplete = app.buttons["Start the fight and complete"]
         XCTAssertTrue(startAndComplete.waitForExistence(timeout: 5))
         startAndComplete.tap()
@@ -471,9 +479,7 @@ final class SmokeTests: XCTestCase {
         let checkbox = app.buttons["complete-Literature review"]
         XCTAssertTrue(checkbox.waitForExistence(timeout: 5))
         checkbox.tap()
-        let completeSelected = app.buttons["completeSelectedButton"]
-        XCTAssertTrue(completeSelected.waitForExistence(timeout: 5))
-        completeSelected.tap()
+        tapCompleteSelected(app)
 
         // The app switches to the boss and plays the spell; the hit lands and it stays there.
         let bossTab = tabButton(app, "Boss")
@@ -496,15 +502,15 @@ final class SmokeTests: XCTestCase {
     /// Run with `TEST_RUNNER_DD_CAPTURE=1 ./build.sh test -only-testing:…/testCaptureAttackFrames`.
     func testCaptureAttackFrames() throws {
         try XCTSkipUnless(ProcessInfo.processInfo.environment["DD_CAPTURE"] != nil, "Frame capture runs only on request")
-        let app = launch(["-seedDemo", "-startTab", "tasks", "-slowMotion"])
+        // `TEST_RUNNER_DD_ROLE=tank|rogue|healer|none` picks the class (default mage).
+        let role = ProcessInfo.processInfo.environment["DD_ROLE"] ?? "mage"
+        let app = launch(["-seedDemo", "-startTab", "tasks", "-slowMotion", "-demoRole", role])
         let checkbox = app.buttons["complete-Literature review"]
         XCTAssertTrue(checkbox.waitForExistence(timeout: 10))
         checkbox.tap()
-        let completeSelected = app.buttons["completeSelectedButton"]
-        XCTAssertTrue(completeSelected.waitForExistence(timeout: 5))
-        completeSelected.tap()
-        for i in 0..<4 {
-            Thread.sleep(forTimeInterval: 1.2)
+        tapCompleteSelected(app)
+        for i in 0..<9 {
+            Thread.sleep(forTimeInterval: 0.9)
             let frame = XCTAttachment(screenshot: app.screenshot())
             frame.name = "Attack frame \(i)"
             frame.lifetime = .keepAlways
