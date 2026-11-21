@@ -60,6 +60,16 @@ public struct DamageConfig: Sendable, Hashable, Codable {
         }
     }
 
+    /// Base damage of a task: its own number, or the recommendation for its size.
+    public func baseDamage(of task: RaidTask) -> Int {
+        task.damage ?? baseDamage(for: task.size)
+    }
+
+    /// Custom task damage is limited so one hit stays under `maxSingleAttackDamage` (and the Firestore rule).
+    public var maxCustomTaskDamage: Int {
+        max(smallTaskDamage, mediumTaskDamage, largeTaskDamage)
+    }
+
     public func multiplier(forStreak days: Int) -> Double {
         streakSteps.first { days >= $0.days }?.multiplier ?? 1.0
     }

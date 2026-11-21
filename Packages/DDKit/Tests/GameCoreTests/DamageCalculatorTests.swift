@@ -11,6 +11,16 @@ struct DamageCalculatorTests {
         #expect(calc.taskDamage(size: size, context: Fixtures.context()) == expected)
     }
 
+    @Test("A custom task number replaces the size's recommendation for damage and boss HP")
+    func customTaskDamage() {
+        #expect(calc.taskDamage(size: .s, base: 275, context: Fixtures.context()) == 275)
+        var task = Fixtures.task(.s)
+        #expect(DamageConfig.standard.baseDamage(of: task) == 50)
+        task.damage = 275
+        #expect(DamageConfig.standard.baseDamage(of: task) == 275)
+        #expect(BossEngine.lockHP(tasks: [task]) == 423) // 275 / 0.65 = 423.1
+    }
+
     @Test("Streak multipliers 1.0, 1.1, 1.2 and capped")
     func streakMultipliers() {
         func attacks(days: Int) -> [Attack] {

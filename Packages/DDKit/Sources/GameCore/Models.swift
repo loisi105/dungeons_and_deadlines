@@ -109,6 +109,9 @@ public struct RaidTask: Identifiable, Codable, Sendable, Hashable {
     public var raidID: UUID
     public var title: String
     public var size: TaskSize
+    /// Base damage of this task. Nil = the recommended damage for its size (`DamageConfig.baseDamage`).
+    /// The size only pre-fills it; the number is what counts for the boss and the stats.
+    public var damage: Int?
     public var assigneeID: String?
     public var createdAt: Date
     public var completedAt: Date?
@@ -116,9 +119,10 @@ public struct RaidTask: Identifiable, Codable, Sendable, Hashable {
     public var sortIndex: Int
 
     public init(
-        id: UUID = UUID(), raidID: UUID, title: String, size: TaskSize, assigneeID: String? = nil,
+        id: UUID = UUID(), raidID: UUID, title: String, size: TaskSize, damage: Int? = nil, assigneeID: String? = nil,
         createdAt: Date, completedAt: Date? = nil, completedBy: String? = nil, sortIndex: Int = 0
     ) {
+        self.damage = damage
         self.id = id
         self.raidID = raidID
         self.title = title

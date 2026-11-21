@@ -24,6 +24,8 @@ struct TaskEditorView: View {
     @Query private var members: [MemberRecord]
     @State private var title = ""
     @State private var size: TaskSize = .m
+    /// Base damage as typed. Picking a size pre-fills the recommended number; the number is what counts.
+    @State private var damageText = String(DDStore.shared.config.baseDamage(for: .m))
     @State private var assigneeID: String?
     @State private var errorMessage: String?
     @FocusState private var titleFocused: Bool
@@ -35,6 +37,7 @@ struct TaskEditorView: View {
         if case .edit(let task) = mode {
             _title = State(initialValue: task.title)
             _size = State(initialValue: task.size)
+            _damageText = State(initialValue: String(DDStore.shared.config.baseDamage(of: task)))
             _assigneeID = State(initialValue: task.assigneeID)
         }
     }
@@ -60,10 +63,17 @@ struct TaskEditorView: View {
                     }
                     .pickerStyle(.segmented)
                     .sensoryFeedback(.selection, trigger: size)
-                    LabeledContent("Damage", value: "\(config.baseDamage(for: size))")
-                    Text("Be honest: bigger tasks hit harder, and teammates see the size.").readableFootnote()
+                    .onChange(of: size) { damageText = String(config.baseDamage(for: size)) }
+                    LabeledContent("Damage") {
+                        TextField("Damage", text: $damageText)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                            .accessibilityIdentifier("taskDamageField")
+                            .onChange(of: damageText) { damageText = damageText.filter(\.isNumber) }
+                    }
+                    Text("Recommended for \(Text(size.title)): \(config.baseDamage(for: size)). Change it if this task is worth more or less, up to \(config.maxCustomTaskDamage).").readableFootnote()
                 } header: {
-                    Text("Size").font(.headline)
+                    Text("Size and damage").font(.headline)
                 }
                 .dungeonRow()
                 if members.count > 1 {
@@ -96,10 +106,18 @@ struct TaskEditorView: View {
     /// Anything differs from what the sheet opened with.
     private var hasChanges: Bool {
         switch mode {
-        case .add: !trimmed.isEmpty || size != .m || assigneeID != nil
-        case .edit(let task): trimmed != task.title || size != task.size || assigneeID != task.assigneeID
+        case .add: !trimmed.isEmpty || size != .m || assigneeID != nil || damage != config.baseDamage(for: .m)
+        case .edit(let task): trimmed != task.title || size != task.size || assigneeID != task.assigneeID || damage != config.baseDamage(of: task)
         }
     }
+
+    /// What was typed, kept within 1...max; empty or 0 falls back to the recommendation.
+    private var damage: Int {
+        guard let typed = Int(damageText), typed > 0 else { return config.baseDamage(for: size) }
+        return min(typed, config.maxCustomTaskDamage)
+    }
+    /// Nil when it equals the recommendation, so it keeps following the size.
+    private var storedDamage: Int? { damage == config.baseDamage(for: size) ? nil : damage }
 
     private var isEditing: Bool { if case .edit = mode { true } else { false } }
     private var trimmed: String { title.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -108,10 +126,11 @@ struct TaskEditorView: View {
         do {
             switch mode {
             case .add:
-                try DDStore.shared.addTask(raidID: raidID, title: trimmed, size: size, assigneeID: assigneeID)
+                try DDStore.shared.addTask(raidID: raidID, title: trimmed, size: size, damage: storedDamage, assigneeID: assigneeID)
             case .edit(var task):
                 task.title = trimmed
                 task.size = size
+                task.damage = storedDamage
                 task.assigneeID = assigneeID
                 try DDStore.shared.updateTask(task)
             }

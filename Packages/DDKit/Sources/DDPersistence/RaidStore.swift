@@ -291,11 +291,11 @@ public final class RaidStore {
     // MARK: - Tasks
 
     @discardableResult
-    public func addTask(raidID: UUID, title: String, size: TaskSize, assigneeID: String? = nil) throws -> RaidTask {
+    public func addTask(raidID: UUID, title: String, size: TaskSize, damage: Int? = nil, assigneeID: String? = nil) throws -> RaidTask {
         guard raid(raidID) != nil else { throw StoreError.raidNotFound }
         // Any status: finished raids collect follow-up tasks before a resumed fight.
         let next = (tasks(raidID).map(\.sortIndex).max() ?? -1) + 1
-        let task = RaidTask(raidID: raidID, title: title, size: size, assigneeID: assigneeID, createdAt: clock(), sortIndex: next)
+        let task = RaidTask(raidID: raidID, title: title, size: size, damage: damage, assigneeID: assigneeID, createdAt: clock(), sortIndex: next)
         context.insert(TaskRecord(task, syncState: .pending))
         try context.save()
         return task
@@ -336,7 +336,7 @@ public final class RaidStore {
 
         // A task hits the boss once. Reopening and completing it again doesn't hit twice.
         let alreadyHit = attacks(raid.id).contains { $0.kind == .task(taskID) }
-        let attack = alreadyHit ? nil : calculator.taskAttack(raidID: raid.id, taskID: taskID, size: record.size, context: context(for: memberID, raid: raid))
+        let attack = alreadyHit ? nil : calculator.taskAttack(raidID: raid.id, taskID: taskID, size: record.size, base: record.damageRaw > 0 ? record.damageRaw : nil, context: context(for: memberID, raid: raid))
         var task = record.model
         task.completedAt = clock()
         task.completedBy = memberID

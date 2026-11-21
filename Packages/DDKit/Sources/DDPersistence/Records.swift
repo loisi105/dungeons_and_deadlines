@@ -117,6 +117,8 @@ public final class TaskRecord {
     public var raidID: UUID
     public var title: String
     public var sizeRaw: String
+    /// 0 = the recommended damage for the size (older tasks).
+    public var damageRaw: Int = 0
     public var assigneeID: String?
     public var createdAt: Date
     public var completedAt: Date?
@@ -132,6 +134,7 @@ public final class TaskRecord {
         raidID = task.raidID
         title = task.title
         sizeRaw = task.size.rawValue
+        damageRaw = task.damage ?? 0
         assigneeID = task.assigneeID
         createdAt = task.createdAt
         completedAt = task.completedAt
@@ -148,7 +151,7 @@ public final class TaskRecord {
 
     public var model: RaidTask {
         RaidTask(
-            id: id, raidID: raidID, title: title, size: size, assigneeID: assigneeID,
+            id: id, raidID: raidID, title: title, size: size, damage: damageRaw > 0 ? damageRaw : nil, assigneeID: assigneeID,
             createdAt: createdAt, completedAt: completedAt, completedBy: completedBy, sortIndex: sortIndex
         )
     }
@@ -156,6 +159,7 @@ public final class TaskRecord {
     public func update(from task: RaidTask, syncState: SyncState) {
         title = task.title
         sizeRaw = task.size.rawValue
+        damageRaw = task.damage ?? 0
         assigneeID = task.assigneeID
         completedAt = task.completedAt
         completedBy = task.completedBy

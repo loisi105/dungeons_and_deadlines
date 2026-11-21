@@ -50,7 +50,7 @@ public struct BossState: Sendable, Hashable {
 public enum BossEngine {
     /// Max HP from the planned tasks: ~65% from tasks, ~35% expected from focus time.
     public static func lockHP(tasks: [RaidTask], config: DamageConfig = .standard) -> Int {
-        let taskTotal = tasks.reduce(0) { $0 + config.baseDamage(for: $1.size) }
+        let taskTotal = tasks.reduce(0) { $0 + config.baseDamage(of: $1) }
         guard taskTotal > 0 else { return 0 }
         return Int((Double(taskTotal) / config.taskShare).rounded(.up))
     }

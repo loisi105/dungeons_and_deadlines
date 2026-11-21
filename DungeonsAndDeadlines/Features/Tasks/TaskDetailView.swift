@@ -37,7 +37,7 @@ struct TaskDetailView: View {
                         .font(.title2.bold())
                         .accessibilityAddTraits(.isHeader)
                     LabeledContent("Size") { Text(task.size.title) }
-                    LabeledContent("Damage", value: "\(DDStore.shared.config.baseDamage(for: task.size))")
+                    LabeledContent("Damage", value: "\(DDStore.shared.config.baseDamage(of: task))")
                     LabeledContent("Assigned to", value: name(task.assigneeID) ?? String(localized: "Nobody"))
                     LabeledContent("Added") { Text(task.createdAt, style: .date) }
                     if task.isLate(startedAt: raid?.startedAt) {

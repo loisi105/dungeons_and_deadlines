@@ -45,8 +45,9 @@ public struct DamageCalculator: Sendable {
         config.multiplier(forStreak: streakDays(context))
     }
 
-    public func taskDamage(size: TaskSize, context: Context) -> Int {
-        let raw = Int((Double(config.baseDamage(for: size)) * multiplier(context)).rounded(.down))
+    /// `base` overrides the size's recommended damage (a task with a custom number).
+    public func taskDamage(size: TaskSize, base: Int? = nil, context: Context) -> Int {
+        let raw = Int((Double(base ?? config.baseDamage(for: size)) * multiplier(context)).rounded(.down))
         return applyPerMemberCap(raw, context: context)
     }
 
@@ -90,8 +91,8 @@ public struct DamageCalculator: Sendable {
     }
 
     /// Builds the attack for a completed task, or nil if it would deal no damage.
-    public func taskAttack(raidID: UUID, taskID: UUID, size: TaskSize, context: Context) -> Attack? {
-        let damage = taskDamage(size: size, context: context)
+    public func taskAttack(raidID: UUID, taskID: UUID, size: TaskSize, base: Int? = nil, context: Context) -> Attack? {
+        let damage = taskDamage(size: size, base: base, context: context)
         guard damage > 0 else { return nil }
         return Attack(
             raidID: raidID, memberID: context.memberID, kind: .task(taskID), damage: damage,

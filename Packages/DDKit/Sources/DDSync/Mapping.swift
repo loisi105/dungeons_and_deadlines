@@ -60,6 +60,7 @@ enum Mapping {
         [
             "title": .string(t.title),
             "size": .string(t.size.rawValue),
+            "damage": t.damage.map(FirestoreValue.int) ?? .null,
             "assigneeId": t.assigneeID.map(FirestoreValue.string) ?? .null,
             "createdAt": .date(t.createdAt),
             "completedAt": t.completedAt.map(FirestoreValue.date) ?? .null,
@@ -74,6 +75,7 @@ enum Mapping {
         let task = RaidTask(
             id: id, raidID: raidID, title: d["title"]?.string ?? "",
             size: TaskSize(rawValue: d["size"]?.string ?? "") ?? .m,
+            damage: d["damage"]?.int.flatMap { $0 > 0 ? $0 : nil },
             assigneeID: d["assigneeId"]?.string, createdAt: d["createdAt"]?.date ?? .now,
             completedAt: d["completedAt"]?.date, completedBy: d["completedBy"]?.string,
             sortIndex: d["sortIndex"]?.int ?? 0

@@ -51,7 +51,7 @@ public struct BossSnapshot: Sendable {
               let state = store.bossState(raid.id, at: date) else { return nil }
         // Up to 6 for the large (iPad) widget; the medium one shows the first 3.
         let open = store.tasks(raid.id).filter { !$0.isDone }.prefix(6).map {
-            TaskInfo(id: $0.id, title: $0.title, sizeLetter: $0.size.rawValue.uppercased(), damage: store.config.baseDamage(for: $0.size))
+            TaskInfo(id: $0.id, title: $0.title, sizeLetter: $0.size.rawValue.uppercased(), damage: store.config.baseDamage(of: $0))
         }
         return BossSnapshot(
             raidID: raid.id, raidName: raid.name, bossName: raid.bossName, startedAt: raid.startedAt,

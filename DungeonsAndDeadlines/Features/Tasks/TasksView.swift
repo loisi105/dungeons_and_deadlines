@@ -188,12 +188,8 @@ struct TasksView: View {
         if let raid, raid.status == .planning {
             let hp = BossEngine.lockHP(tasks: tasks.map(\.model), config: config)
             Section {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Boss health when the fight starts: \(hp) HP")
-                        .font(.headline)
-                    Text("Small tasks deal \(config.smallTaskDamage), medium \(config.mediumTaskDamage), large \(config.largeTaskDamage) damage. Focus time covers the rest.")
-                        .readableFootnote()
-                }
+                Text("Boss health when the fight starts: \(hp) HP")
+                    .font(.headline)
             }
             .dungeonRow()
         }
@@ -270,7 +266,7 @@ struct TasksView: View {
                 CompleteButton(task: task, enabled: canComplete) { beginSelecting(task) }
             }
             NavigationLink(value: task.id) {
-                TaskRow(task: task, damage: config.baseDamage(for: task.size), assignee: showsAssignee ? nickname(task.assigneeID) : nil, isLate: task.isLate(startedAt: raid?.startedAt))
+                TaskRow(task: task, damage: config.baseDamage(of: task), assignee: showsAssignee ? nickname(task.assigneeID) : nil, isLate: task.isLate(startedAt: raid?.startedAt))
             }
         }
         .tag(task.id)
