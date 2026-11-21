@@ -33,9 +33,14 @@ struct RoleList: View {
 
     var body: some View {
         List {
-            Group {
+            Section {
                 option(nil)
                 ForEach(Role.allCases) { option($0) }
+            } footer: {
+                // Class is cosmetic: damage comes only from task size and focus time.
+                Text("Your class only changes your attack animation. It never changes damage.")
+                    .readableFootnote()
+                    .accessibilityIdentifier("classHint")
             }
             .dungeonRow()
         }

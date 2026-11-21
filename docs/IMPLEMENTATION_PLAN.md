@@ -103,7 +103,7 @@ With fewer people, merge A+E and B+D.
 ### Tasks: models (`GameCore/Models/`)
 - [ ] `Raid`: `id`, `name`, `bossName`, `ownerID`, `createdAt`, `deadline`, `startedAt?`, `lockedMaxHP?`, `status` (`.planning`, `.active`, `.won`, `.lost`)
 - [ ] `Member`: `id`, `raidID`, `nickname`, `role?`, `joinedAt`
-- [ ] `Role`: `.mage` (writer), `.tank` (researcher), `.rogue` (designer), `.healer` (presenter) — flavor only
+- [ ] `Role`: `.mage`, `.tank`, `.rogue`, `.healer` — flavor only (attack animation)
 - [ ] `RaidTask`: `id`, `raidID`, `title`, `size` (`.s/.m/.l`), `assigneeID?`, `createdAt`, `completedAt?`, `completedBy?`; computed `isLate(startedAt:)`
 - [ ] `Attack`: `id: UUID`, `raidID`, `memberID`, `kind` (`.task(taskID)` / `.focus(seconds)`), `damage`, `createdAt`, `localDay` (`"yyyy-MM-dd"` in the creating device's time zone, so daily caps come out the same on every device)
 - [ ] `FocusSession`: `id`, `raidID`, `memberID`, `state` (`.running/.paused/.stopped`), `startedAt?`, `accumulatedSeconds`, `backgroundedAt?`

@@ -72,10 +72,10 @@ extension TaskSize {
 extension Role {
     public var title: LocalizedStringResource {
         switch self {
-        case .mage: "Mage (writer)"
-        case .tank: "Tank (researcher)"
-        case .rogue: "Rogue (designer)"
-        case .healer: "Healer (presenter)"
+        case .mage: "Mage"
+        case .tank: "Tank"
+        case .rogue: "Rogue"
+        case .healer: "Healer"
         }
     }
 
