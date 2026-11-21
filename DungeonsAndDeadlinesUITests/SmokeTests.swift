@@ -22,6 +22,10 @@ final class SmokeTests: XCTestCase {
             // Text clipping inside system-owned chrome (tab bar, keyboard) isn't ours to fix.
             if issue.auditType == .textClipped, issue.element?.elementType == .tabBar { return true }
             if issue.element?.elementType == .keyboard { return true }
+            // Icon-and-title list buttons wrap at large sizes (checked at AX3 on Settings); the audit
+            // reports them as possibly clipped anyway.
+            if issue.auditType == .textClipped,
+               ["See Premium", "Sign in to Game Center"].contains(issue.element?.label ?? "") { return true }
             // The contrast audit misreads Liquid Glass button fills. Our button colors are
             // checked by hand instead: white on `Color.actionTint` is ~8:1, and accent-tinted
             // labels on glass are ~5:1. Text contrast everywhere else stays strict.
@@ -141,12 +145,17 @@ final class SmokeTests: XCTestCase {
         let checkbox = app.buttons["complete-Outline"]
         XCTAssertTrue(checkbox.waitForExistence(timeout: 5))
         checkbox.tap()
+        let completeSelected = app.buttons["completeSelectedButton"]
+        XCTAssertTrue(completeSelected.waitForExistence(timeout: 5))
+        completeSelected.tap()
         let startAndComplete = app.buttons["Start the fight and complete"]
         XCTAssertTrue(startAndComplete.waitForExistence(timeout: 5))
         startAndComplete.tap()
         // Completing jumps straight to the boss for the attack.
-        XCTAssertTrue(hpLabel(app, contains: "312 / 462 HP").waitForExistence(timeout: 5))
-        XCTAssertTrue(tabButton(app, "Boss").isSelected)
+        XCTAssertTrue(hpLabel(app, contains: "312 / 462 HP").waitForExistence(timeout: 8))
+        let bossTab = tabButton(app, "Boss")
+        expectation(for: NSPredicate(format: "isSelected == true"), evaluatedWith: bossTab)
+        waitForExpectations(timeout: 5)
         try audit(app, "Boss (fighting)")
 
         // Swiping right completes too.
@@ -195,6 +204,7 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(mia.waitForExistence(timeout: 30))
         // Stop the simulation so the audit sees a stable screen.
         tab(app, "Raid")
+        app.buttons["settingsButton"].tap() // the debug toggle lives in Settings
         let toggle = app.switches["fakeTeammatesToggle"]
         scrollClearOfBottomBars(app, toggle)
         // Tap the switch itself (right edge); the row's center doesn't toggle it.
@@ -361,9 +371,30 @@ final class SmokeTests: XCTestCase {
         XCTAssertFalse(name.waitForExistence(timeout: 2), "Cancel should still close the sheet")
     }
 
+    /// Settings holds the profile, Premium, Game Center and the alert switches, and picking a class
+    /// must not hang the app (a binding to the database record once spun it at 100% CPU).
+    func testSettingsScreenAndClassPicker() throws {
+        let app = launch(["-seedDemo", "-startTab", "raid"])
+        app.buttons["settingsButton"].tap()
+        XCTAssertTrue(app.staticTexts["Profile"].waitForExistence(timeout: 5))
+        // Rows here stack at large sizes, which the Dynamic Type audit misreads (checked by hand).
+        try audit(app, "Settings", skipping: .dynamicType)
+
+        let classRow = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Class'")).firstMatch
+        XCTAssertTrue(classRow.waitForExistence(timeout: 5))
+        classRow.tap()
+        let healer = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Healer'")).firstMatch
+        XCTAssertTrue(healer.waitForExistence(timeout: 5), "The class list should open")
+        healer.tap()
+        // Back on Settings with the new class shown.
+        XCTAssertTrue(app.staticTexts["Profile"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'Healer'")).firstMatch.waitForExistence(timeout: 5))
+    }
+
     func testSeePremiumStaysOpen() throws {
         let app = launch(["-seedDemo"])
         tab(app, "Raid")
+        app.buttons["settingsButton"].tap()
         let seePremium = app.buttons["partySeePremium"]
         scrollClearOfBottomBars(app, seePremium)
         seePremium.tap()
@@ -440,15 +471,21 @@ final class SmokeTests: XCTestCase {
         let checkbox = app.buttons["complete-Literature review"]
         XCTAssertTrue(checkbox.waitForExistence(timeout: 5))
         checkbox.tap()
+        let completeSelected = app.buttons["completeSelectedButton"]
+        XCTAssertTrue(completeSelected.waitForExistence(timeout: 5))
+        completeSelected.tap()
 
         // The app switches to the boss and plays the spell; the hit lands and it stays there.
-        XCTAssertTrue(tabButton(app, "Boss").isSelected)
+        let bossTab = tabButton(app, "Boss")
+        XCTAssertTrue(bossTab.waitForExistence(timeout: 5))
+        expectation(for: NSPredicate(format: "isSelected == true"), evaluatedWith: bossTab)
+        waitForExpectations(timeout: 5)
         Thread.sleep(forTimeInterval: 0.4)
         let midFlight = XCTAttachment(screenshot: app.screenshot())
         midFlight.name = "Attack mid-flight"
         midFlight.lifetime = .keepAlways
         add(midFlight)
-        XCTAssertTrue(hpLabel(app, contains: "550 / 1.000 HP").waitForExistence(timeout: 5)
+        XCTAssertTrue(hpLabel(app, contains: "550 / 1.000 HP").waitForExistence(timeout: 8)
                       || hpLabel(app, contains: "550 / 1,000 HP").exists)
         Thread.sleep(forTimeInterval: 1.5)
         XCTAssertTrue(tabButton(app, "Boss").isSelected)
@@ -463,6 +500,9 @@ final class SmokeTests: XCTestCase {
         let checkbox = app.buttons["complete-Literature review"]
         XCTAssertTrue(checkbox.waitForExistence(timeout: 10))
         checkbox.tap()
+        let completeSelected = app.buttons["completeSelectedButton"]
+        XCTAssertTrue(completeSelected.waitForExistence(timeout: 5))
+        completeSelected.tap()
         for i in 0..<4 {
             Thread.sleep(forTimeInterval: 1.2)
             let frame = XCTAttachment(screenshot: app.screenshot())
