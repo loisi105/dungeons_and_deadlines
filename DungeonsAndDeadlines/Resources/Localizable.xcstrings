@@ -63,8 +63,15 @@
         }
       }
     },
-    "%@ Block distracting apps while you focus" : {
-
+    "%@ Block distracting apps while you focus %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ Block distracting apps while you focus %2$@"
+          }
+        }
+      }
     },
     "%@ is %@." : {
       "localizations" : {
@@ -136,8 +143,15 @@
     "%@ was defeated." : {
 
     },
-    "%@ Your picked apps are blocked while you focus. Change" : {
-
+    "%@ Your picked apps are blocked while you focus. Change %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ Your picked apps are blocked while you focus. Change %2$@"
+          }
+        }
+      }
     },
     "%@, done" : {
 
@@ -289,9 +303,6 @@
 
     },
     "Attacking: 2 damage per minute" : {
-
-    },
-    "Be honest: bigger tasks hit harder, and teammates see the size." : {
 
     },
     "Block apps while focusing" : {
@@ -569,6 +580,9 @@
     "Group raids are Premium" : {
 
     },
+    "Group raids are shared with your team through our server. Sign in with Apple and they follow you to a new phone or iPad. Your solo bosses stay on this device only." : {
+
+    },
     "Group raids need Premium. Choosing Raid shows Premium." : {
 
     },
@@ -678,6 +692,9 @@
     "Manage subscription" : {
 
     },
+    "Maximum damage: %lld." : {
+
+    },
     "Member" : {
 
     },
@@ -744,6 +761,9 @@
     "None picked" : {
 
     },
+    "Not now" : {
+
+    },
     "Not yet" : {
 
     },
@@ -769,9 +789,6 @@
 
     },
     "Other raids" : {
-
-    },
-    "Party" : {
 
     },
     "Past raids" : {
@@ -981,17 +998,13 @@
     "Size" : {
 
     },
-    "Small tasks deal %lld, medium %lld, large %lld damage. Focus time covers the rest." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Small tasks deal %1$lld, medium %2$lld, large %3$lld damage. Focus time covers the rest."
-          }
-        }
-      }
+    "Size and damage" : {
+
     },
     "Solo" : {
+
+    },
+    "Solo bosses are stored only on this device. Group raids sync through your account." : {
 
     },
     "Someone" : {
@@ -1037,6 +1050,9 @@
 
     },
     "Switch boss" : {
+
+    },
+    "Tap the picture or the grid to choose a look. The dice picks a random boss." : {
 
     },
     "Task" : {
@@ -1173,6 +1189,9 @@
     "Up to 5 people per raid." : {
 
     },
+    "Use your raids on all your devices" : {
+
+    },
     "Victory" : {
 
     },
@@ -1197,7 +1216,10 @@
     "You cast a spell for %lld damage." : {
 
     },
-    "You slam your shield for %lld damage." : {
+    "You smash your hammer for %lld damage." : {
+
+    },
+    "Your class only changes your attack animation. It never changes damage." : {
 
     },
     "Your daggers strike for %lld damage." : {

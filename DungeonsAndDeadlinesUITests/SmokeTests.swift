@@ -35,7 +35,7 @@ final class SmokeTests: XCTestCase {
             // Icon-and-title list buttons wrap at large sizes (checked at AX3 on Settings); the audit
             // reports them as possibly clipped anyway.
             if issue.auditType == .textClipped,
-               ["See Premium", "Sign in to Game Center"].contains(issue.element?.label ?? "") { return true }
+               ["See Premium", "Sign in to Game Center", "Premium is active", "Manage subscription"].contains(issue.element?.label ?? "") { return true }
             // The contrast audit misreads Liquid Glass button fills. Our button colors are
             // checked by hand instead: white on `Color.actionTint` is ~8:1, and accent-tinted
             // labels on glass are ~5:1. Text contrast everywhere else stays strict.
@@ -59,6 +59,10 @@ final class SmokeTests: XCTestCase {
                app.navigationBars.buttons[element.label].exists || app.navigationBars.staticTexts[element.label].exists { return true }
             // Inside the system DatePicker (its compact date label) is Apple's UI.
             if issue.detailedDescription.contains("_UIDatePicker") { return true }
+            // The compact date picker's label is just the date ("24.11.2026"), which the audit
+            // can't read as a description. It is Apple's control.
+            if issue.auditType == .sufficientElementDescription, let label = issue.element?.label,
+               !label.isEmpty, label.rangeOfCharacter(from: .letters) == nil { return true }
             // The keyboard's prediction bar is system UI.
             if issue.detailedDescription.contains("TUIPrediction") { return true }
             print("AUDIT [\(screen)] \(issue.compactDescription): \(issue.detailedDescription) | element: \(issue.element.map { "\($0.elementType.rawValue) id=\($0.identifier) label=\($0.label) frame=\($0.frame)" } ?? "nil")")
@@ -381,6 +385,14 @@ final class SmokeTests: XCTestCase {
 
     /// Settings holds the profile, Premium, Game Center and the alert switches, and picking a class
     /// must not hang the app (a binding to the database record once spun it at 100% CPU).
+    /// Settings as a Premium subscriber sees it (the rows differ from the free plan's).
+    func testSettingsAsPremiumPassesAudit() throws {
+        let app = launch(["-seedDemo", "-startTab", "raid", "-premium"])
+        app.buttons["settingsButton"].tap()
+        XCTAssertTrue(app.staticTexts["Profile"].waitForExistence(timeout: 5))
+        try audit(app, "Settings (Premium)", skipping: .dynamicType)
+    }
+
     func testSettingsScreenAndClassPicker() throws {
         let app = launch(["-seedDemo", "-startTab", "raid"])
         app.buttons["settingsButton"].tap()

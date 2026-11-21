@@ -23,6 +23,8 @@ final class Entitlements {
             isPremium = true
             return
         }
+        // UI tests start on the free plan, even on a phone with a real subscription.
+        if LaunchOptions.isUITesting { return }
         // Purchases made elsewhere (other devices, Ask to Buy, renewals) arrive here.
         updates = Task { [weak self] in
             for await result in Transaction.updates {
@@ -34,7 +36,7 @@ final class Entitlements {
     }
 
     func refresh() async {
-        guard !LaunchOptions.forcePremium else { return }
+        guard !LaunchOptions.forcePremium, !LaunchOptions.isUITesting else { return }
         var active = false
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result,

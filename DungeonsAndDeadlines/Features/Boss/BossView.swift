@@ -338,6 +338,7 @@ struct BossView: View {
                             .monospacedDigit()
                             .fontWeight(.semibold)
                     }
+                    .frame(minHeight: 44)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(A11yText.attack(attack, by: attack.memberID == me ? nil : nickname(attack.memberID)))
                 }
