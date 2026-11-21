@@ -170,7 +170,7 @@ struct BossView: View {
 
             VStack(spacing: 8) {
                 Text(raid.bossName)
-                    .font(.title.weight(.black))
+                    .font(.title2.bold())
                     .multilineTextAlignment(.center)
                     // A single long word ("Procrastination") can't wrap; let it shrink instead of clipping.
                     .minimumScaleFactor(0.5)

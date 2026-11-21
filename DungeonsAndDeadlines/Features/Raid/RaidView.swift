@@ -115,7 +115,7 @@ struct RaidView: View {
                     VStack(alignment: .leading) {
                         Text(member.id == me ? String(localized: "\(member.nickname) (you)") : member.nickname)
                         if let role = member.role {
-                            Text(role.title).font(.caption).foregroundStyle(.readableSecondary)
+                            Text(role.title).font(.subheadline).foregroundStyle(.readableSecondary)
                         }
                     }
                     Spacer()
@@ -127,7 +127,7 @@ struct RaidView: View {
                     }
                     if member.activeFocusSince != nil {
                         Label("Attacking", systemImage: "flame.fill")
-                            .font(.caption)
+                            .font(.subheadline)
                             .foregroundStyle(.orange)
                     }
                 }

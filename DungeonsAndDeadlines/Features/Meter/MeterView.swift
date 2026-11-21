@@ -112,7 +112,7 @@ struct MeterView: View {
                         .foregroundStyle(by: .value("Source", String(localized: "Focus")))
                         .annotation(position: .trailing) {
                             Text("\(row.stats.total)")
-                                .font(.caption.bold())
+                                .font(.subheadline.bold())
                                 .monospacedDigit()
                                 .contentTransition(.numericText())
                         }

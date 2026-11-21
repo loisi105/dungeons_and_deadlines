@@ -472,7 +472,7 @@ struct TaskRow: View {
                 .strikethrough(task.isDone)
                 .foregroundStyle(task.isDone ? Theme.inkSoft : Theme.ink)
             Text(details)
-                .font(.caption)
+                .font(.subheadline)
                 .foregroundStyle(.readableSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)

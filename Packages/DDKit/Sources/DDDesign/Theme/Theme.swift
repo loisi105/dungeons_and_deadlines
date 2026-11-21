@@ -34,6 +34,15 @@ public enum Theme {
     public static let dangerBottom = Color(hex: 0x7A1426)
     public static let dangerText = Color(hex: 0xFFF6D6)
     public static let outline = Color(hex: 0x1A0D1F)
+
+    // Type scale, the same on every page (use the system styles so Dynamic Type keeps working):
+    //   page title     .largeTitle (navigation title, set by the system)
+    //   hero name      .title2.bold()        the boss name, an outcome headline
+    //   section header .headline             list headers and card headings
+    //   row title      .body                 the default; rows, labels, values
+    //   row detail     .subheadline          second line of a row, small values, chart labels
+    //   footnote       .footnote             hints and explanations (`readableFootnote()`)
+    // Avoid .caption (except in compact chips and thumbnails) and custom weights like .black.
 }
 
 extension Color {
