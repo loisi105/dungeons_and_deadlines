@@ -21,6 +21,9 @@ struct CreateRaidView: View {
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var choosingBoss = false
+    /// The Apple sign-in offer is shown once, after the first group raid.
+    @State private var offeringAppleSync = false
+    @AppStorage("settings.appleSyncOffered", store: AppGroup.defaults) private var appleSyncOffered = false
     private enum Field { case name, boss }
     @FocusState private var focus: Field?
     /// The boss name the sheet opened with, to tell whether the user changed anything.
@@ -95,6 +98,10 @@ struct CreateRaidView: View {
                     .accessibilityIdentifier("modePicker")
                     RolePickerRow(role: $role)
                     Group {
+                        if !multiplayer {
+                            // Said where a boss is made, so nobody is surprised by a new phone.
+                            Text("Solo bosses are stored only on this device. Group raids sync through your account.")
+                        }
                         if !entitlements.isPremium {
                             Text("Group raids for up to 5 come with Premium. Joining a friend's raid stays free.")
                         } else if sync.isAvailable {
@@ -120,6 +127,7 @@ struct CreateRaidView: View {
             }
             .sheet(item: $paywall) { PaywallView(reason: $0.block) }
             .sheet(isPresented: $choosingBoss) { BossPickerSheet(bossName: $bossName) }
+            .sheet(isPresented: $offeringAppleSync, onDismiss: { dismiss() }) { AppleSyncOfferView() }
             .deleteBossConfirmation($removing)
             .navigationTitle("New raid")
             .navigationBarTitleDisplayMode(.inline)
@@ -279,7 +287,13 @@ struct CreateRaidView: View {
                     deadline: deadline, multiplayer: multiplayer, owner: LocalIdentity.current, role: role
                 )
                 if multiplayer { try await sync.publish(raid) }
-                dismiss()
+                // First group raid: offer to tie the account to Apple so it follows the player.
+                if multiplayer, !sync.isAppleLinked, !appleSyncOffered {
+                    appleSyncOffered = true
+                    offeringAppleSync = true
+                } else {
+                    dismiss()
+                }
             } catch {
                 errorMessage = error.localizedDescription
             }

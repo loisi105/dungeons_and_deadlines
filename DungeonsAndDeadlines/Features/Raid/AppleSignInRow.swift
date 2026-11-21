@@ -1,6 +1,7 @@
 import SwiftUI
 import AuthenticationServices
 import CryptoKit
+import DDDesign
 
 /// "Sign in with Apple" for the player's account. Optional: raids work without it, but with it
 /// they follow the player to a new phone. Shown only when multiplayer is available.
@@ -69,5 +70,38 @@ struct AppleSignInRow: View {
 
     private static func sha256(_ input: String) -> String {
         SHA256.hash(data: Data(input.utf8)).map { String(format: "%02x", $0) }.joined()
+    }
+}
+
+/// Offered once, right after the first group raid is created: signing in with Apple keeps the player's
+/// group raids available on their other devices. Closing it (or signing in) finishes the creation.
+struct AppleSyncOfferView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(SyncEngine.self) private var sync
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 16) {
+                Image(systemName: "icloud.and.arrow.up")
+                    .font(.largeTitle)
+                    .foregroundStyle(.tint)
+                    .accessibilityHidden(true)
+                Text("Use your raids on all your devices")
+                    .font(.title2.bold())
+                    .fontDesign(.serif)
+                Text("Group raids are shared with your team through our server. Sign in with Apple and they follow you to a new phone or iPad. Your solo bosses stay on this device only.")
+                    .foregroundStyle(.readableSecondary)
+                AppleSignInRow()
+                Button("Not now") { dismiss() }
+                    .frame(maxWidth: .infinity)
+                    .accessibilityIdentifier("appleOfferNotNow")
+                Spacer(minLength: 0)
+            }
+            .padding(20)
+            .dungeonScreen()
+            .navigationBarTitleDisplayMode(.inline)
+            .onChange(of: sync.isAppleLinked) { _, linked in if linked { dismiss() } }
+        }
+        .presentationDetents([.medium, .large])
     }
 }
