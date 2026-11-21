@@ -2,6 +2,7 @@ import GameKit
 import SwiftUI
 import GameCore
 import DDPersistence
+import DDDesign
 
 /// Game Center: sign-in, achievements, leaderboards and the Access Point.
 /// Raids themselves sync through Firebase; Game Center is the Apple-native layer
@@ -80,7 +81,9 @@ final class GameCenterService {
         let store = DDStore.shared
         let me = LocalIdentity.current.memberID
         let reports = store.raids().compactMap { store.report($0.id) }
-        let progress = PlayerProgress.compute(memberID: me, reports: reports, config: store.config)
+        let progress = PlayerProgress.compute(memberID: me, reports: reports, config: store.config,
+            lookOf: { BossKind.forName($0).rawValue }, lookCount: BossKind.allCases.count
+        )
 
         var sent = reported
         let achievements: [GKAchievement] = progress.achievements.compactMap { achievement, percent in

@@ -46,8 +46,8 @@ available right now.
 
 | Product ID | Type | Price (suggested) | Notes |
 |---|---|---|---|
-| `dd.premium.yearly` | Auto-renewable, 1 year | 19.99 | 1-week free trial |
-| `dd.premium.monthly` | Auto-renewable, 1 month | 2.99 | |
+| `at.fhooe.sail.dungeonsanddeadlines.premium.yearly` | Auto-renewable, 1 year | 19.99 | 1-week free trial |
+| `at.fhooe.sail.dungeonsanddeadlines.premium.monthly` | Auto-renewable, 1 month | 2.99 | |
 
 Both are in the subscription group **Premium** (local test ID `21512345`). Family Sharing is on.
 IDs are in `DungeonsAndDeadlines/App/Entitlements.swift`.
@@ -56,7 +56,12 @@ IDs are in `DungeonsAndDeadlines/App/Entitlements.swift`.
 
 1. Create the subscription group "Premium" and the two subscriptions above.
 2. Replace `Entitlements.subscriptionGroupID` with the real group ID (used by "Manage subscription").
-3. Add the paid-apps agreement, tax and banking info, or products won't load in TestFlight.
+3. Upload `docs/appstore/subscription-image.png` (1024×1024, no transparency; made by
+   `tools/make_icon.py`) as the **Promotional Image** of each subscription. It is optional but
+   needed for the subscriptions to be promoted on the App Store. Each subscription also needs a
+   **Review Screenshot** of the paywall: take it from a TestFlight or device build with the real
+   plans loaded (the simulator without StoreKit shows the "unavailable" state).
+4. Add the paid-apps agreement, tax and banking info, or products won't load in TestFlight.
 
 ### Local testing (simulator)
 

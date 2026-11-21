@@ -11,7 +11,7 @@ import GameCore
 @Observable
 final class Entitlements {
     static let subscriptionGroupID = "21512345"
-    static let productIDs = ["dd.premium.yearly", "dd.premium.monthly"]
+    static let productIDs = ["at.fhooe.sail.dungeonsanddeadlines.premium.yearly", "at.fhooe.sail.dungeonsanddeadlines.premium.monthly"]
 
     private(set) var isPremium = false
     var plan: Plan { isPremium ? .premium : .free }
@@ -38,7 +38,9 @@ final class Entitlements {
         var active = false
         for await result in Transaction.currentEntitlements {
             if case .verified(let transaction) = result,
-               Self.productIDs.contains(transaction.productID),
+               // Any active subscription counts, not only the current IDs: purchases made before
+               // the products were renamed (dd.premium.*) must keep unlocking Premium.
+               transaction.productType == .autoRenewable || Self.productIDs.contains(transaction.productID),
                transaction.revocationDate == nil {
                 active = true
             }

@@ -25,31 +25,47 @@ Connect, reports fail quietly and the app works normally.
 
 ### Achievements
 
-| ID | Name | How to earn | Points | Progressive |
-|---|---|---|---|---|
-| `dd.achievement.first_blood` | First Blood | Deal your first damage | 5 | no |
-| `dd.achievement.first_victory` | Deadline Slayer | Defeat your first boss | 10 | no |
-| `dd.achievement.slayer_5` | Seasoned Slayer | Defeat 5 bosses | 25 | yes |
-| `dd.achievement.slayer_25` | Legendary Slayer | Defeat 25 bosses | 50 | yes |
-| `dd.achievement.focus_10h` | Deep Focus | Focus for 10 hours in total | 25 | yes |
-| `dd.achievement.streak_7` | Unbreakable | Focus 30+ minutes on 7 days in a row | 25 | yes |
-| `dd.achievement.flawless` | Flawless | Win with every task done | 15 | no |
-| `dd.achievement.full_party` | Full Party | Win a raid with 5 members | 20 | no |
-| `dd.achievement.title_mvp` | MVP | Earn the MVP title in a raid | 15 | no |
-| `dd.achievement.title_sniper` | Sniper | Earn the Sniper title | 10 | no |
-| `dd.achievement.title_grinder` | Grinder | Earn the Grinder title | 10 | no |
-| `dd.achievement.title_consistent` | Consistent | Earn the Consistent title | 10 | no |
-| `dd.achievement.title_last_minute_hero` | Last-Minute Hero | Earn the Last-Minute Hero title | 10 | no |
+| ID | Name | How to earn | Points | Progressive | Hidden |
+|---|---|---|---|---|---|
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.first_blood` | First Blood | Deal your first damage | 5 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.first_victory` | Deadline Slayer | Defeat your first boss | 10 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.slayer_5` | Seasoned Slayer | Defeat 5 bosses | 25 | yes | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.slayer_25` | Legendary Slayer | Defeat 25 bosses | 50 | yes | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.focus_10h` | Deep Focus | Focus for 10 hours in total | 25 | yes | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.streak_7` | Unbreakable | Focus 30+ minutes on 7 days in a row | 25 | yes | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.flawless` | Flawless | Win with every task done | 15 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.full_party` | Full Party | Win a raid with 5 members | 20 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.title_mvp` | MVP | Earn the MVP title in a raid | 15 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.title_sniper` | Sniper | Earn the Sniper title | 10 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.title_grinder` | Grinder | Earn the Grinder title | 10 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.title_consistent` | Consistent | Earn the Consistent title | 10 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.title_last_minute_hero` | Last-Minute Hero | Earn the Last-Minute Hero title | 10 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.tasks_10` | Checked Off | Complete 10 tasks | 5 | yes | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.tasks_100` | Task Machine | Complete 100 tasks | 25 | yes | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.big_one` | Heavy Hitter | Complete an L-size task | 10 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.clean_sweep` | Clean Sweep | Win with every task done while the boss was still Calm or Angry | 20 | no | yes |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.focus_first` | Eyes on the Prize | Finish your first focus session | 5 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.focus_marathon` | Marathon | One focus session of 2+ hours | 20 | yes | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.focus_night_owl` | Night Owl | Start a focus session between 00:00 and 04:00 | 10 | no | yes |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.focus_early_bird` | Early Bird | Start a focus session between 04:00 and 06:00 | 10 | no | yes |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.streak_30` | Habit Formed | Focus 30+ minutes on 30 days in a row | 50 | yes | yes |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.ahead_of_schedule` | Ahead of Schedule | Win by the halfway point between fight start and deadline (raids of 24h+) | 20 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.speedrun` | Speedrun | Win in the first quarter of the time (raids of 24h+) | 35 | no | yes |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.buzzer_beater` | Buzzer Beater | Win within the last hour before the deadline | 25 | no | yes |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.bestiary` | Bestiary | Defeat each of the 12 boss looks | 50 | yes | yes |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.team_player` | Team Player | Win a raid with 2+ members, dealing damage yourself | 10 | no | no |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.carry` | Carried the Team | Deal over half of a raid's damage in a won raid with 4+ members | 20 | no | yes |
+| `at.fhooe.sail.dungeonsanddeadlines.achievement.delegator` | Delegator | As leader, have a task you gave to someone else completed by them | 10 | no | no |
 
-Title achievements only count in raids with at least 2 members. AFK Legend is never an achievement.
+Pacing wins use the fight start and the moment the boss's HP reached zero. Delegator only credits the leader, since only the leader assigns tasks. Title achievements only count in raids with at least 2 members. AFK Legend is never an achievement.
 
 ### Leaderboards (classic, all-time, high score first)
 
 | ID | Name | Score |
 |---|---|---|
-| `dd.leaderboard.total_damage` | Total Damage | All damage you've dealt |
-| `dd.leaderboard.bosses_defeated` | Bosses Defeated | Number of won raids |
-| `dd.leaderboard.focus_minutes` | Focus Minutes | Total focused minutes |
+| `at.fhooe.sail.dungeonsanddeadlines.leaderboard.total_damage` | Total Damage | All damage you've dealt |
+| `at.fhooe.sail.dungeonsanddeadlines.leaderboard.bosses_defeated` | Bosses Defeated | Number of won raids |
+| `at.fhooe.sail.dungeonsanddeadlines.leaderboard.focus_minutes` | Focus Minutes | Total focused minutes |
 
 The IDs live in `Packages/DDKit/Sources/GameCore/PlayerProgress.swift` (`Achievement`, `Leaderboard`).
 

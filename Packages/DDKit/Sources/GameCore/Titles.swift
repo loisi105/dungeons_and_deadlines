@@ -17,6 +17,8 @@ public struct RaidReport: Sendable {
     public var raid: Raid
     public var state: BossState
     public var rows: [Row]
+    /// Every task of the raid, done or not.
+    public var tasks: [RaidTask]
     public var lateTasks: [RaidTask]
     public var openTasks: [RaidTask]
     public var timeline: [(date: Date, hp: Int)]
@@ -95,6 +97,7 @@ public enum Titles {
         let highest = raid.startedAt.map { Phase.at(start: $0, deadline: raid.deadline, now: end, shift: raid.phaseShift) } ?? .calm
         return RaidReport(
             raid: raid, state: state, rows: rows,
+            tasks: raidTasks,
             lateTasks: raidTasks.filter { $0.isLate(startedAt: raid.startedAt) },
             openTasks: raidTasks.filter { !$0.isDone },
             timeline: BossEngine.hpTimeline(raid: raid, attacks: attacks),
