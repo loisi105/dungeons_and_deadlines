@@ -34,7 +34,8 @@ public struct FirebaseConfig: Sendable, Equatable {
 
 // MARK: - Auth
 
-/// Anonymous Firebase Auth. The refresh token and user ID live in the Keychain,
+/// Firebase Auth: anonymous by default, optionally upgraded with Sign in with Apple
+/// (`signInWithApple`). The refresh token and user ID live in the Keychain,
 /// so the player keeps the same account across launches.
 public actor FirebaseAuthREST {
     private let config: FirebaseConfig
@@ -70,6 +71,51 @@ public actor FirebaseAuthREST {
         expiresAt = Date().addingTimeInterval((Double(json["expiresIn"] as? String ?? "3600") ?? 3600) - 60)
         Keychain.write("firebase.uid", uid)
         Keychain.write("firebase.refreshToken", refresh)
+        return uid
+    }
+
+    /// True once this account is tied to an Apple ID (kept in the Keychain with the account).
+    public nonisolated static var isAppleLinked: Bool { Keychain.read("firebase.apple") != nil }
+
+    /// Signs in with the identity token from Sign in with Apple and returns the Firebase user ID.
+    ///
+    /// The current anonymous account is upgraded in place, so its raids stay. If this Apple ID is
+    /// already linked to another Firebase account (the player used it on another phone), that
+    /// account is restored instead and its user ID is returned; the caller moves the local data over.
+    /// - Parameters:
+    ///   - identityToken: `ASAuthorizationAppleIDCredential.identityToken`, as text.
+    ///   - rawNonce: the unhashed nonce whose SHA-256 was sent to Apple with the request.
+    public func signInWithApple(identityToken: String, rawNonce: String) async throws -> String {
+        let current = try? await validToken()
+        do {
+            return try await exchangeApple(identityToken, rawNonce, linkingTo: current)
+        } catch let FirebaseError.http(_, _, message) where current != nil && message.contains("FEDERATED_USER_ID_ALREADY_LINKED") {
+            return try await exchangeApple(identityToken, rawNonce, linkingTo: nil)
+        }
+    }
+
+    private func exchangeApple(_ identityToken: String, _ rawNonce: String, linkingTo idToken: String?) async throws -> String {
+        var request = URLRequest(url: URL(string: "\(config.authBase)/accounts:signInWithIdp?key=\(config.apiKey)")!)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        var body: [String: Any] = [
+            "postBody": "id_token=\(identityToken)&providerId=apple.com&nonce=\(rawNonce)",
+            "requestUri": "http://localhost",
+            "returnSecureToken": true,
+            "returnIdpCredential": true,
+        ]
+        if let idToken { body["idToken"] = idToken }
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+        let json = try await HTTP.send(request, session: session)
+        guard let token = json["idToken"] as? String, let refresh = json["refreshToken"] as? String,
+              let uid = json["localId"] as? String else { throw FirebaseError.badResponse }
+        self.uid = uid
+        self.idToken = token
+        refreshToken = refresh
+        expiresAt = Date().addingTimeInterval((Double(json["expiresIn"] as? String ?? "3600") ?? 3600) - 60)
+        Keychain.write("firebase.uid", uid)
+        Keychain.write("firebase.refreshToken", refresh)
+        Keychain.write("firebase.apple", "1")
         return uid
     }
 

@@ -27,6 +27,9 @@ final class SyncEngine {
     let pollInterval: Duration = .seconds(5)
 
     private var sync: RaidSync?
+    private var auth: FirebaseAuthREST?
+    /// The account is tied to an Apple ID, so it survives a new phone.
+    private(set) var isAppleLinked = FirebaseAuthREST.isAppleLinked
     private var flushTask: Task<Void, Never>?
     private var pollTask: Task<Void, Never>?
     private var store: RaidStore { DDStore.shared }
@@ -44,19 +47,36 @@ final class SyncEngine {
     private func signIn(_ config: FirebaseConfig) async {
         do {
             let auth = FirebaseAuthREST(config: config)
+            self.auth = auth
+            self.config = config
             let uid = try await auth.signIn()
-            let old = LocalIdentity.current.memberID
-            if old != uid {
-                try store.migrateMemberID(from: old, to: uid)
-                LocalIdentity.setMemberID(uid)
-            }
-            sync = RaidSync(store: store, transport: FirestoreREST(config: config, auth: auth), uid: uid)
-            status = .ready
-            startPolling()
-            scheduleFlush(raidID: nil)
+            try adopt(uid: uid, config: config, auth: auth)
         } catch {
             status = .failed(error.localizedDescription)
         }
+    }
+
+    private var config: FirebaseConfig?
+
+    /// Makes `uid` the player's identity: moves local data over and (re)starts syncing.
+    private func adopt(uid: String, config: FirebaseConfig, auth: FirebaseAuthREST) throws {
+        let old = LocalIdentity.current.memberID
+        if old != uid {
+            try store.migrateMemberID(from: old, to: uid)
+            LocalIdentity.setMemberID(uid)
+        }
+        sync = RaidSync(store: store, transport: FirestoreREST(config: config, auth: auth), uid: uid)
+        status = .ready
+        isAppleLinked = FirebaseAuthREST.isAppleLinked
+        startPolling()
+        scheduleFlush(raidID: nil)
+    }
+
+    /// Ties the account to the player's Apple ID (Sign in with Apple), so raids follow them to a new phone.
+    func signInWithApple(identityToken: String, rawNonce: String) async throws {
+        guard let auth, let config else { throw FirebaseError.notConfigured }
+        let uid = try await auth.signInWithApple(identityToken: identityToken, rawNonce: rawNonce)
+        try adopt(uid: uid, config: config, auth: auth)
     }
 
     func appDidBecomeActive() {
