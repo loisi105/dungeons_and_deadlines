@@ -114,12 +114,12 @@ struct CreateRaidView: View {
                             // Said where a boss is made, so nobody is surprised by a new phone.
                             Text("Solo bosses are stored only on this device. Group raids sync through your account.")
                         }
-                        if !entitlements.isPremium {
-                            Text("Group raids for up to 5 come with Premium. Joining a friend's raid stays free.")
-                        } else if sync.isAvailable {
-                            Text("A raid gets an invite code to share with your group.")
-                        } else {
-                            Text("Multiplayer needs Firebase; this build is solo only.")
+                        if entitlements.isPremium {
+                            if sync.isAvailable {
+                                Text("A raid gets an invite code to share with your group.")
+                            } else {
+                                Text("Multiplayer needs Firebase; this build is solo only.")
+                            }
                         }
                     }
                     .readableFootnote()
