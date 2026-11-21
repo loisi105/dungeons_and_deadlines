@@ -41,6 +41,7 @@ struct RoleList: View {
         }
         .dungeonScreen()
         .navigationTitle("Class")
+        .navigationBarTitleDisplayMode(.inline)
         .sensoryFeedback(.selection, trigger: picks) { _, _ in hapticsOn }
     }
 

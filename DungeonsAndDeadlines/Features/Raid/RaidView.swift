@@ -10,12 +10,6 @@ struct RaidView: View {
     let raidID: UUID
 
     @Environment(SyncEngine.self) private var sync
-    @Environment(GameCenterService.self) private var gameCenter
-    @Environment(Entitlements.self) private var entitlements
-    @State private var paywall: PaywallReason?
-    @State private var manageSubscription = false
-    @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
-    @AppStorage("identity.nickname", store: AppGroup.defaults) private var nickname = ""
 
     @Query private var raids: [RaidRecord]
     @Query private var members: [MemberRecord]
@@ -25,7 +19,6 @@ struct RaidView: View {
     @State private var showJoin = false
     @State private var removing: Raid?
     @State private var showReport = false
-    @FocusState private var nicknameFocused: Bool
 
     init(raidID: UUID) {
         self.raidID = raidID
@@ -43,12 +36,8 @@ struct RaidView: View {
                     if raid.isMultiplayer { inviteSection(raid) }
                     membersSection(raid)
                 }
-                youSection
-                premiumSection
-                gameCenterSection
                 otherRaidsSection
                 dangerSection
-                extraSections
             }
             .headerProminence(.increased)
             .scrollDismissesKeyboard(.interactively)
@@ -56,20 +45,22 @@ struct RaidView: View {
             .readableContentWidth()
             .navigationTitle("Party")
             .toolbar {
-                Menu("New", systemImage: "plus") {
-                    Button("New raid", systemImage: "plus") { environment.showCreateRaid = true }
-                    Button("Join with code", systemImage: "person.badge.plus") { showJoin = true }
-                        .disabled(!sync.isAvailable)
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink { SettingsView(raidID: raidID) } label: {
+                        Label("Settings", systemImage: "gearshape")
+                    }
+                    .accessibilityIdentifier("settingsButton")
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Menu("New", systemImage: "plus") {
+                        Button("New raid", systemImage: "plus") { environment.showCreateRaid = true }
+                        Button("Join with code", systemImage: "person.badge.plus") { showJoin = true }
+                            .disabled(!sync.isAvailable)
+                    }
                 }
             }
-            // No floating Game Center access point here: it's a fixed overlay that sits on
-            // top of this scrolling list. The Game Center rows below open the same dashboard.
             .sheet(isPresented: $showJoin) { JoinRaidView() }
             .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
-            // Screen level, not on the Premium row: sheets attached to list rows get
-            // dismissed when the list refreshes, which closed the paywall right away.
-            .sheet(item: $paywall) { PaywallView(reason: $0.block) }
-            .manageSubscriptionsSheet(isPresented: $manageSubscription, subscriptionGroupID: Entitlements.subscriptionGroupID)
             .deleteBossConfirmation($removing)
         }
     }
@@ -148,87 +139,6 @@ struct RaidView: View {
         .dungeonRow()
     }
 
-    private var youSection: some View {
-        Section {
-            TextField("Nickname", text: $nickname)
-                .focused($nicknameFocused)
-                .textContentType(.nickname)
-                .textInputAutocapitalization(.words)
-                .autocorrectionDisabled()
-                .submitLabel(.done)
-                .onSubmit(commitNickname)
-                // Settings-style: the name is kept when you tap away or leave the tab, not only on Return.
-                .onChange(of: nicknameFocused) { _, focused in if !focused { commitNickname() } }
-                .onDisappear(perform: commitNickname)
-            if let mine = members.first(where: { $0.memberID == me }) {
-                RolePickerRow(role: Binding(
-                    get: { mine.model.role },
-                    set: { role in
-                        try? DDStore.shared.updateMember(raidID: raidID, memberID: me) { $0.role = role }
-                        GameActions.changed(raidID)
-                    }
-                ))
-            }
-            Toggle("Haptics", isOn: $hapticsOn)
-                .sensoryFeedback(.selection, trigger: hapticsOn)
-            PhaseAlertsSetting()
-            FocusBlockingSetting()
-        } header: {
-            Text("You").font(.headline)
-        }
-        .dungeonRow()
-    }
-
-    private func commitNickname() {
-        let name = nickname.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !name.isEmpty, members.first(where: { $0.memberID == me })?.nickname != name else { return }
-        nickname = name
-        try? DDStore.shared.renameMember(me, to: name)
-        GameActions.changed(raidID)
-    }
-
-    private var premiumSection: some View {
-        Section {
-            if entitlements.isPremium {
-                Label("Premium is active", systemImage: "crown.fill")
-                Button("Manage subscription", systemImage: "creditcard") { manageSubscription = true }
-            } else {
-                Text("Free plan: 1 active solo boss, join any raid. Premium adds group raids and unlimited bosses.")
-                    .readableFootnote()
-                Button("See Premium", systemImage: "crown") { paywall = PaywallReason(block: nil) }
-                    .accessibilityIdentifier("partySeePremium")
-            }
-        } header: {
-            Text("Premium").font(.headline)
-        }
-        .dungeonRow()
-    }
-
-    private var gameCenterSection: some View {
-        Section {
-            if gameCenter.isAuthenticated {
-                Label {
-                    Text("Signed in as \(gameCenter.displayName ?? "")")
-                } icon: {
-                    Image(systemName: "gamecontroller.fill")
-                }
-                Button("Game Center", systemImage: "person.crop.circle") { gameCenter.openDashboard(.dashboard) }
-                    .accessibilityHint(Text("Shows your Game Center profile and friends"))
-                    .accessibilityIdentifier("gameCenterDashboardButton")
-                Button("Achievements", systemImage: "trophy.fill") { gameCenter.openDashboard(.achievements) }
-                Button("Leaderboards", systemImage: "list.number") { gameCenter.openDashboard(.leaderboards) }
-            } else {
-                Text("Sign in to Game Center to earn achievements and compare your damage with friends.")
-                    .readableFootnote()
-                Button("Sign in to Game Center", systemImage: "gamecontroller") { gameCenter.authenticate() }
-                    .disabled(!gameCenter.isEnabled)
-            }
-        } header: {
-            Text("Game Center").font(.headline)
-        }
-        .dungeonRow()
-    }
-
     @ViewBuilder
     private var otherRaidsSection: some View {
         let others = allRaids.filter { $0.id != raidID }
@@ -270,9 +180,14 @@ struct RaidView: View {
                     Button(role: .destructive) {
                         removing = raid
                     } label: {
-                        Label(raid.isMultiplayer ? "Leave raid" : "Delete boss",
-                              systemImage: raid.isMultiplayer ? "rectangle.portrait.and.arrow.right" : "trash")
-                            .frame(maxWidth: .infinity)
+                        // Icon and text as plain views: a `Label` here was reported by the audit as
+                        // possibly clipped at large text sizes (it wraps fine; the audit can't tell).
+                        HStack(spacing: 8) {
+                            Image(systemName: raid.isMultiplayer ? "rectangle.portrait.and.arrow.right" : "trash")
+                                .accessibilityHidden(true)
+                            Text(raid.isMultiplayer ? "Leave raid" : "Delete boss")
+                        }
+                        .frame(maxWidth: .infinity)
                     }
                     .dangerActionStyle()
                     .accessibilityIdentifier("deleteCurrentBoss")
@@ -285,14 +200,6 @@ struct RaidView: View {
             }
         }
         .dungeonRow()
-    }
-
-    /// Debug tools (debug builds only).
-    @ViewBuilder
-    private var extraSections: some View {
-        #if DEBUG
-        DebugSection(raidID: raidID)
-        #endif
     }
 
     private func statusTitle(_ status: RaidStatus) -> LocalizedStringKey {

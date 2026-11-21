@@ -6,10 +6,13 @@ import DDDesign
 struct DebugSection: View {
     let raidID: UUID
     @Environment(FakeTeammates.self) private var fakes
+    /// Read once when the section appears: fetching from the store inside `body` re-ran it on every
+    /// refresh of the list, and froze the screen when a row was tapped.
+    @State private var canRun = false
 
     var body: some View {
         Section {
-            if fakes.canRun(in: raidID) {
+            if canRun {
                 Toggle("Fake teammates", isOn: Binding(
                     get: { fakes.runningRaidID == raidID },
                     set: { $0 ? fakes.start(raidID: raidID) : fakes.stop() }
@@ -25,6 +28,7 @@ struct DebugSection: View {
             Text("Debug").font(.headline)
         }
         .dungeonRow()
+        .onAppear { canRun = fakes.canRun(in: raidID) }
     }
 }
 #endif

@@ -184,6 +184,9 @@
     "%lld picked" : {
 
     },
+    "%lld Selected" : {
+
+    },
     "%lld. %@: %lld" : {
       "localizations" : {
         "en" : {
@@ -211,6 +214,9 @@
 
     },
     "A raid gets an invite code to share with your group." : {
+
+    },
+    "Account" : {
 
     },
     "Achievements" : {
@@ -246,10 +252,19 @@
     "Added after the fight started" : {
 
     },
+    "Alerts & focus" : {
+
+    },
     "All %lld bosses" : {
 
     },
     "All tasks done!" : {
+
+    },
+    "Another app already manages Screen Time on this device. Remove its access in Settings > Screen Time, then try again." : {
+
+    },
+    "Apple didn't send a sign-in token. Try again." : {
 
     },
     "Apps to block" : {
@@ -309,9 +324,6 @@
     "Boss name" : {
 
     },
-    "Bosses" : {
-
-    },
     "Burst and sustained damage" : {
 
     },
@@ -342,9 +354,6 @@
     "Complete" : {
 
     },
-    "Complete %@" : {
-
-    },
     "Complete ${task}" : {
 
     },
@@ -364,6 +373,9 @@
 
     },
     "Couldn't do that" : {
+
+    },
+    "Couldn't reach Apple to confirm Screen Time access. Check your internet connection and try again." : {
 
     },
     "Create" : {
@@ -417,6 +429,12 @@
     "Delete %@…" : {
 
     },
+    "Delete %lld Tasks" : {
+
+    },
+    "Delete %lld tasks?" : {
+
+    },
     "Delete boss" : {
 
     },
@@ -426,7 +444,13 @@
     "Deletes this boss with all its tasks and hits. This can't be undone." : {
 
     },
+    "Details" : {
+
+    },
     "done" : {
+
+    },
+    "Done" : {
 
     },
     "Done (%lld)" : {
@@ -607,6 +631,9 @@
 
     },
     "Keep new bosses and features coming." : {
+
+    },
+    "Keeps your raids when you get a new phone. Apple shares nothing with us but a private ID." : {
 
     },
     "Krakens, liches, mimics and more. The Clock, Dragon and Goblin are free." : {
@@ -806,6 +833,9 @@
     "Prepare for battle" : {
 
     },
+    "Profile" : {
+
+    },
     "Project" : {
 
     },
@@ -863,13 +893,41 @@
     "Save" : {
 
     },
-    "Screen Time access is off for Dungeons & Deadlines. Turn it on in Settings > Screen Time." : {
+    "Screen Time access failed (%@ %lld): %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Screen Time access failed (%1$@ %2$lld): %3$@"
+          }
+        }
+      }
+    },
+    "Screen Time access failed: %@" : {
+
+    },
+    "Screen Time access is off for Dungeons & Deadlines. Turn it on in Settings > Screen Time > Apps with Screen Time Access." : {
+
+    },
+    "Screen Time access is restricted on this device, e.g. by Content & Privacy Restrictions or a device management profile." : {
+
+    },
+    "Screen Time access isn't allowed for this app yet. Turn the setting on and choose Continue when iOS asks, or allow it in Settings > Screen Time > Apps with Screen Time Access." : {
+
+    },
+    "Screen Time access wasn't allowed. Turn the setting on again to retry, or allow it in Settings > Screen Time > Apps with Screen Time Access." : {
+
+    },
+    "Screen Time isn't available. Turn on Screen Time in Settings, and make sure you're signed in with your Apple Account." : {
 
     },
     "See Premium" : {
 
     },
     "See report" : {
+
+    },
+    "Select %@" : {
 
     },
     "Sends a notification when a boss changes phase." : {
@@ -881,6 +939,12 @@
     "Set ^[%lld step](inflect: true) calmer than the deadline." : {
 
     },
+    "Set a device passcode (Settings > Face ID & Passcode) to allow Screen Time access." : {
+
+    },
+    "Settings" : {
+
+    },
     "Share" : {
 
     },
@@ -888,6 +952,9 @@
 
     },
     "Show as" : {
+
+    },
+    "Show details" : {
 
     },
     "Shows Premium" : {
@@ -906,6 +973,9 @@
 
     },
     "Signed in as %@" : {
+
+    },
+    "Signed in with Apple" : {
 
     },
     "Six letters and numbers from the raid leader." : {
@@ -946,6 +1016,9 @@
 
     },
     "Start the fight and complete" : {
+
+    },
+    "Starts selecting tasks to complete or delete" : {
 
     },
     "Status" : {
@@ -1073,6 +1146,12 @@
 
     },
     "They stay blocked while your focus timer runs." : {
+
+    },
+    "This Apple Account can't give Screen Time access (for example, a Managed Apple Account)." : {
+
+    },
+    "This build of the app isn't set up for Screen Time: the Family Controls capability is missing from its signing profile. Rebuild it from Xcode with the FH team." : {
 
     },
     "Time" : {
