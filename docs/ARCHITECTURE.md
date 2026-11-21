@@ -36,7 +36,7 @@ Dependency direction: `app / widgets → DDIntents → DDPersistence → GameCor
 - **App Group** (`group.<bundle-id>`): holds the SwiftData store so the app and widget extension share it.
 - **Screen Time** (`DDScreenTime` target + `DDFocusMonitor` and `DDShieldConfig` extensions): blocks picked apps while the focus timer runs. `GameActions.changed()` reconciles the shield after every change; see [HANDOFF.md](HANDOFF.md#screen-time-blocking).
 - **Swift 6 language mode** with strict concurrency. Views and view models are `@MainActor` and `@Observable`. Background writes go through a `@ModelActor` (`RaidStore`).
-- **Deployment target: iOS 26.0** (Liquid Glass APIs; see README).
+- **Deployment target: iOS 26.1** (Liquid Glass APIs and `tabViewBottomAccessory(isEnabled:)`; see README).
 
 ## 3. Data flow
 

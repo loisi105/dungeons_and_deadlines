@@ -65,7 +65,7 @@ SwiftUI · iOS 26+ · SwiftData · App Intents · WidgetKit · ActivityKit · Ga
   and Siri share one code path.
 - **Game Center:** 13 achievements and 3 leaderboards (total damage, bosses defeated, focus
   minutes).
-- **iPad:** a sidebar with every boss for one-tap switching, and a two-column Boss tab.
+- **iPad:** a two-column Boss tab and a sidebar for the tabs; bosses switch with the boss button at the top right.
 - **Accessibility:** VoiceOver announcements for hits, audio graphs on the charts, phases never
   shown by color alone, Dynamic Type layouts up to AX5, and Reduce Motion support. Every UI flow
   runs Xcode's accessibility audit.
@@ -82,13 +82,13 @@ existing bosses or history. Details: [docs/MONETIZATION.md](docs/MONETIZATION.md
 | Join a friend's raid by code | ✓ | ✓ |
 | Focus, widgets, Live Activity, report, Game Center | ✓ | ✓ |
 
-Products: `dd.premium.monthly` and `dd.premium.yearly` (subscription group "Premium").
+Products: `at.fhooe.sail.dungeonsanddeadlines.premium.monthly` and `at.fhooe.sail.dungeonsanddeadlines.premium.yearly` (subscription group "Premium").
 
 ## Setup
 
 Requirements:
 - **Xcode 27.2** (the project builds with the iOS 27.2 SDK and simulator)
-- **iOS 26.0** deployment target (Liquid Glass APIs set the minimum; runs on iPhone 11 and newer)
+- **iOS 26.1** deployment target (Liquid Glass and the tab bar accessory API set the minimum; runs on iPhone 11 and newer)
 - Nothing else for solo play. Python 3 is only needed for the art tools in `tools/`.
 
 1. Clone the repo and open `DungeonsAndDeadlines.xcodeproj`. The only package is the local

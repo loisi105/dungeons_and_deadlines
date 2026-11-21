@@ -48,12 +48,12 @@ Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.
 
 | Topic | Plan said | Now |
 |---|---|---|
-| Toolchain | Xcode 26 | Built with **Xcode 27.2**, iOS 27.2 simulator. Deployment target is still **iOS 26.0**. |
+| Toolchain | Xcode 26 | Built with **Xcode 27.2**, iOS 27.2 simulator. Deployment target is **iOS 26.1** (the tab bar accessory can be switched off without rebuilding the tabs). |
 | Firebase | iOS SDK | **REST, no SDK.** The SDK added ~1.4 s to every launch (measured: app code starts at 1.75 s with it vs 0.32 s without). Same Firebase project, Auth, Firestore and security rules. Teammates' changes arrive by polling the current raid every 5 s while the app is in the foreground. The user chose this. Code: `Packages/DDKit/Sources/DDSync`. |
 | Store | `@ModelActor RaidStore` | `@MainActor RaidStore` on `mainContext`, so `@Query` views see writes immediately. |
 | Intents from widgets/controls | Write locally, sync later | Write intents also conform to `LiveActivityIntent`, so iOS runs them **in the app process**. The app's store, Live Activity and sync all see the change at once. |
 | Art style | SF Symbol placeholders | **Pixel fantasy, taken from Nico's icon layers** (`docs/icon/*.svg`): 64×64 grids, one-pixel dark outline, three-tone shading, cream/gold/night-purple palette. The user wanted the remote art used as the style reference. |
-| App icon | — | Background + boss layers only. **No sword** (the user asked). Built by `tools/make_icon.py`. |
+| App icon | — | Layered Icon Composer document `DungeonsAndDeadlines/Resources/AppIcon.icon` (night-sky background, a dimmed sky for Dark, boss on its own transparent layer), so iOS 26 draws Default, Dark, Clear and Tinted. **No sword** (the user asked). Built by `tools/make_icon.py`; preview any look with Icon Composer's `ictool`. |
 | Liquid Glass | Glass buttons | System chrome stays Liquid Glass (tab bar, toolbars, sheets, timer accessory). In-content actions use the pixel `RPGButtonStyle`. |
 | Game Center | Not planned | **The user asked for GameKit** ("better Apple support"): sign-in, achievements, leaderboards, Access Point. Raids stay on Firebase. |
 | Tabs | Boss, Tasks, Meter, Raid | Same, with flavor titles: Tasks → "Quest Log", Raid → "Party", Meter → "Meter". |
