@@ -27,6 +27,7 @@ struct TasksView: View {
     /// Selection mode, like Mail: tapping an empty circle starts it; the bottom bar acts on the selection.
     @State private var editMode: EditMode = .inactive
     @State private var selection = Set<UUID>()
+    @State private var path: [UUID] = []
     /// Tasks waiting for the fight to start before a batch completes.
     @State private var pendingBatch: [UUID] = []
     @State private var confirmBatchDelete = false
@@ -51,7 +52,7 @@ struct TasksView: View {
     private var isFinished: Bool { raid?.status == .won || raid?.status == .lost }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             taskList
                 .confirmationDialog(
                     "Delete \(selection.count) tasks?", isPresented: $confirmBatchDelete, titleVisibility: .visible
@@ -265,8 +266,23 @@ struct TasksView: View {
             if !editMode.isEditing {
                 CompleteButton(task: task, enabled: canComplete) { beginSelecting(task) }
             }
-            NavigationLink(value: task.id) {
-                TaskRow(task: task, damage: config.baseDamage(of: task), assignee: showsAssignee ? nickname(task.assigneeID) : nil, isLate: task.isLate(startedAt: raid?.startedAt))
+            let content = TaskRow(task: task, damage: config.baseDamage(of: task), assignee: showsAssignee ? nickname(task.assigneeID) : nil, isLate: task.isLate(startedAt: raid?.startedAt))
+            if editMode.isEditing {
+                // Taps select the row while choosing tasks.
+                content
+            } else {
+                // A button, not a NavigationLink: next to the checkbox, a link's text didn't react to taps.
+                Button { path.append(task.id) } label: {
+                    HStack {
+                        content
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
         }
         .tag(task.id)
@@ -469,7 +485,6 @@ struct TaskRow: View {
         // so it scales cleanly with Dynamic Type.
         VStack(alignment: .leading, spacing: 2) {
             Text(task.title)
-                .strikethrough(task.isDone)
                 .foregroundStyle(task.isDone ? Theme.inkSoft : Theme.ink)
             Text(details)
                 .font(.subheadline)

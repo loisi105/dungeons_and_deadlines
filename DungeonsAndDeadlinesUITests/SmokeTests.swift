@@ -428,6 +428,15 @@ final class SmokeTests: XCTestCase {
         XCTAssertFalse(notNow.waitForExistence(timeout: 2))
     }
 
+    func testTappingATaskOpensItsDetails() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"])
+        let title = app.staticTexts["Literature review"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.tap()
+        XCTAssertTrue(app.navigationBars["Task"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Complete task"].exists)
+    }
+
     func testFollowUpTasksResumeTheFight() throws {
         let app = launch(["-seedFinished"])
         XCTAssertTrue(app.buttons["seeReportButton"].waitForExistence(timeout: 10))
