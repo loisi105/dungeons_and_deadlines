@@ -153,9 +153,6 @@
         }
       }
     },
-    "%@, done" : {
-
-    },
     "%@, Premium" : {
 
     },
@@ -365,6 +362,9 @@
     "Complete" : {
 
     },
+    "Complete %lld Tasks" : {
+
+    },
     "Complete ${task}" : {
 
     },
@@ -372,6 +372,9 @@
 
     },
     "Complete Task" : {
+
+    },
+    "Complete tasks" : {
 
     },
     "Complete tasks or focus to fill the meter." : {
@@ -443,16 +446,22 @@
     "Delete %lld Tasks" : {
 
     },
-    "Delete %lld tasks?" : {
-
-    },
     "Delete boss" : {
 
     },
     "Delete task" : {
 
     },
+    "Delete Task" : {
+
+    },
+    "Delete tasks" : {
+
+    },
     "Deletes this boss with all its tasks and hits. This can't be undone." : {
+
+    },
+    "Deselect All" : {
 
     },
     "Details" : {
@@ -465,6 +474,9 @@
 
     },
     "Done (%lld)" : {
+
+    },
+    "done by %@" : {
 
     },
     "Dungeons & Deadlines" : {
@@ -707,6 +719,9 @@
     "Mode" : {
 
     },
+    "More" : {
+
+    },
     "Moves the boss one phase back, now and for the rest of the fight." : {
 
     },
@@ -859,6 +874,9 @@
     "Purchases aren't available right now. Check your connection and try again later." : {
 
     },
+    "Puts this task back on the Quest Log. The hit it dealt stays." : {
+
+    },
     "Quest Log" : {
 
     },
@@ -895,7 +913,13 @@
     "Removes this raid from your phone. Your teammates keep fighting." : {
 
     },
+    "Removes this task from the Quest Log. This can't be undone." : {
+
+    },
     "Reopen" : {
+
+    },
+    "Reopen task" : {
 
     },
     "Resume" : {
@@ -941,7 +965,10 @@
     "See report" : {
 
     },
-    "Select %@" : {
+    "Select All" : {
+
+    },
+    "Select Tasks" : {
 
     },
     "Sends a notification when a boss changes phase." : {
@@ -1026,9 +1053,6 @@
 
     },
     "Start the fight and complete" : {
-
-    },
-    "Starts selecting tasks to complete or delete" : {
 
     },
     "Status" : {
@@ -1165,6 +1189,9 @@
 
     },
     "This build of the app isn't set up for Screen Time: the Family Controls capability is missing from its signing profile. Rebuild it from Xcode with the FH team." : {
+
+    },
+    "This can't be undone." : {
 
     },
     "Time" : {
