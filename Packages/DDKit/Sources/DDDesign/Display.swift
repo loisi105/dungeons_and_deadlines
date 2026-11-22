@@ -150,6 +150,9 @@ extension BossKind {
         case .spider: "Spider"
         case .mushroom: "Shroom"
         case .cyclops: "Cyclops"
+        case .bat: "Bat"
+        case .knight: "Knight"
+        case .yeti: "Yeti"
         }
     }
 }

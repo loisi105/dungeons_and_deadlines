@@ -17,6 +17,9 @@ extension BossKind {
         case .spider: ["Syntax Spider", "Merge Bug", "Web of Sources"]
         case .mushroom: ["Burnout Shroom", "Spore of Stress", "Fungus of Fatigue"]
         case .cyclops: ["Proctor Cyclops", "Watcher of Grades", "Eye of the Grader"]
+        case .bat: ["Doomscroll Bat", "Night Shift Vampire", "Sleepless Vampire"]
+        case .knight: ["Red Tape Knight", "Bureaucracy Paladin", "Policy Knight"]
+        case .yeti: ["Snowed Under Yeti", "Frostbite Yeti", "Abominable Snowman"]
         }
     }
 }

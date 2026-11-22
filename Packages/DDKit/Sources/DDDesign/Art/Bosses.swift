@@ -3,7 +3,7 @@ import Foundation
 /// Every boss look. All are 64×64 in the style of the app icon (Nico's alarm clock):
 /// one-pixel dark outline, three-tone shading lit from the top-left, gold/cream/night palette.
 public enum BossKind: String, CaseIterable, Sendable {
-    case alarmClock, dragon, slime, lich, golem, kraken, goblin, mimic, ghost, spider, mushroom, cyclops
+    case alarmClock, dragon, slime, lich, golem, kraken, goblin, mimic, ghost, spider, mushroom, cyclops, bat, knight, yeti
 
     /// The looks on the free plan; the others need Premium (the rule is
     /// `PlanLimits.check(bossIsFree:plan:)` in GameCore, which can't see this type).
@@ -29,6 +29,9 @@ public enum BossKind: String, CaseIterable, Sendable {
             (.kraken, ["kraken", "squid", "octo", "project", "tentacle"]),
             (.goblin, ["goblin", "imp", "citation", "gremlin", "thief"]),
             (.slime, ["slime", "blob", "ooze", "jelly"]),
+            (.bat, ["vampire", "scroll"]),
+            (.knight, ["knight", "paladin", "bureau", "tape"]),
+            (.yeti, ["yeti", "frost", "snow", "winter"]),
         ]
         for (kind, words) in table where words.contains(where: n.contains) { return kind }
         let pool = freeKinds
@@ -49,6 +52,9 @@ public enum BossKind: String, CaseIterable, Sendable {
         case .spider: BossArt.spider
         case .mushroom: BossArt.mushroom
         case .cyclops: BossArt.cyclops
+        case .bat: BossArt.bat
+        case .knight: BossArt.knight
+        case .yeti: BossArt.yeti
         }
     }
 }
@@ -66,6 +72,9 @@ enum BossArt {
     static let spider = paintSpider()
     static let mushroom = paintMushroom()
     static let cyclops = paintCyclops()
+    static let bat = paintBat()
+    static let knight = paintKnight()
+    static let yeti = paintYeti()
 
     /// Paints a boss without caching (tests and benchmarks).
     static func paint(_ kind: BossKind) -> PixelArt {
@@ -82,6 +91,9 @@ enum BossArt {
         case .spider: paintSpider()
         case .mushroom: paintMushroom()
         case .cyclops: paintCyclops()
+        case .bat: paintBat()
+        case .knight: paintKnight()
+        case .yeti: paintYeti()
         }
     }
 
@@ -311,6 +323,68 @@ enum BossArt {
         let mouth = p.flat(Palette.mouth)
         p.rect(24, 38, 39, 41, mouth)
         fangs(&p, from: 25, to: 38, y: 38, every: 4)
+        return p.render()
+    }
+
+    static func paintBat() -> PixelArt {
+        var p = PixelPainter()
+        _ = p.eye() // registers the glowing eye color
+        let wing = p.material(Palette.plum), body = p.material(Palette.night), chest = p.material(Palette.bone)
+        // Wings with a scalloped lower edge.
+        p.polygon([(22, 28), (3, 10), (1, 30), (7, 27), (9, 40), (15, 34), (19, 46)], wing, mirror: true)
+        p.ellipse(32, 42, 11, 15, body)
+        p.ellipse(32, 46, 6, 8, chest)
+        p.ellipse(32, 24, 11, 10, body)
+        p.polygon([(23, 20), (20, 4), (30, 16)], body, mirror: true)
+        angryEyes(&p, x: 24, y: 21)
+        let mouth = p.flat(Palette.mouth)
+        p.rect(27, 30, 36, 32, mouth)
+        fangs(&p, from: 28, to: 35, y: 30, every: 7)
+        let foot = p.flat(Palette.black)
+        p.rect(27, 56, 28, 60, foot, mirror: true)
+        return p.render()
+    }
+
+    static func paintKnight() -> PixelArt {
+        var p = PixelPainter()
+        let eyeID = p.eye()
+        let plate = p.material(Palette.stone), helm = p.material(Palette.steel)
+        let plume = p.material(Palette.ember), trim = p.material(Palette.gold), blade = p.material(Palette.steel)
+        p.rect(20, 56, 28, 63, plate, mirror: true)
+        p.rect(17, 34, 46, 58, plate)
+        p.ellipse(14, 38, 8, 7, helm, mirror: true)
+        p.polygon([(28, 14), (22, 4), (34, 0), (42, 6), (36, 14)], plume)
+        p.rect(21, 12, 42, 36, helm)
+        p.ellipse(32, 15, 12, 9, helm)
+        let slit = p.flat(Palette.black)
+        p.rect(22, 21, 41, 26, slit)
+        p.rect(25, 22, 29, 25, eyeID, mirror: true)
+        for y in [29, 31, 33] { p.pixel(28, y, slit, mirror: true) }
+        p.rect(30, 38, 33, 54, trim)
+        p.rect(24, 42, 39, 45, trim)
+        p.polygon([(51, 50), (57, 50), (54, 14)], blade)
+        p.rect(49, 50, 59, 52, trim)
+        p.rect(53, 53, 55, 58, plume)
+        return p.render()
+    }
+
+    static func paintYeti() -> PixelArt {
+        var p = PixelPainter()
+        _ = p.eye() // registers the glowing eye color
+        let fur = p.material(Palette.ghost), face = p.material(Palette.ocean), horn = p.material(Palette.bone)
+        p.rect(17, 54, 28, 63, fur, mirror: true)
+        p.ellipse(32, 44, 22, 18, fur)
+        p.ellipse(9, 46, 8, 14, fur, mirror: true)
+        p.polygon([(18, 28), (6, 26), (16, 38)], fur, mirror: true)
+        p.ellipse(32, 24, 15, 14, fur)
+        p.polygon([(19, 14), (14, 2), (25, 11)], horn, mirror: true)
+        p.ellipse(32, 28, 10, 9, face)
+        angryEyes(&p, x: 24, y: 23)
+        let mouth = p.flat(Palette.mouth)
+        p.rect(26, 35, 37, 38, mouth)
+        fangs(&p, from: 27, to: 36, y: 35, every: 3)
+        let claw = p.flat(0xFFFBEA)
+        for x in [2, 5, 8] { p.rect(x, 58, x, 60, claw, mirror: true) }
         return p.render()
     }
 }

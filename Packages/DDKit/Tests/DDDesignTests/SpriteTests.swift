@@ -31,6 +31,7 @@ struct SpriteTests {
         ("Procrastination Wraith", .lich), ("Slide Deck Golem", .golem), ("Group Project Kraken", .kraken),
         ("Citation Goblin", .goblin), ("Midterm Mimic", .mimic), ("Wifi Phantom", .ghost),
         ("Syntax Spider", .spider), ("Burnout Shroom", .mushroom), ("Proctor Cyclops", .cyclops),
+        ("Doomscroll Bat", .bat), ("Red Tape Knight", .knight), ("Frostbite Yeti", .yeti),
         ("Kraken", .kraken), ("Unfinished Citation Goblin", .goblin), // the -uiTesting name, a free look
     ])
     func mapping(name: String, kind: BossKind) {
@@ -54,7 +55,7 @@ struct SpriteTests {
     func freeKinds() {
         #expect(BossKind.freeKinds == [.alarmClock, .dragon, .goblin])
         #expect(BossKind.allCases.filter(\.isFree) == BossKind.freeKinds)
-        #expect(BossKind.allCases.count(where: { !$0.isFree }) == 9)
+        #expect(BossKind.allCases.count(where: { !$0.isFree }) == 12)
     }
 
     @Test("Names without a keyword get a free look, the same one every time")
