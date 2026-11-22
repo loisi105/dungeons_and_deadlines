@@ -452,6 +452,18 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["Complete task"].exists)
     }
 
+    func testTaskDetailsCanDelete() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"])
+        let title = app.staticTexts["Literature review"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.tap()
+        let delete = app.buttons["deleteTaskButton"]
+        XCTAssertTrue(delete.waitForExistence(timeout: 5))
+        delete.tap()
+        app.buttons["Delete task"].firstMatch.tap()
+        XCTAssertTrue(app.staticTexts["Literature review"].waitForNonExistence(timeout: 5))
+    }
+
     func testSwipeCompleteNeedsConfirmation() throws {
         let app = launch(["-seedDemo", "-startTab", "tasks"])
         let row = app.descendants(matching: .any)["task-Fix citations"].firstMatch

@@ -18,6 +18,7 @@ struct TaskDetailView: View {
     @State private var editing = false
     @State private var errorMessage: String?
     @State private var needsFightStart: RaidTask?
+    @State private var confirmDelete = false
 
     init(taskID: UUID, raidID: UUID) {
         self.taskID = taskID
@@ -55,6 +56,23 @@ struct TaskDetailView: View {
                     }
                     .dungeonRow()
                 }
+                if raid != nil {
+                    // Everything the Quest Log swipes do is here too.
+                    Section {
+                        if task.isDone {
+                            Button { reopen(task) } label: {
+                                Label("Reopen", systemImage: "arrow.uturn.backward")
+                            }
+                            .accessibilityIdentifier("reopenTaskButton")
+                        } else {
+                            Button(role: .destructive) { confirmDelete = true } label: {
+                                Label("Delete task", systemImage: "trash")
+                            }
+                            .accessibilityIdentifier("deleteTaskButton")
+                        }
+                    }
+                    .dungeonRow()
+                }
             }
             .headerProminence(.increased)
             .dungeonScreen()
@@ -85,6 +103,9 @@ struct TaskDetailView: View {
             }
             .sheet(isPresented: $editing) { TaskEditorView(raidID: raidID, mode: .edit(task)) }
             .startFightPrompt(task: $needsFightStart, raid: raid) { complete($0) }
+            .confirmationDialog("Delete this task?", isPresented: $confirmDelete, titleVisibility: .visible) {
+                Button("Delete task", role: .destructive) { delete(task) }
+            }
             .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
                 Button("OK") { errorMessage = nil }
             } message: {
@@ -103,6 +124,21 @@ struct TaskDetailView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func reopen(_ task: RaidTask) {
+        do {
+            try DDStore.shared.reopenTask(task.id)
+            GameActions.changed(raidID)
+        } catch { errorMessage = error.localizedDescription }
+    }
+
+    private func delete(_ task: RaidTask) {
+        do {
+            try DDStore.shared.deleteTask(task.id)
+            GameActions.changed(raidID)
+            dismiss()
+        } catch { errorMessage = error.localizedDescription }
     }
 
     private func name(_ id: String?) -> String? {
