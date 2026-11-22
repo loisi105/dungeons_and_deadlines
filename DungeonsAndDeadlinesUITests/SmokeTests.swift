@@ -452,6 +452,40 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["Complete task"].exists)
     }
 
+    /// Perf probe: times opening the new-task sheet and typing the first word. Run on a device
+    /// in Release while profiling; prints the durations.
+    func testPerfNewTaskTyping() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"])
+        XCTAssertTrue(app.buttons["addTaskButton"].waitForExistence(timeout: 10))
+        for round in 1...3 {
+            let t0 = Date()
+            app.buttons["addTaskButton"].tap()
+            let field = app.descendants(matching: .any)["taskTitleField"]
+            XCTAssertTrue(field.waitForExistence(timeout: 10))
+            let opened = Date().timeIntervalSince(t0)
+            field.tap()
+            let t1 = Date()
+            field.typeText("Write")
+            let typed = Date().timeIntervalSince(t1)
+            print("PERF round \(round): sheet opened in \(String(format: "%.2f", opened)) s, typed 5 chars in \(String(format: "%.2f", typed)) s")
+            app.buttons["Cancel"].firstMatch.tap()
+            sleep(1)
+        }
+    }
+
+    func testPickingSizeWhileTypingRegistersTheTap() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"])
+        app.buttons["addTaskButton"].tap()
+        let field = app.descendants(matching: .any)["taskTitleField"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.typeText("Write")
+        app.buttons["Large"].tap()
+        let damage = app.textFields["taskDamageField"]
+        XCTAssertTrue(damage.waitForExistence(timeout: 5))
+        XCTAssertEqual(damage.value as? String, "400", "the first tap on Large must register")
+        XCTAssertTrue(app.keyboards.count > 0, "the keyboard stays up")
+    }
+
     func testEdgeSwipeGoesBackFromTaskDetails() throws {
         let app = launch(["-seedDemo", "-startTab", "tasks"])
         app.staticTexts["Literature review"].tap()
