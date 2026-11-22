@@ -498,6 +498,28 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["Nobody"].firstMatch.waitForExistence(timeout: 5), "the menu opened on the first tap")
     }
 
+    func testDamageIsCorrectedWhenTypingEnds() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"])
+        app.buttons["addTaskButton"].tap()
+        let title = app.descendants(matching: .any)["taskTitleField"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.typeText("Write")
+        let damage = app.textFields["taskDamageField"]
+        damage.tap()
+        damage.press(forDuration: 1.0)
+        if app.menuItems["Select All"].waitForExistence(timeout: 2) { app.menuItems["Select All"].tap() }
+        damage.typeText("9999")
+        XCTAssertEqual(damage.value as? String, "9999", "not changed while typing")
+        title.tap() // leaves the damage field
+        XCTAssertEqual(damage.value as? String, "400", "snapped to the maximum")
+        damage.tap()
+        damage.press(forDuration: 1.0)
+        if app.menuItems["Select All"].waitForExistence(timeout: 2) { app.menuItems["Select All"].tap() }
+        damage.typeText("0")
+        title.tap()
+        XCTAssertEqual(damage.value as? String, "150", "0 falls back to the size's recommendation")
+    }
+
     func testEdgeSwipeGoesBackFromTaskDetails() throws {
         let app = launch(["-seedDemo", "-startTab", "tasks"])
         app.staticTexts["Literature review"].tap()

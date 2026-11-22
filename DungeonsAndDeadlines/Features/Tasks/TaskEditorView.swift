@@ -29,6 +29,7 @@ struct TaskEditorView: View {
     @State private var assigneeID: String?
     @State private var errorMessage: String?
     @FocusState private var titleFocused: Bool
+    @FocusState private var damageFocused: Bool
 
     init(raidID: UUID, mode: Mode) {
         self.raidID = raidID
@@ -67,9 +68,15 @@ struct TaskEditorView: View {
                     LabeledContent("Damage") {
                         TextField("Damage", text: $damageText)
                             .keyboardType(.numberPad)
+                            .focused($damageFocused)
                             .multilineTextAlignment(.trailing)
                             .accessibilityIdentifier("taskDamageField")
                             .onChange(of: damageText) { damageText = damageText.filter(\.isNumber) }
+                            // Correct it once typing ends, so the field shows what will be saved
+                            // (over the maximum, or empty/0, snaps to a valid number).
+                            .onChange(of: damageFocused) { _, focused in
+                                if !focused { damageText = String(damage) }
+                            }
                     }
                     Text("Maximum damage: \(config.maxCustomTaskDamage).").readableFootnote()
                 } header: {
