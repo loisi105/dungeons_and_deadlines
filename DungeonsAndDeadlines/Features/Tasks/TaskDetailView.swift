@@ -57,19 +57,36 @@ struct TaskDetailView: View {
                     .dungeonRow()
                 }
                 if raid != nil {
-                    // Everything the Quest Log swipes do is here too.
+                    // Everything the Quest Log swipes do is here too. Styled like Leave raid.
                     Section {
-                        if task.isDone {
-                            Button { reopen(task) } label: {
-                                Label("Reopen", systemImage: "arrow.uturn.backward")
+                        VStack(alignment: .leading, spacing: 10) {
+                            if task.isDone {
+                                Button { reopen(task) } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "arrow.uturn.backward").accessibilityHidden(true)
+                                        Text("Reopen task")
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                }
+                                .secondaryActionStyle()
+                                .accessibilityIdentifier("reopenTaskButton")
+                                Text("Puts this task back on the Quest Log. The hit it dealt stays.")
+                                    .readableFootnote()
+                            } else {
+                                Button(role: .destructive) { confirmDelete = true } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "trash").accessibilityHidden(true)
+                                        Text("Delete task")
+                                    }
+                                    .frame(maxWidth: .infinity)
+                                }
+                                .dangerActionStyle()
+                                .accessibilityIdentifier("deleteTaskButton")
+                                Text("Removes this task from the Quest Log. This can't be undone.")
+                                    .readableFootnote()
                             }
-                            .accessibilityIdentifier("reopenTaskButton")
-                        } else {
-                            Button(role: .destructive) { confirmDelete = true } label: {
-                                Label("Delete task", systemImage: "trash")
-                            }
-                            .accessibilityIdentifier("deleteTaskButton")
                         }
+                        .padding(.vertical, 4)
                     }
                     .dungeonRow()
                 }

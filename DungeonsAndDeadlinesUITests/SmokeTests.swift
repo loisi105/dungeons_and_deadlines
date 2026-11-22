@@ -452,6 +452,15 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["Complete task"].exists)
     }
 
+    func testEdgeSwipeGoesBackFromTaskDetails() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"])
+        app.staticTexts["Literature review"].tap()
+        XCTAssertTrue(app.navigationBars["Task"].waitForExistence(timeout: 5))
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.0, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.5)))
+        XCTAssertTrue(app.navigationBars["Quest Log"].waitForExistence(timeout: 5))
+    }
+
     func testTaskDetailsCanDelete() throws {
         let app = launch(["-seedDemo", "-startTab", "tasks"])
         let title = app.staticTexts["Literature review"]
