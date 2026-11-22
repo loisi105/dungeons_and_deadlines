@@ -486,6 +486,18 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.keyboards.count > 0, "the keyboard stays up")
     }
 
+    func testClickableAreasKeepTheKeyboardUp() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks", "-fakeTeammates"])
+        app.buttons["addTaskButton"].tap()
+        let field = app.descendants(matching: .any)["taskTitleField"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.typeText("Write")
+        let assigned = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS 'Assigned'")).firstMatch
+        XCTAssertTrue(assigned.waitForExistence(timeout: 5), app.debugDescription)
+        assigned.tap()
+        XCTAssertTrue(app.buttons["Nobody"].firstMatch.waitForExistence(timeout: 5), "the menu opened on the first tap")
+    }
+
     func testEdgeSwipeGoesBackFromTaskDetails() throws {
         let app = launch(["-seedDemo", "-startTab", "tasks"])
         app.staticTexts["Literature review"].tap()
