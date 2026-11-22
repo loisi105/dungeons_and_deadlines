@@ -17,14 +17,19 @@ final class SmokeTests: XCTestCase {
         return app
     }
 
+    /// Drags a row all the way across, like a full swipe (XCUI's swipeRight stops short of it).
+    func fullSwipeRight(_ row: XCUIElement) {
+        let start = row.coordinate(withNormalizedOffset: CGVector(dx: 0.05, dy: 0.5))
+        start.press(forDuration: 0.05, thenDragTo: row.coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5)),
+                    withVelocity: .fast, thenHoldForDuration: 0)
+    }
+
     /// Completes a task the way a player does: swipe right, then tap the Complete button that stays open.
     func swipeComplete(_ app: XCUIApplication, _ title: String) {
         let row = app.descendants(matching: .any)["task-\(title)"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 10), "row \(title)")
-        row.swipeRight()
-        let button = app.buttons["Complete"].firstMatch
-        XCTAssertTrue(button.waitForExistence(timeout: 5), "Complete button after swipe")
-        button.tap()
+        fullSwipeRight(row) // a full swipe completes straight away
+
     }
 
     /// ⋯ → Select Tasks.
@@ -130,8 +135,7 @@ final class SmokeTests: XCTestCase {
     func complete(_ app: XCUIApplication, _ title: String) {
         let row = app.descendants(matching: .any)["task-\(title)"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
-        row.swipeRight()
-        app.buttons["Complete"].firstMatch.tap()
+        fullSwipeRight(row)
     }
 
     /// Scrolls until `element` is visible and not under the fixed tab bar / timer bar.
@@ -541,16 +545,24 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Literature review"].waitForNonExistence(timeout: 5))
     }
 
-    func testSwipeCompleteNeedsConfirmation() throws {
+    func testFullSwipeCompletesAndShortSwipeWaits() throws {
         let app = launch(["-seedDemo", "-startTab", "tasks"])
         let row = app.descendants(matching: .any)["task-Fix citations"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 10))
-        row.swipeRight()
-        // A swipe alone doesn't complete: the button waits for a tap.
+        // A short swipe only reveals the button.
+        let start = row.coordinate(withNormalizedOffset: CGVector(dx: 0.1, dy: 0.5))
+        start.press(forDuration: 0.1, thenDragTo: row.coordinate(withNormalizedOffset: CGVector(dx: 0.4, dy: 0.5)))
         XCTAssertTrue(app.buttons["Complete"].firstMatch.waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Done (1)"].exists, "still not completed after the swipe")
+        XCTAssertTrue(app.staticTexts["Done (1)"].exists, "a short swipe doesn't complete")
         app.buttons["Complete"].firstMatch.tap()
-        // Completing jumps to the boss for the attack.
+        let bossTab = tabButton(app, "Boss")
+        expectation(for: NSPredicate(format: "isSelected == true"), evaluatedWith: bossTab)
+        waitForExpectations(timeout: 10)
+    }
+
+    func testFullSwipeCompletesStraightAway() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"])
+        swipeComplete(app, "Fix citations")
         let bossTab = tabButton(app, "Boss")
         expectation(for: NSPredicate(format: "isSelected == true"), evaluatedWith: bossTab)
         waitForExpectations(timeout: 10)

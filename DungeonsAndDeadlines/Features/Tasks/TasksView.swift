@@ -5,7 +5,7 @@ import DDPersistence
 import DDIntents
 import DDDesign
 
-/// Task list (native `List`): swipe right and tap Complete, swipe left to delete, long-press for
+/// Task list (native `List`): swipe right to complete, swipe left to delete, long-press for
 /// more, ⋯ → Select Tasks for several at once (drag handles reorder there). Tapping a row opens
 /// its details. Before the fight starts, completing asks to start the fight first.
 struct TasksView: View {
@@ -324,8 +324,8 @@ struct TasksView: View {
         // Full swipe right completes (green, like the checkbox), full swipe left deletes.
         // Apple's own symbols and names (Reminders/Mail): iOS 26 draws the icon in the capsule
         // with the name underneath.
-        // Complete stays open until it is tapped (it can't be taken back); Reopen can full-swipe.
-        .swipeActions(edge: .leading, allowsFullSwipe: task.isDone) {
+        // A full swipe runs the action (Complete, or Reopen on done tasks); a short swipe leaves the button to tap.
+        .swipeActions(edge: .leading, allowsFullSwipe: true) {
             if !task.isDone && canComplete {
                 Button { attemptComplete(task) } label: { Label("Complete", systemImage: "checkmark")
                     .labelStyle(.titleAndIcon) }
