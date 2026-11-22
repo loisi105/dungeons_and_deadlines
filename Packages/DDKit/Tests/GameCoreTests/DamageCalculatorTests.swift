@@ -18,7 +18,7 @@ struct DamageCalculatorTests {
         #expect(DamageConfig.standard.baseDamage(of: task) == 50)
         task.damage = 275
         #expect(DamageConfig.standard.baseDamage(of: task) == 275)
-        #expect(BossEngine.lockHP(tasks: [task]) == 423) // 275 / 0.65 = 423.1
+        #expect(BossEngine.lockHP(tasks: [task]) == 424) // 275 / 0.65 = 423.08, rounded up
     }
 
     @Test("Streak multipliers 1.0, 1.1, 1.2 and capped")

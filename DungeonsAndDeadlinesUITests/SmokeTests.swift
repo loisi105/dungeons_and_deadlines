@@ -17,14 +17,32 @@ final class SmokeTests: XCTestCase {
         return app
     }
 
-    /// Taps the bottom bar's Complete once the tapped task is selected: the button appears with edit
-    /// mode, a moment before the selection lands and enables it.
+    /// Completes a task the way a player does: swipe right, then tap the Complete button that stays open.
+    func swipeComplete(_ app: XCUIApplication, _ title: String) {
+        let row = app.descendants(matching: .any)["task-\(title)"].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10), "row \(title)")
+        row.swipeRight()
+        let button = app.buttons["Complete"].firstMatch
+        XCTAssertTrue(button.waitForExistence(timeout: 5), "Complete button after swipe")
+        button.tap()
+    }
+
+    /// ⋯ → Select Tasks.
+    func startSelecting(_ app: XCUIApplication) {
+        app.buttons["tasksMenuButton"].tap()
+        app.buttons["selectTasksButton"].tap()
+    }
+
+    /// Bottom bar Complete, then the confirmation dialog.
     func tapCompleteSelected(_ app: XCUIApplication) {
         let button = app.buttons["completeSelectedButton"]
         XCTAssertTrue(button.waitForExistence(timeout: 5))
         expectation(for: NSPredicate(format: "isEnabled == true"), evaluatedWith: button)
         waitForExpectations(timeout: 5)
         button.tap()
+        let confirm = app.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Complete' AND label != 'Complete'")).firstMatch
+        let single = app.sheets.buttons["Complete"].firstMatch
+        if confirm.waitForExistence(timeout: 3) { confirm.tap() } else if single.exists { single.tap() }
     }
 
     func audit(_ app: XCUIApplication, _ screen: String, skipping skipped: XCUIAccessibilityAuditType = []) throws {
@@ -156,10 +174,7 @@ final class SmokeTests: XCTestCase {
         try audit(app, "Boss (planning)")
         // Completing during planning asks to start the fight first.
         tab(app, "Tasks")
-        let checkbox = app.buttons["complete-Outline"]
-        XCTAssertTrue(checkbox.waitForExistence(timeout: 5))
-        checkbox.tap()
-        tapCompleteSelected(app)
+        swipeComplete(app, "Outline")
         let startAndComplete = app.buttons["Start the fight and complete"]
         XCTAssertTrue(startAndComplete.waitForExistence(timeout: 5))
         startAndComplete.tap()
@@ -437,6 +452,39 @@ final class SmokeTests: XCTestCase {
         XCTAssertTrue(app.buttons["Complete task"].exists)
     }
 
+    func testSwipeCompleteNeedsConfirmation() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"])
+        let row = app.descendants(matching: .any)["task-Fix citations"].firstMatch
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.swipeRight()
+        // A swipe alone doesn't complete: the button waits for a tap.
+        XCTAssertTrue(app.buttons["Complete"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Done (1)"].exists, "still not completed after the swipe")
+        app.buttons["Complete"].firstMatch.tap()
+        // Completing jumps to the boss for the attack.
+        let bossTab = tabButton(app, "Boss")
+        expectation(for: NSPredicate(format: "isSelected == true"), evaluatedWith: bossTab)
+        waitForExpectations(timeout: 10)
+    }
+
+    func testSelectAllAndCompleteSeveral() throws {
+        let app = launch(["-seedDemo", "-startTab", "tasks"])
+        XCTAssertTrue(app.buttons["tasksMenuButton"].waitForExistence(timeout: 10))
+        startSelecting(app)
+        XCTAssertTrue(app.buttons["selectAllButton"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["completeSelectedButton"].isEnabled, "nothing selected yet")
+        app.buttons["selectAllButton"].tap()
+        XCTAssertTrue(app.navigationBars["3 Selected"].waitForExistence(timeout: 5))
+        app.buttons["selectAllButton"].tap() // now Deselect All
+        XCTAssertTrue(app.navigationBars["Select Tasks"].waitForExistence(timeout: 5))
+        app.buttons["selectAllButton"].tap()
+        tapCompleteSelected(app)
+        // The three attacks play on the boss tab.
+        let bossTab = tabButton(app, "Boss")
+        expectation(for: NSPredicate(format: "isSelected == true"), evaluatedWith: bossTab)
+        waitForExpectations(timeout: 10)
+    }
+
     func testFollowUpTasksResumeTheFight() throws {
         let app = launch(["-seedFinished"])
         XCTAssertTrue(app.buttons["seeReportButton"].waitForExistence(timeout: 10))
@@ -497,10 +545,7 @@ final class SmokeTests: XCTestCase {
 
     func testTaskAttackJumpsToBossAndAnimates() throws {
         let app = launch(["-seedDemo", "-startTab", "tasks"]) // the demo player is a mage
-        let checkbox = app.buttons["complete-Literature review"]
-        XCTAssertTrue(checkbox.waitForExistence(timeout: 5))
-        checkbox.tap()
-        tapCompleteSelected(app)
+        swipeComplete(app, "Literature review")
 
         // The app switches to the boss and plays the spell; the hit lands and it stays there.
         let bossTab = tabButton(app, "Boss")
@@ -555,10 +600,7 @@ final class SmokeTests: XCTestCase {
         // `TEST_RUNNER_DD_ROLE=tank|rogue|healer|none` picks the class (default mage).
         let role = ProcessInfo.processInfo.environment["DD_ROLE"] ?? "mage"
         let app = launch(["-seedDemo", "-startTab", "tasks", "-slowMotion", "-demoRole", role])
-        let checkbox = app.buttons["complete-Literature review"]
-        XCTAssertTrue(checkbox.waitForExistence(timeout: 10))
-        checkbox.tap()
-        tapCompleteSelected(app)
+        swipeComplete(app, "Literature review")
         for i in 0..<9 {
             Thread.sleep(forTimeInterval: 0.9)
             let frame = XCTAttachment(screenshot: app.screenshot())

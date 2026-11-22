@@ -5,9 +5,9 @@ import DDPersistence
 import DDIntents
 import DDDesign
 
-/// Task list (native `List`): tap the checkbox or swipe right to complete, swipe left to
-/// delete, long-press for more, drag to reorder in Edit mode. Before the fight starts,
-/// completing asks to start the fight first.
+/// Task list (native `List`): swipe right and tap Complete, swipe left to delete, long-press for
+/// more, ⋯ → Select Tasks for several at once (drag handles reorder there). Tapping a row opens
+/// its details. Before the fight starts, completing asks to start the fight first.
 struct TasksView: View {
     let raidID: UUID
 
@@ -24,13 +24,14 @@ struct TasksView: View {
     @State private var completedCount = 0
     /// A task the player tried to complete while the raid is still planning.
     @State private var needsFightStart: RaidTask?
-    /// Selection mode, like Mail: tapping an empty circle starts it; the bottom bar acts on the selection.
+    /// Selection mode, like Mail and Notes: ⋯ → Select Tasks starts it; the bottom bar acts on the selection.
     @State private var editMode: EditMode = .inactive
     @State private var selection = Set<UUID>()
     @State private var path: [UUID] = []
     /// Tasks waiting for the fight to start before a batch completes.
     @State private var pendingBatch: [UUID] = []
     @State private var confirmBatchDelete = false
+    @State private var confirmBatchComplete = false
     @State private var showResume = false
     @Namespace private var zoom
 
@@ -55,13 +56,20 @@ struct TasksView: View {
         NavigationStack(path: $path) {
             taskList
                 .confirmationDialog(
+                    selection.count == 1 ? Text("Complete this task?") : Text("Complete \(selection.count) tasks?"),
+                    isPresented: $confirmBatchComplete, titleVisibility: .visible
+                ) {
+                    Button(selection.count == 1 ? "Complete" : "Complete \(selection.count) Tasks") { completeSelected() }
+                    Button("Cancel", role: .cancel) {}
+                }
+                .confirmationDialog(
                     "Delete \(selection.count) tasks?", isPresented: $confirmBatchDelete, titleVisibility: .visible
                 ) {
                     Button("Delete \(selection.count) Tasks", role: .destructive) { deleteSelected() }
                     Button("Cancel", role: .cancel) {}
                 }
                 .environment(\.editMode, $editMode)
-                .navigationTitle(editMode.isEditing && !selection.isEmpty ? Text("\(selection.count) Selected") : Text("Quest Log"))
+                .navigationTitle(editMode.isEditing ? (selection.isEmpty ? Text("Select Tasks") : Text("\(selection.count) Selected")) : Text("Quest Log"))
                 .navigationSubtitle(raid.map { "\($0.bossName) · \($0.name)" } ?? "")
                 .navigationDestination(for: UUID.self) { id in
                     TaskDetailView(taskID: id, raidID: raidID)
@@ -135,10 +143,9 @@ struct TasksView: View {
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
-        ToolbarItem(placement: .topBarTrailing) { BossSwitcher(currentRaidID: raidID) }
         if editMode.isEditing {
             ToolbarItemGroup(placement: .bottomBar) {
-                Button("Complete", systemImage: "checkmark.circle") { completeSelected() }
+                Button("Complete", systemImage: "checkmark.circle") { confirmBatchComplete = true }
                     .disabled(selection.isEmpty || !canComplete)
                     .accessibilityIdentifier("completeSelectedButton")
                 Spacer()
@@ -146,19 +153,35 @@ struct TasksView: View {
                     .disabled(selection.isEmpty || !canEdit)
                     .accessibilityIdentifier("deleteSelectedButton")
             }
-        }
-        if canEdit {
-            // Not `EditButton()`: toolbar content doesn't see the edit mode bound on the list,
-            // so that button toggled a different state and did nothing.
             ToolbarItem(placement: .topBarLeading) {
-                Button(editMode.isEditing ? "Done" : "Edit") {
-                    withAnimation { editMode = editMode.isEditing ? .inactive : .active }
+                let all = !open.isEmpty && selection.count == open.count
+                Button(all ? "Deselect All" : "Select All") {
+                    selection = all ? [] : Set(open.map(\.id))
                 }
-                .accessibilityIdentifier("editTasksButton")
+                .accessibilityIdentifier("selectAllButton")
             }
             ToolbarItem(placement: .primaryAction) {
-                Button("Add task", systemImage: "plus") { editing = .add }
-                    .accessibilityIdentifier("addTaskButton")
+                Button("Done") { withAnimation { editMode = .inactive } }
+                    .accessibilityIdentifier("doneSelectingButton")
+            }
+        } else {
+            ToolbarItem(placement: .topBarTrailing) { BossSwitcher(currentRaidID: raidID) }
+            if canEdit {
+                // Like Mail and Notes: selecting lives in the more menu.
+                ToolbarItem(placement: .topBarLeading) {
+                    Menu("More", systemImage: "ellipsis") {
+                        Button("Select Tasks", systemImage: "checkmark.circle") {
+                            withAnimation { editMode = .active }
+                        }
+                        .disabled(open.isEmpty)
+                        .accessibilityIdentifier("selectTasksButton")
+                    }
+                    .accessibilityIdentifier("tasksMenuButton")
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button("Add task", systemImage: "plus") { editing = .add }
+                        .accessibilityIdentifier("addTaskButton")
+                }
             }
         }
     }
@@ -202,7 +225,7 @@ struct TasksView: View {
     private var openGroups: [TaskGroup] {
         let me = LocalIdentity.current.memberID
         guard open.contains(where: { $0.assigneeID != nil }) else {
-            return [TaskGroup(id: "open", title: String(localized: "Open (\(open.count))"), tasks: open)]
+            return [TaskGroup(id: "open", title: String(localized: "Open (\(open.count))"), symbol: nil, tasks: open)]
         }
         let byAssignee = Dictionary(grouping: open) { $0.assigneeID }
         var order: [String] = [me] + members.map(\.memberID).filter { $0 != me }
@@ -211,11 +234,11 @@ struct TasksView: View {
         var groups = order.compactMap { id -> TaskGroup? in
             guard let tasks = byAssignee[id] else { return nil }
             let name = nickname(id) ?? String(localized: "Former member")
-            return TaskGroup(id: id, title: String(localized: "\(name) (\(tasks.count))"), tasks: tasks)
+            return TaskGroup(id: id, title: String(localized: "\(name) (\(tasks.count))"), symbol: roleSymbol(of: id), tasks: tasks)
         }
         // Unassigned tasks come first: they're the ones still waiting for someone.
         if let unassigned = byAssignee[nil] {
-            groups.insert(TaskGroup(id: "unassigned", title: String(localized: "Unassigned (\(unassigned.count))"), tasks: unassigned), at: 0)
+            groups.insert(TaskGroup(id: "unassigned", title: String(localized: "Unassigned (\(unassigned.count))"), symbol: "person.crop.circle.dashed", tasks: unassigned), at: 0)
         }
         return groups
     }
@@ -241,7 +264,12 @@ struct TasksView: View {
                 }
                 .onMove { move(in: group.id, from: $0, to: $1) }
             } header: {
-                Text(group.title)
+                // The class icon says whose tasks these are (Mail/Notes style header).
+                if let symbol = group.symbol {
+                    Label(group.title, systemImage: symbol)
+                } else {
+                    Text(group.title)
+                }
             }
             .dungeonRow()
         }
@@ -263,15 +291,19 @@ struct TasksView: View {
     private func row(_ record: TaskRecord, showsAssignee: Bool = true) -> some View {
         let task = record.model
         HStack(spacing: 12) {
-            if !editMode.isEditing {
-                CompleteButton(task: task, enabled: canComplete) { beginSelecting(task) }
+            if task.isDone {
+                // Who landed the hit: their class icon.
+                Image(systemName: roleSymbol(of: task.completedBy))
+                    .foregroundStyle(Theme.inkSoft)
+                    .frame(width: 28)
+                    .accessibilityHidden(true)
             }
-            let content = TaskRow(task: task, damage: config.baseDamage(of: task), assignee: showsAssignee ? nickname(task.assigneeID) : nil, isLate: task.isLate(startedAt: raid?.startedAt))
+            let content = TaskRow(task: task, damage: config.baseDamage(of: task), assignee: showsAssignee ? nickname(task.assigneeID) : nil, completedBy: task.isDone ? nickname(task.completedBy) : nil, isLate: task.isLate(startedAt: raid?.startedAt))
             if editMode.isEditing {
                 // Taps select the row while choosing tasks.
                 content
             } else {
-                // A button, not a NavigationLink: next to the checkbox, a link's text didn't react to taps.
+                // A button, not a NavigationLink: a link's text didn't react to taps in this row.
                 Button { path.append(task.id) } label: {
                     HStack {
                         content
@@ -290,11 +322,12 @@ struct TasksView: View {
         .matchedTransitionSource(id: task.id, in: zoom)
         // Fixed insets: with the system's default ones the accessibility audit
         // intermittently reports the row's text as not scaling with Dynamic Type.
-        .listRowInsets(EdgeInsets(top: 8, leading: 6, bottom: 8, trailing: 14))
+        .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 16))
         // Full swipe right completes (green, like the checkbox), full swipe left deletes.
         // Apple's own symbols and names (Reminders/Mail): iOS 26 draws the icon in the capsule
         // with the name underneath.
-        .swipeActions(edge: .leading, allowsFullSwipe: true) {
+        // Complete stays open until it is tapped (it can't be taken back); Reopen can full-swipe.
+        .swipeActions(edge: .leading, allowsFullSwipe: task.isDone) {
             if !task.isDone && canComplete {
                 Button { attemptComplete(task) } label: { Label("Complete", systemImage: "checkmark")
                     .labelStyle(.titleAndIcon) }
@@ -363,15 +396,9 @@ struct TasksView: View {
 
     // MARK: Actions
 
-    /// Tapping an empty circle starts selecting, with that task chosen, like Mail.
-    private func beginSelecting(_ task: RaidTask) {
-        withAnimation { editMode = .active }
-        // After the list has entered edit mode: it clears the selection while it switches, so a
-        // selection set together with edit mode never stuck (Complete stayed disabled).
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(50))
-            selection = [task.id]
-        }
+    /// Class icon of a member (the person icon without a class or when unknown).
+    private func roleSymbol(of id: String?) -> String {
+        members.first { $0.memberID == id }?.model.role?.symbol ?? "person.fill"
     }
 
     private func completeSelected() {
@@ -471,6 +498,8 @@ struct TasksView: View {
 private struct TaskGroup: Identifiable {
     let id: String
     let title: String
+    /// SF Symbol for the assignee's class (nil when nobody is assigned anything).
+    let symbol: String?
     let tasks: [TaskRecord]
 }
 
@@ -478,6 +507,7 @@ struct TaskRow: View {
     let task: RaidTask
     let damage: Int
     let assignee: String?
+    var completedBy: String? = nil
     let isLate: Bool
 
     var body: some View {
@@ -498,41 +528,17 @@ struct TaskRow: View {
     private var details: String {
         var parts = ["\(String(localized: task.size.title)) · \(damage) dmg"]
         if let assignee { parts.append(assignee) }
+        if let completedBy { parts.append(String(localized: "done by \(completedBy)")) }
         if isLate { parts.append(String(localized: "Late")) }
         return parts.joined(separator: " · ")
     }
 
     private var accessibilityText: Text {
         var parts = [task.title, String(localized: task.size.title), String(localized: "\(damage) damage")]
-        if task.isDone { parts.append(String(localized: "done")) }
+        if task.isDone { parts.append(completedBy.map { String(localized: "done by \($0)") } ?? String(localized: "done")) }
         if let assignee { parts.append(String(localized: "assigned to \(assignee)")) }
         if isLate { parts.append(String(localized: "added after the fight started")) }
         return Text(parts.joined(separator: ", "))
-    }
-}
-
-/// The row's checkbox, like Reminders: one tap completes the task.
-struct CompleteButton: View {
-    let task: RaidTask
-    let enabled: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Image(systemName: task.isDone ? "checkmark.circle.fill" : "circle")
-                .font(.title2)
-                .foregroundStyle(task.isDone ? AnyShapeStyle(Color.green) : AnyShapeStyle(Theme.inkSoft))
-                .contentTransition(.symbolEffect(.replace))
-                .symbolEffect(.bounce, value: task.isDone)
-                .frame(minWidth: 44, minHeight: 44)
-                .contentShape(Rectangle())
-        }
-        // Borderless, so tapping the checkbox doesn't open the task.
-        .buttonStyle(.borderless)
-        .disabled(task.isDone || !enabled)
-        .accessibilityLabel(task.isDone ? Text("\(task.title), done") : Text("Select \(task.title)"))
-        .accessibilityHint(task.isDone ? Text("") : Text("Starts selecting tasks to complete or delete"))
-        .accessibilityIdentifier("complete-\(task.title)")
     }
 }
 
