@@ -18,6 +18,8 @@ struct RaidView: View {
     @Environment(AppEnvironment.self) private var environment
     @State private var showJoin = false
     @State private var removing: Raid?
+    /// The Leave raid / Delete boss button of the current raid; its dialog opens right above it.
+    @State private var removingCurrent: Raid?
     @State private var showReport = false
 
     init(raidID: UUID) {
@@ -178,7 +180,7 @@ struct RaidView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     // Solid red pixel button, so it never reads like an ordinary row.
                     Button(role: .destructive) {
-                        removing = raid
+                        removingCurrent = raid
                     } label: {
                         // Icon and text as plain views: a `Label` here was reported by the audit as
                         // possibly clipped at large text sizes (it wraps fine; the audit can't tell).
@@ -190,6 +192,7 @@ struct RaidView: View {
                         .frame(maxWidth: .infinity)
                     }
                     .dangerActionStyle()
+                    .deleteBossConfirmation($removingCurrent)
                     .accessibilityIdentifier("deleteCurrentBoss")
                     Text(raid.isMultiplayer
                          ? "Removes this raid from your phone. Your teammates keep fighting."
