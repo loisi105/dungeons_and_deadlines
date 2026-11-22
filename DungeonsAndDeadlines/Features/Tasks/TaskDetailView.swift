@@ -81,6 +81,12 @@ struct TaskDetailView: View {
                                     .frame(maxWidth: .infinity)
                                 }
                                 .dangerActionStyle()
+                                // On the button, so the dialog opens next to it.
+                                .confirmationDialog("Delete task", isPresented: $confirmDelete, titleVisibility: .hidden) {
+                                    Button("Delete task", role: .destructive) { delete(task) }
+                                } message: {
+                                    Text("This can't be undone.")
+                                }
                                 .accessibilityIdentifier("deleteTaskButton")
                                 Text("Removes this task from the Quest Log. This can't be undone.")
                                     .readableFootnote()
@@ -120,9 +126,6 @@ struct TaskDetailView: View {
             }
             .sheet(isPresented: $editing) { TaskEditorView(raidID: raidID, mode: .edit(task)) }
             .startFightPrompt(task: $needsFightStart, raid: raid) { complete($0) }
-            .confirmationDialog("Delete this task?", isPresented: $confirmDelete, titleVisibility: .visible) {
-                Button("Delete task", role: .destructive) { delete(task) }
-            }
             .alert("Couldn't do that", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
                 Button("OK") { errorMessage = nil }
             } message: {

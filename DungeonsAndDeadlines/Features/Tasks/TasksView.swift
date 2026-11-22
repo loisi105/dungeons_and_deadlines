@@ -55,19 +55,6 @@ struct TasksView: View {
     var body: some View {
         NavigationStack(path: $path) {
             taskList
-                .confirmationDialog(
-                    selection.count == 1 ? Text("Complete this task?") : Text("Complete \(selection.count) tasks?"),
-                    isPresented: $confirmBatchComplete, titleVisibility: .visible
-                ) {
-                    Button(selection.count == 1 ? "Complete" : "Complete \(selection.count) Tasks") { completeSelected() }
-                    Button("Cancel", role: .cancel) {}
-                }
-                .confirmationDialog(
-                    "Delete \(selection.count) tasks?", isPresented: $confirmBatchDelete, titleVisibility: .visible
-                ) {
-                    Button("Delete \(selection.count) Tasks", role: .destructive) { deleteSelected() }
-                    Button("Cancel", role: .cancel) {}
-                }
                 .environment(\.editMode, $editMode)
                 .navigationTitle(editMode.isEditing ? (selection.isEmpty ? Text("Select Tasks") : Text("\(selection.count) Selected")) : Text("Quest Log"))
                 .navigationSubtitle(raid.map { "\($0.bossName) · \($0.name)" } ?? "")
@@ -147,10 +134,21 @@ struct TasksView: View {
             ToolbarItemGroup(placement: .bottomBar) {
                 Button("Complete", systemImage: "checkmark.circle") { confirmBatchComplete = true }
                     .disabled(selection.isEmpty || !canComplete)
+                    // On the button, so the dialog opens next to it, not somewhere else.
+                    .confirmationDialog("Complete tasks", isPresented: $confirmBatchComplete, titleVisibility: .hidden) {
+                        Button(selection.count == 1 ? "Complete Task" : "Complete \(selection.count) Tasks") { completeSelected() }
+                        Button("Cancel", role: .cancel) {}
+                    }
                     .accessibilityIdentifier("completeSelectedButton")
                 Spacer()
                 Button("Delete", systemImage: "trash", role: .destructive) { confirmBatchDelete = true }
                     .disabled(selection.isEmpty || !canEdit)
+                    .confirmationDialog("Delete tasks", isPresented: $confirmBatchDelete, titleVisibility: .hidden) {
+                        Button(selection.count == 1 ? "Delete Task" : "Delete \(selection.count) Tasks", role: .destructive) { deleteSelected() }
+                        Button("Cancel", role: .cancel) {}
+                    } message: {
+                        Text("This can't be undone.")
+                    }
                     .accessibilityIdentifier("deleteSelectedButton")
             }
             ToolbarItem(placement: .topBarLeading) {
