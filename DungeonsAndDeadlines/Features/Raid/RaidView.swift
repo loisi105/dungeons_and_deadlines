@@ -154,9 +154,12 @@ struct RaidView: View {
                     }
                     .foregroundStyle(.primary)
                     .swipeActions(edge: .trailing) {
-                        Button(raid.isMultiplayer ? "Leave" : "Delete", systemImage: "trash", role: .destructive) {
-                            removing = raid.model
+                        // Styled like the Quest Log's swipe buttons: icon above the name.
+                        Button(role: .destructive) { removing = raid.model } label: {
+                            Label(raid.isMultiplayer ? "Leave" : "Delete", systemImage: "trash.fill")
+                                .labelStyle(.titleAndIcon)
                         }
+                        .tint(Theme.dangerTop)
                     }
                     .contextMenu {
                         Button(raid.isMultiplayer ? "Leave raid" : "Delete boss", systemImage: "trash", role: .destructive) {
