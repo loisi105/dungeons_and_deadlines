@@ -3,7 +3,7 @@ import SwiftData
 import GameCore
 import DDPersistence
 
-/// The game: Liquid Glass tabs (bottom bar on iPhone, top bar or sidebar on iPad)
+/// The game: Liquid Glass tabs (bottom bar on iPhone, top bar on iPad)
 /// over the Boss, Tasks, Meter and Party tabs. The boss switcher (top right) changes bosses on every device.
 struct RaidTabView: View {
     let raidID: UUID
@@ -38,7 +38,6 @@ struct RaidTabView: View {
                 RaidView(raidID: raidID).id(raidID)
             }
         }
-        .tabViewStyle(.sidebarAdaptable)
         .tabBarMinimizeBehavior(.never) // the tab bar stays put while scrolling
         .modifier(FocusAccessoryModifier(enabled: isFighting, suspended: environment.isSelectingTasks) {
             FocusTimerAccessory(raidID: raidID) { showFocus = true }.id(raidID)

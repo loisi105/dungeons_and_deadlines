@@ -65,7 +65,7 @@ SwiftUI · iOS 26+ · SwiftData · App Intents · WidgetKit · ActivityKit · Ga
   and Siri share one code path.
 - **Game Center:** 13 achievements and 3 leaderboards (total damage, bosses defeated, focus
   minutes).
-- **iPad:** a two-column Boss tab and a sidebar for the tabs; bosses switch with the boss button at the top right.
+- **iPad:** a two-column Boss tab and a top tab bar; bosses switch with the boss button at the top right.
 - **Accessibility:** VoiceOver announcements for hits, audio graphs on the charts, phases never
   shown by color alone, Dynamic Type layouts up to AX5, and Reduce Motion support. Every UI flow
   runs Xcode's accessibility audit.

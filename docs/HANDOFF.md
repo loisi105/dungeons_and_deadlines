@@ -4,7 +4,7 @@ Last updated: 2026-11-19 (after M7). Read this first, then [IMPLEMENTATION_PLAN.
 
 ## TL;DR
 
-- **Done and committed on `main`:** M0–M7, the pixel-art theme, Game Center, a boss switcher, one-tap task completion, a soft paywall ([MONETIZATION.md](MONETIZATION.md)), follow-up fights after the deadline, deleting old bosses, class attack animations, keyboard dismissal, and an iPad layout (sidebar, two-column boss, large widget).
+- **Done and committed on `main`:** M0–M7, the pixel-art theme, Game Center, a boss switcher, one-tap task completion, a soft paywall ([MONETIZATION.md](MONETIZATION.md)), follow-up fights after the deadline, deleting old bosses, class attack animations, keyboard dismissal, and an iPad layout (two-column boss, large widget).
   - Solo and multiplayer raids (multiplayer uses Firebase over REST).
   - Focus timer, Live Activity, Control Center toggle, Siri shortcuts, widgets.
   - Damage meter, end-of-raid report, achievements and leaderboards.
