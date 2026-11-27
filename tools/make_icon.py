@@ -2,8 +2,8 @@
 """Build the app icon and the launch-screen boss from the icon SVGs.
 
 The icon is an Icon Composer document (`AppIcon.icon`) with two layers, so iOS 26 can draw its
-Default, Dark, Clear and Tinted looks: an opaque night-sky background (plus a darker one for
-Dark) and the boss on a transparent layer. No sword (the user asked).
+Default, Dark, Clear and Tinted looks: a plain background in the app's page colors (cream for
+Default, night purple for Dark) and the boss on a transparent layer. No sword (the user asked).
 
 Pure Python (no dependencies): reads the 16 px <rect> cells and writes 1024x1024 PNGs.
 Usage: python3 tools/make_icon.py
@@ -35,38 +35,62 @@ def write_png(path, rows, color_type):
     print(f"wrote {path.relative_to(ROOT)}")
 
 
-def paint(svg, fill=None, tone=1.0):
-    """The SVG's cells at 1024x1024; transparent where nothing is drawn unless `fill` is given."""
-    pixels = [[fill or (0, 0, 0, 0)] * SIZE for _ in range(SIZE)]
-    for x, y, w, h, color in RECT.findall((ROOT / svg).read_text()):
-        rgb = tuple(int(int(color[i:i + 2], 16) * tone) for i in (0, 2, 4)) + (255,)
-        x, y, w, h = map(int, (x, y, w, h))
-        for yy in range(y, y + h):
+# The boss on the icon: 14 px per art cell, centered a touch below the middle so it sits level.
+ICON_CELL, CENTER_X, CENTER_Y = 14, 512, 520
+
+
+def boss_layer():
+    """The boss at icon size on a transparent 1024x1024 canvas."""
+    cells = []
+    for x, y, w, h, color in RECT.findall((ROOT / "docs/icon/2-boss.svg").read_text()):
+        rgb = tuple(int(color[i:i + 2], 16) for i in (0, 2, 4)) + (255,)
+        cells.append((*(int(v) // 16 for v in (x, y, w, h)), rgb))
+    mid_x = (min(c[0] for c in cells) + max(c[0] + c[2] for c in cells)) / 2
+    mid_y = (min(c[1] for c in cells) + max(c[1] + c[3] for c in cells)) / 2
+    left, top = round(CENTER_X - mid_x * ICON_CELL), round(CENTER_Y - mid_y * ICON_CELL)
+    pixels = [[(0, 0, 0, 0)] * SIZE for _ in range(SIZE)]
+    for x, y, w, h, rgb in cells:
+        for yy in range(top + y * ICON_CELL, top + (y + h) * ICON_CELL):
             row = pixels[yy]
-            for xx in range(x, x + w):
+            for xx in range(left + x * ICON_CELL, left + (x + w) * ICON_CELL):
                 row[xx] = rgb
     return pixels
 
 
+def gradient(top, bottom, bands=32):
+    """A plain background fading from `top` to `bottom` (hex colors) in pixel-art bands."""
+    a, b = (tuple(int(c[i:i + 2], 16) for i in (0, 2, 4)) for c in (top, bottom))
+    rows = []
+    for band in range(bands):
+        mix = band / (bands - 1)
+        rgb = tuple(round(a[i] + (b[i] - a[i]) * mix) for i in range(3)) + (255,)
+        rows += [[rgb] * SIZE for _ in range(SIZE // bands)]
+    return rows
+
+
 ASSETS = ICON / "Assets"
-write_png(ASSETS / "background.png", paint("docs/icon/1-background.svg", fill=(0, 0, 0, 255)), 6)
-# Dark appearance: the same sky, dimmed so the icon sits quietly on a dark home screen.
-write_png(ASSETS / "background-dark.png", paint("docs/icon/1-background.svg", fill=(0, 0, 0, 255), tone=0.5), 6)
-write_png(ASSETS / "boss.png", paint("docs/icon/2-boss.svg"), 6)
+# The theme's card and deep parchment (light), card and deep night (dark).
+light, dark = gradient("fff6d6", "e2cb98"), gradient("2b184f", "0e0820")
+boss = boss_layer()
+write_png(ASSETS / "background.png", light, 6)
+write_png(ASSETS / "background-dark.png", dark, 6)
+write_png(ASSETS / "boss.png", boss, 6)
 (ICON / "icon.json").write_text(json.dumps({
-    "fill": {"solid": "extended-srgb:0.10196,0.05098,0.12157,1.00000"},
+    "fill": {"solid": "extended-srgb:1.00000,0.96471,0.83922,1.00000"},
     "groups": [{
         "layers": [
             {"image-name": "boss.png", "name": "Boss", "glass": False},
-            # Two skies, swapped by appearance: the image-name specializations didn't take effect
+            # Two backgrounds, swapped by appearance: the image-name specializations didn't take effect
             # in ictool, switching layers on and off does.
             {
                 "image-name": "background.png", "name": "Background", "glass": False,
-                "hidden-specializations": [{"appearance": "dark", "value": True}],
+                "hidden-specializations": [{"appearance": "dark", "value": True}, {"appearance": "tinted", "value": True}],
             },
             {
                 "image-name": "background-dark.png", "name": "Background (dark)", "glass": False,
-                "hidden-specializations": [{"value": True}, {"appearance": "dark", "value": False}],
+                "hidden-specializations": [
+                    {"value": True}, {"appearance": "dark", "value": False}, {"appearance": "tinted", "value": False},
+                ],
             },
         ],
         "shadow": {"kind": "neutral", "opacity": 0.5},
@@ -77,8 +101,7 @@ write_png(ASSETS / "boss.png", paint("docs/icon/2-boss.svg"), 6)
 print(f"wrote {ICON.relative_to(ROOT)}/icon.json")
 
 # App Store Connect subscription image: the flat icon art, 1024x1024, no transparency.
-bg, boss = paint("docs/icon/1-background.svg", fill=(0, 0, 0, 255)), paint("docs/icon/2-boss.svg")
-flat = [[(b[0], b[1], b[2]) if t[3] == 0 else (t[0], t[1], t[2]) for b, t in zip(brow, trow)] for brow, trow in zip(bg, boss)]
+flat = [[(b[0], b[1], b[2]) if t[3] == 0 else (t[0], t[1], t[2]) for b, t in zip(brow, trow)] for brow, trow in zip(light, boss)]
 write_png(ROOT / "docs/appstore/subscription-image.png", flat, 2)
 
 # Launch screen: just the boss on a transparent background, 4 px per cell (256x256).
