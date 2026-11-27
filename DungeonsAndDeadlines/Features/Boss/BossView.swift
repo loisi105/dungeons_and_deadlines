@@ -8,7 +8,6 @@ import DDDesign
 /// The boss, its health, the phase and the latest hits.
 struct BossView: View {
     let raidID: UUID
-    var showTasks: () -> Void = {}
 
     @Environment(Announcer.self) private var announcer
     @Environment(AppEnvironment.self) private var environment
@@ -35,12 +34,11 @@ struct BossView: View {
     @State private var errorMessage: String?
     @State private var showReport = false
     @State private var showResume = false
-    @State private var addFollowUp = false
+    @State private var addingTask = false
     @State private var showPhaseDetails = false
 
-    init(raidID: UUID, showTasks: @escaping () -> Void = {}) {
+    init(raidID: UUID) {
         self.raidID = raidID
-        self.showTasks = showTasks
         _raids = Query(filter: #Predicate<RaidRecord> { $0.id == raidID })
         _tasks = Query(filter: #Predicate<TaskRecord> { $0.raidID == raidID && $0.deletedAt == nil }, sort: \TaskRecord.sortIndex)
         _attacks = Query(filter: #Predicate<AttackRecord> { $0.raidID == raidID }, sort: \AttackRecord.createdAt)
@@ -77,7 +75,7 @@ struct BossView: View {
                 }
                 .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
                 .sheet(isPresented: $showResume) { ResumeFightView(raidID: raidID) }
-                .sheet(isPresented: $addFollowUp) { TaskEditorView(raidID: raidID, mode: .add) }
+                .sheet(isPresented: $addingTask) { TaskEditorView(raidID: raidID, mode: .add) }
                 // At accessibility text sizes the phase details are a sheet; a popover would clip.
                 .sheet(isPresented: phaseDetailsBinding(asSheet: true)) {
                     if let raid = raids.first?.model {
@@ -257,7 +255,7 @@ struct BossView: View {
                 .foregroundStyle(.readableSecondary)
             if raid.ownerID == me {
                 HStack {
-                    Button("Add tasks", systemImage: "plus", action: showTasks)
+                    Button("Add task", systemImage: "plus") { addingTask = true }
                         .secondaryActionStyle()
                     Spacer()
                     Button {
@@ -299,11 +297,14 @@ struct BossView: View {
                 .accessibilityIdentifier("seeReportButton")
             // Follow-up work after the deadline: add tasks and bring the boss back.
             if raid.ownerID == me {
-                Button("Add follow-up task", systemImage: "plus") { addFollowUp = true }
+                Button("Add follow-up task", systemImage: "plus") { addingTask = true }
                     .secondaryActionStyle()
                     .accessibilityIdentifier("addFollowUpButton")
                 Button("Resume the fight", systemImage: "flame") { showResume = true }
                     .secondaryActionStyle()
+                    // It needs open tasks, as in the Quest Log.
+                    .disabled(!tasks.contains { !$0.isDone })
+                    .accessibilityHint(tasks.contains { !$0.isDone } ? Text("") : Text("Add a follow-up task first."))
                     .accessibilityIdentifier("resumeFightButton")
             } else {
                 Text("Found more work? The raid leader can add follow-up tasks and resume the fight.")

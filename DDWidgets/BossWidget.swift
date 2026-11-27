@@ -312,7 +312,7 @@ struct StatusLine: View {
     var body: some View {
         switch snapshot.state.outcome {
         case .planning: Text("Planning")
-        case .won: Text("Defeated!")
+        case .won: Text("Victory")
         case .lost: Text("Deadline passed")
         case .ongoing:
             if snapshot.deadline > date {

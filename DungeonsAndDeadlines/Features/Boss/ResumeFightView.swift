@@ -13,11 +13,16 @@ struct ResumeFightView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(Announcer.self) private var announcer
     @Query private var tasks: [TaskRecord]
-    @State private var deadline = Calendar.current.date(byAdding: .day, value: 3, to: .now) ?? .now
+    @State private var deadline: Date
+    /// The deadline the sheet opened with, to tell whether the user changed it.
+    @State private var initialDeadline: Date
     @State private var errorMessage: String?
 
     init(raidID: UUID) {
         self.raidID = raidID
+        let start = Calendar.current.date(byAdding: .day, value: 3, to: .now) ?? .now
+        _deadline = State(initialValue: start)
+        _initialDeadline = State(initialValue: start)
         _tasks = Query(filter: #Predicate<TaskRecord> { $0.raidID == raidID && $0.deletedAt == nil && $0.completedAt == nil })
     }
 
@@ -41,7 +46,7 @@ struct ResumeFightView: View {
             .dungeonScreen()
             .navigationTitle("Resume the fight")
             .navigationBarTitleDisplayMode(.inline)
-            .sheetCancelConfirm("Resume", confirmIdentifier: "confirmResumeButton", isEnabled: !tasks.isEmpty) { resume() }
+            .sheetCancelConfirm("Resume", confirmIdentifier: "confirmResumeButton", isEnabled: !tasks.isEmpty, hasChanges: deadline != initialDeadline) { resume() }
         }
         .presentationDetents([.large])
     }

@@ -233,6 +233,9 @@
     "Achievements" : {
 
     },
+    "Add a follow-up task first." : {
+
+    },
     "Add a follow-up task first. The boss comes back with health from the open tasks." : {
 
     },
@@ -243,9 +246,6 @@
 
     },
     "Add task" : {
-
-    },
-    "Add tasks" : {
 
     },
     "Add the steps for this deadline." : {
@@ -431,9 +431,6 @@
     "Defeat" : {
 
     },
-    "Defeated" : {
-
-    },
     "Delete" : {
 
     },
@@ -462,9 +459,6 @@
 
     },
     "Deselect All" : {
-
-    },
-    "Details" : {
 
     },
     "done" : {
@@ -644,9 +638,6 @@
     "Join with code" : {
 
     },
-    "Join with code…" : {
-
-    },
     "Joining a friend's raid is always free." : {
 
     },
@@ -735,9 +726,6 @@
 
     },
     "New" : {
-
-    },
-    "New boss…" : {
 
     },
     "New deadline" : {
@@ -925,6 +913,9 @@
     "Resume" : {
 
     },
+    "Resume focus" : {
+
+    },
     "Resume the fight" : {
 
     },
@@ -993,9 +984,6 @@
 
     },
     "Show as" : {
-
-    },
-    "Show details" : {
 
     },
     "Shows Premium" : {
@@ -1068,9 +1056,6 @@
 
     },
     "Support the party" : {
-
-    },
-    "Survived" : {
 
     },
     "Switch boss" : {

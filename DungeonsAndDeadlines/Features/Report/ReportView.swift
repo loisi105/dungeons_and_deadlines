@@ -56,42 +56,51 @@ struct ReportView: View {
 
 struct ReportContent: View {
     let report: RaidReport
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         List {
             Section { header }.dungeonRow()
             Section {
-                Text("Boss health over time").font(.headline).accessibilityAddTraits(.isHeader)
                 HPChart(report: report)
+                    // Room for the "Deadline" label above the plot, which the card's edge cut off.
+                    .padding(.top, 16)
+            } header: {
+                Text("Boss health over time").font(.headline)
             }
             .dungeonRow()
             Section {
-                Text("The party").font(.headline).accessibilityAddTraits(.isHeader)
                 ForEach(report.rows) { row in MemberCard(row: row) }
+            } header: {
+                Text("The party").font(.headline)
             }
             .dungeonRow()
             if !report.lateTasks.isEmpty {
                 Section {
-                    Text("Added after the fight started").font(.headline).accessibilityAddTraits(.isHeader)
                     Text("These still dealt damage, but weren't part of the boss's health.").readableFootnote()
                     ForEach(report.lateTasks) { task in
                         Label(task.title, systemImage: "clock.badge.exclamationmark")
                     }
+                } header: {
+                    Text("Added after the fight started").font(.headline)
                 }
                 .dungeonRow()
             }
             if !report.openTasks.isEmpty {
                 Section {
-                    Text("Left undone").font(.headline).accessibilityAddTraits(.isHeader)
                     ForEach(report.openTasks) { task in
                         Label(task.title, systemImage: "circle")
                     }
+                } header: {
+                    Text("Left undone").font(.headline)
                 }
                 .dungeonRow()
             }
         }
+        // Section titles as large as on the other screens.
+        .headerProminence(.increased)
         .dungeonScreen()
-            .readableContentWidth()
+        .readableContentWidth()
     }
 
     private var header: some View {
@@ -103,11 +112,12 @@ struct ReportContent: View {
             Text(summary)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.readableSecondary)
-            ViewThatFits {
-                HStack(spacing: 20) { stats }
-                VStack(spacing: 8) { stats }
-            }
-            .padding(.top, 4)
+            // One layout that changes shape, so the numbers stay the same views as text grows.
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(spacing: 8))
+                : AnyLayout(HStackLayout(spacing: 20))
+            layout { stats }
+                .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical)

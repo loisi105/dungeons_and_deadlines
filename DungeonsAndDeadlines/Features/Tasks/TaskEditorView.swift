@@ -21,6 +21,7 @@ struct TaskEditorView: View {
     let mode: Mode
 
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
     @Query private var members: [MemberRecord]
     @State private var title = ""
     @State private var size: TaskSize = .m
@@ -63,7 +64,7 @@ struct TaskEditorView: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    .sensoryFeedback(.selection, trigger: size)
+                    .sensoryFeedback(.selection, trigger: size) { _, _ in hapticsOn }
                     .onChange(of: size) { damageText = String(config.baseDamage(for: size)) }
                     LabeledContent("Damage") {
                         TextField("Damage", text: $damageText)

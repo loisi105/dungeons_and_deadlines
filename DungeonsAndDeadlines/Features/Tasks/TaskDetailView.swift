@@ -37,10 +37,10 @@ struct TaskDetailView: View {
                     Text(task.title)
                         .font(.title2.bold())
                         .accessibilityAddTraits(.isHeader)
-                    LabeledContent("Size") { Text(task.size.title) }
-                    LabeledContent("Damage", value: "\(DDStore.shared.config.baseDamage(of: task))")
-                    LabeledContent("Assigned to", value: name(task.assigneeID) ?? String(localized: "Nobody"))
-                    LabeledContent("Added") { Text(task.createdAt, style: .date) }
+                    InfoRow("Size") { Text(task.size.title) }
+                    InfoRow("Damage", value: "\(DDStore.shared.config.baseDamage(of: task))")
+                    InfoRow("Assigned to", value: name(task.assigneeID) ?? String(localized: "Nobody"))
+                    InfoRow("Added") { Text(task.createdAt, style: .date) }
                     if task.isLate(startedAt: raid?.startedAt) {
                         Label("Added after the fight started", systemImage: "clock.badge.exclamationmark")
                             .foregroundStyle(.orange)
@@ -49,8 +49,8 @@ struct TaskDetailView: View {
                 .dungeonRow()
                 if let completedAt = task.completedAt {
                     Section {
-                        LabeledContent("By", value: name(task.completedBy) ?? "?")
-                        LabeledContent("When") { Text(completedAt, format: .dateTime) }
+                        InfoRow("By", value: name(task.completedBy) ?? "?")
+                        InfoRow("When") { Text(completedAt, format: .dateTime) }
                     } header: {
                         Text("Completed").font(.headline)
                     }
@@ -82,11 +82,7 @@ struct TaskDetailView: View {
                                 }
                                 .dangerActionStyle()
                                 // On the button, so the dialog opens next to it.
-                                .confirmationDialog("Delete task", isPresented: $confirmDelete, titleVisibility: .hidden) {
-                                    Button("Delete task", role: .destructive) { delete(task) }
-                                } message: {
-                                    Text("This can't be undone.")
-                                }
+                                .deleteTaskConfirmation(isPresented: $confirmDelete) { delete(task) }
                                 .accessibilityIdentifier("deleteTaskButton")
                                 Text("Removes this task from the Quest Log. This can't be undone.")
                                     .readableFootnote()
@@ -120,7 +116,7 @@ struct TaskDetailView: View {
                 }
             }
             .toolbar {
-                if raid?.status == .planning || raid?.status == .active {
+                if raid != nil {
                     Button("Edit", systemImage: "pencil") { editing = true }
                 }
             }

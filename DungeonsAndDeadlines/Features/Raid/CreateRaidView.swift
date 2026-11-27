@@ -28,6 +28,7 @@ struct CreateRaidView: View {
     @FocusState private var focus: Field?
     /// The boss name the sheet opened with, to tell whether the user changed anything.
     @State private var initialBossName = ""
+    @State private var initialDeadline: Date?
     /// Bumped to rebuild the Mode picker, so it snaps back to Solo after a free player picks Raid.
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// The boss preview grows a little with the text size, up to 72pt.
@@ -138,6 +139,7 @@ struct CreateRaidView: View {
             .dungeonScreen()
             .onAppear {
                 if initialBossName.isEmpty { initialBossName = bossName }
+                if initialDeadline == nil { initialDeadline = deadline }
             }
             .sheet(item: $paywall) { PaywallView(reason: $0.block) }
             .sheet(isPresented: $choosingBoss) { BossPickerSheet(bossName: $bossName) }
@@ -146,8 +148,14 @@ struct CreateRaidView: View {
             .navigationTitle("New raid")
             .navigationBarTitleDisplayMode(.inline)
             .sheetCancelConfirm("Create", confirmIdentifier: "createRaidButton",
-                                isEnabled: !trimmedName.isEmpty && !isSaving, hasChanges: !trimmedName.isEmpty || (!initialBossName.isEmpty && bossName != initialBossName), onConfirm: create)
+                                isEnabled: !trimmedName.isEmpty && !isSaving, hasChanges: hasChanges, onConfirm: create)
         }
+    }
+
+    /// Anything differs from what the sheet opened with.
+    private var hasChanges: Bool {
+        !trimmedName.isEmpty || (!initialBossName.isEmpty && bossName != initialBossName)
+            || (initialDeadline != nil && deadline != initialDeadline) || multiplayer || role != nil
     }
 
     // MARK: Boss row

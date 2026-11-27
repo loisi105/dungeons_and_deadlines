@@ -134,7 +134,7 @@ struct FocusActivityButtons: View {
                 }
             }
             Button(intent: StopFocusIntent(raid: raid)) {
-                Label("Stop", systemImage: "stop.fill")
+                Label("Stop and attack", systemImage: "bolt.fill")
             }
         }
         .buttonStyle(.bordered)

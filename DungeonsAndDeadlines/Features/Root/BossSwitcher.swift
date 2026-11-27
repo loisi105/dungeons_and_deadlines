@@ -30,10 +30,10 @@ struct BossSwitcher: View {
             }
             .pickerStyle(.inline)
             Section {
-                Button("New boss…", systemImage: "plus") { environment.showCreateRaid = true }
+                Button("New raid", systemImage: "plus") { environment.showCreateRaid = true }
                     .accessibilityIdentifier("newBossButton")
                 if sync.isAvailable {
-                    Button("Join with code…", systemImage: "person.badge.plus") { showJoin = true }
+                    Button("Join with code", systemImage: "person.badge.plus") { showJoin = true }
                 }
             }
         } label: {
@@ -51,8 +51,8 @@ struct BossSwitcher: View {
         let status: String = switch raid.status {
         case .planning: String(localized: "Planning")
         case .active: String(localized: "\(DDStore.shared.bossState(raid.id)?.percent ?? 100)% HP")
-        case .won: String(localized: "Defeated")
-        case .lost: String(localized: "Survived")
+        case .won: String(localized: "Victory")
+        case .lost: String(localized: "Defeat")
         }
         return "\(raid.name) · \(status)"
     }

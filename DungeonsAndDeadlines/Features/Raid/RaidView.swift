@@ -17,7 +17,6 @@ struct RaidView: View {
 
     @Environment(AppEnvironment.self) private var environment
     @State private var showJoin = false
-    @State private var removing: Raid?
     /// The Leave raid / Delete boss button of the current raid; its dialog opens right above it.
     @State private var removingCurrent: Raid?
     @State private var showReport = false
@@ -56,14 +55,14 @@ struct RaidView: View {
                 ToolbarItem(placement: .primaryAction) {
                     Menu("New", systemImage: "plus") {
                         Button("New raid", systemImage: "plus") { environment.showCreateRaid = true }
-                        Button("Join with code", systemImage: "person.badge.plus") { showJoin = true }
-                            .disabled(!sync.isAvailable)
+                        if sync.isAvailable {
+                            Button("Join with code", systemImage: "person.badge.plus") { showJoin = true }
+                        }
                     }
                 }
             }
             .sheet(isPresented: $showJoin) { JoinRaidView() }
             .sheet(isPresented: $showReport) { ReportView(raidID: raidID) }
-            .deleteBossConfirmation($removing)
         }
     }
 
@@ -76,7 +75,15 @@ struct RaidView: View {
             InfoRow("Deadline") { Text(raid.deadline, format: .dateTime.day().month().hour().minute()) }
             InfoRow("Status") { Text(statusTitle(raid.status)) }
             if raid.status == .won || raid.status == .lost {
-                Button("See report", systemImage: "doc.text.magnifyingglass") { showReport = true }
+                // The same gold button as on the Boss tab.
+                Button { showReport = true } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "doc.text.magnifyingglass").accessibilityHidden(true)
+                        Text("See report")
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .primaryActionStyle()
             }
         }
         .dungeonRow()
@@ -153,22 +160,7 @@ struct RaidView: View {
                         RaidRow(raid: raid)
                     }
                     .foregroundStyle(.primary)
-                    .swipeActions(edge: .trailing) {
-                        // Styled like the Quest Log's swipe buttons: icon above the name.
-                        Button(role: .destructive) { removing = raid.model } label: {
-                            Label(raid.isMultiplayer ? "Leave" : "Delete", systemImage: "trash.fill")
-                                .labelStyle(.titleAndIcon)
-                        }
-                        .tint(Theme.dangerTop)
-                    }
-                    .contextMenu {
-                        Button(raid.isMultiplayer ? "Leave raid" : "Delete boss", systemImage: "trash", role: .destructive) {
-                            removing = raid.model
-                        }
-                    }
-                    .accessibilityActions {
-                        Button(raid.isMultiplayer ? "Leave raid" : "Delete boss") { removing = raid.model }
-                    }
+                    .raidRowActions(raid.model)
                 }
             } header: {
                 Text("Other raids").font(.headline)
@@ -188,7 +180,7 @@ struct RaidView: View {
                         // Icon and text as plain views: a `Label` here was reported by the audit as
                         // possibly clipped at large text sizes (it wraps fine; the audit can't tell).
                         HStack(spacing: 8) {
-                            Image(systemName: raid.isMultiplayer ? "rectangle.portrait.and.arrow.right" : "trash")
+                            Image(systemName: raid.removalSymbol)
                                 .accessibilityHidden(true)
                             Text(raid.isMultiplayer ? "Leave raid" : "Delete boss")
                         }

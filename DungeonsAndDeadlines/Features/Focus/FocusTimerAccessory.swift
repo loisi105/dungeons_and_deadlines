@@ -60,11 +60,28 @@ struct FocusTimerAccessory: View {
             }
             .buttonStyle(.plain)
             .sensoryFeedback(.impact(weight: .medium), trigger: toggles) { _, _ in hapticsOn }
-            .accessibilityLabel(session.state == .running ? Text("Pause focus") : Text("Start focus"))
-            .accessibilityInputLabels(session.state == .running ? ["Pause", "Pause focus"] : ["Start", "Focus", "Start focus"])
+            .accessibilityLabel(toggleLabel)
+            .accessibilityInputLabels(toggleInputLabels)
         }
         .padding(.horizontal, 16)
         .animation(.smooth, value: session.state)
+    }
+
+    /// The same words as the buttons on the Focus screen.
+    private var toggleLabel: Text {
+        switch session.state {
+        case .running: Text("Pause focus")
+        case .paused: Text("Resume focus")
+        case .idle: Text("Start focus")
+        }
+    }
+
+    private var toggleInputLabels: [Text] {
+        switch session.state {
+        case .running: [Text("Pause"), Text("Pause focus")]
+        case .paused: [Text("Resume"), Text("Resume focus")]
+        case .idle: [Text("Start"), Text("Focus"), Text("Start focus")]
+        }
     }
 
     private var accessibilityLabel: Text {

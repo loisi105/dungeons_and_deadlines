@@ -43,7 +43,7 @@ struct JoinRaidView: View {
             .onAppear { codeFocused = true }
             .navigationTitle("Join raid")
             .navigationBarTitleDisplayMode(.inline)
-            .sheetCancelConfirm("Join", confirmIdentifier: "joinRaidButton", isEnabled: code.count >= 6, isWorking: isJoining, hasChanges: !code.isEmpty, onConfirm: join)
+            .sheetCancelConfirm("Join", confirmIdentifier: "joinRaidButton", isEnabled: code.count >= 6, isWorking: isJoining, hasChanges: !code.isEmpty || role != nil, onConfirm: join)
         }
     }
 

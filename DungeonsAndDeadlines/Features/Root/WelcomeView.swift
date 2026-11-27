@@ -35,6 +35,7 @@ struct WelcomeView: View {
                                 RaidRow(raid: raid)
                             }
                             .foregroundStyle(.primary)
+                            .raidRowActions(raid.model)
                         }
                     } header: {
                         Text("Past raids").font(.headline)
@@ -81,12 +82,19 @@ struct WelcomeView: View {
 
 struct RaidRow: View {
     let raid: RaidRecord
+    /// The boss picture follows the line it sits in, so the row stays short.
+    @ScaledMetric(relativeTo: .subheadline) private var artSize: CGFloat = 20
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(raid.name).font(.headline)
             HStack {
-                Label(raid.bossName, systemImage: "lizard.fill")
+                Label {
+                    Text(raid.bossName)
+                } icon: {
+                    PixelArtView(BossKind.forName(raid.bossName).art)
+                        .frame(width: artSize, height: artSize)
+                }
                 Spacer()
                 Text(statusText)
             }

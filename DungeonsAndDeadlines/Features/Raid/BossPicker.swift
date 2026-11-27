@@ -1,5 +1,6 @@
 import SwiftUI
 import GameCore
+import DDPersistence
 import DDDesign
 
 /// All boss looks at a glance. The look comes from the boss name, so tapping a boss
@@ -14,6 +15,7 @@ struct BossPicker: View {
     var onLocked: (BossKind) -> Void = { _ in }
     @ScaledMetric(relativeTo: .caption) private var tileSize: CGFloat = 64
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @AppStorage("settings.haptics", store: AppGroup.defaults) private var hapticsOn = true
     /// Counts taps that pick a boss, so typing a name doesn't buzz on every keystroke.
     @State private var picks = 0
 
@@ -37,7 +39,7 @@ struct BossPicker: View {
             .padding(.top, 4)
             grid(BossKind.allCases.filter { !$0.isFree })
         }
-        .sensoryFeedback(.selection, trigger: picks)
+        .sensoryFeedback(.selection, trigger: picks) { _, _ in hapticsOn }
     }
 
     private func grid(_ kinds: [BossKind]) -> some View {

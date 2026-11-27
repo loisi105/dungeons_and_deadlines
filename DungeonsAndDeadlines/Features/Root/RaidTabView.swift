@@ -26,7 +26,7 @@ struct RaidTabView: View {
         @Bindable var environment = environment
         TabView(selection: $environment.selectedTab) {
             Tab("Boss", systemImage: "flame.fill", value: AppTab.boss) {
-                BossView(raidID: raidID, showTasks: { environment.selectedTab = .tasks }).id(raidID)
+                BossView(raidID: raidID).id(raidID)
             }
             Tab("Tasks", systemImage: "scroll.fill", value: AppTab.tasks) {
                 TasksView(raidID: raidID).id(raidID)

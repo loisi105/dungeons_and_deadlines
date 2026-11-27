@@ -31,6 +31,8 @@ struct TasksView: View {
     /// Tasks waiting for the fight to start before a batch completes.
     @State private var pendingBatch: [UUID] = []
     @State private var confirmBatchDelete = false
+    /// The task whose swipe or long-press Delete is waiting for confirmation.
+    @State private var deleting: UUID?
     @State private var confirmBatchComplete = false
     @State private var showResume = false
     @Namespace private var zoom
@@ -125,14 +127,14 @@ struct TasksView: View {
             }
         }
         .dungeonScreen()
-        .readableContentWidth(minMargin: 16)
+        .readableContentWidth()
     }
 
     @ToolbarContentBuilder
     private var toolbar: some ToolbarContent {
         if editMode.isEditing {
             ToolbarItemGroup(placement: .bottomBar) {
-                Button("Complete", systemImage: "checkmark.circle") { confirmBatchComplete = true }
+                Button("Complete", systemImage: "checkmark") { confirmBatchComplete = true }
                     .disabled(selection.isEmpty || !canComplete)
                     // On the button, so the dialog opens next to it, not somewhere else.
                     .confirmationDialog("Complete tasks", isPresented: $confirmBatchComplete, titleVisibility: .hidden) {
@@ -195,7 +197,7 @@ struct TasksView: View {
                         .readableFootnote()
                     if raid.ownerID == LocalIdentity.current.memberID {
                         Button("Resume the fight", systemImage: "flame") { showResume = true }
-                            .primaryActionStyle()
+                            .secondaryActionStyle()
                             .disabled(open.isEmpty)
                             .accessibilityIdentifier("tasksResumeFightButton")
                     }
@@ -321,7 +323,7 @@ struct TasksView: View {
         // Fixed insets: with the system's default ones the accessibility audit
         // intermittently reports the row's text as not scaling with Dynamic Type.
         .listRowInsets(EdgeInsets(top: 8, leading: 20, bottom: 8, trailing: 16))
-        // Full swipe right completes (green, like the checkbox), full swipe left deletes.
+        // Full swipe right completes (green, like the checkbox), full swipe left asks to delete.
         // Apple's own symbols and names (Reminders/Mail): iOS 26 draws the icon in the capsule
         // with the name underneath.
         // A full swipe runs the action (Complete, or Reopen on done tasks); a short swipe leaves the button to tap.
@@ -341,33 +343,37 @@ struct TasksView: View {
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
             if !task.isDone && canEdit {
                 // First listed = outermost = the full-swipe action.
-                Button(role: .destructive) { delete(task) } label: { Label("Delete", systemImage: "trash.fill")
+                // No destructive role: it would animate the row away before the player confirms.
+                Button { deleting = task.id } label: { Label("Delete", systemImage: "trash.fill")
                     .labelStyle(.titleAndIcon) }
-                    // Without a tint the destructive button takes the app's gold accent at night.
+                    // Red by tint; untinted it would take the app's accent color.
                     .tint(Theme.dangerTop)
-                Button { editing = .edit(task) } label: { Label("Details", systemImage: "info.circle.fill")
+                Button { editing = .edit(task) } label: { Label("Edit", systemImage: "pencil")
                     .labelStyle(.titleAndIcon) }
                     .tint(Color(hex: 0x8A5A12))
             }
         }
         .contextMenu {
             if !task.isDone && canComplete {
-                Button("Complete", systemImage: "checkmark.circle") { attemptComplete(task) }
+                Button("Complete", systemImage: "checkmark") { attemptComplete(task) }
             }
             if task.isDone {
                 Button("Reopen", systemImage: "arrow.uturn.backward") { reopen(task) }
             }
             if canEdit {
-                Button("Details", systemImage: "info.circle") { editing = .edit(task) }
-                Menu("Assign to", systemImage: "person.crop.circle") {
-                    Button("Nobody") { assign(task, to: nil) }
-                    ForEach(members) { m in
-                        Button(m.nickname) { assign(task, to: m.memberID) }
+                Button("Edit", systemImage: "pencil") { editing = .edit(task) }
+                // Only with someone to share with, as in the task editor.
+                if members.count > 1 {
+                    Menu("Assign to", systemImage: "person.crop.circle") {
+                        Button("Nobody") { assign(task, to: nil) }
+                        ForEach(members) { m in
+                            Button(m.nickname) { assign(task, to: m.memberID) }
+                        }
                     }
                 }
             }
             if !task.isDone && canEdit {
-                Button("Delete", systemImage: "trash", role: .destructive) { delete(task) }
+                Button("Delete", systemImage: "trash", role: .destructive) { deleting = task.id }
             }
         }
         .accessibilityActions {
@@ -375,11 +381,15 @@ struct TasksView: View {
                 Button("Complete task") { attemptComplete(task) }
             }
             if canEdit {
-                Button("Show details") { editing = .edit(task) }
+                Button("Edit task") { editing = .edit(task) }
             }
             if !task.isDone && canEdit {
-                Button("Delete task", role: .destructive) { delete(task) }
+                Button("Delete task", role: .destructive) { deleting = task.id }
             }
+        }
+        // On the row, so the dialog opens next to the task.
+        .deleteTaskConfirmation(isPresented: Binding(get: { deleting == task.id }, set: { if !$0 { deleting = nil } })) {
+            delete(task)
         }
         // A container, so the checkbox keeps its own identifier and label.
         .accessibilityElement(children: .contain)
@@ -541,6 +551,15 @@ struct TaskRow: View {
 }
 
 extension View {
+    /// Asks before deleting one task; the same question wherever it's deleted from.
+    func deleteTaskConfirmation(isPresented: Binding<Bool>, delete: @escaping () -> Void) -> some View {
+        confirmationDialog("Delete task", isPresented: isPresented, titleVisibility: .hidden) {
+            Button("Delete task", role: .destructive, action: delete)
+        } message: {
+            Text("This can't be undone.")
+        }
+    }
+
     /// Asks to start the fight when a task is completed during planning.
     /// The raid leader can start it right away; others are told to wait.
     func startFightPrompt(task: Binding<RaidTask?>, raid: Raid?, complete: @escaping (RaidTask) -> Void) -> some View {
